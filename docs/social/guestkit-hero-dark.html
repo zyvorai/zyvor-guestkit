@@ -8,58 +8,47 @@
   Build: ./docs/social/build-hero-dark.sh  ->  guestkit-hero-dark.jpg (2400x1260)
 -->
 <style>
-  :root { --blue:#0071e3; --signal:#2997ff; --cyan:#64d2ff; --green:#30d158; --amber:#ff9f0a;
+  :root { --blue:#0071e3; --signal:#2997ff; --cyan:#64d2ff; --green:#30d158; --amber:#ff9f0a; --red:#ff453a; --violet:#bf5af2;
     --sans:'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif; --mono:'SF Mono',Menlo,Consolas,monospace; }
   * { box-sizing:border-box; }
   html,body { margin:0; padding:0; }
   body { width:1200px; height:630px; overflow:hidden; color:#f5f5f7; font-family:var(--sans); position:relative; background:#000; }
   .aurora { position:absolute; inset:0;
-    background:radial-gradient(720px 460px at 80% 16%, rgba(41,151,255,.40), transparent 62%),
-               radial-gradient(600px 420px at 104% 98%, rgba(100,210,255,.20), transparent 60%),
+    background:radial-gradient(720px 460px at 80% 16%, rgba(41,151,255,.34), transparent 62%),
+               radial-gradient(600px 420px at 104% 98%, rgba(100,210,255,.16), transparent 60%),
                radial-gradient(520px 380px at 6% 110%, rgba(0,113,227,.28), transparent 60%); }
-  .grid { position:absolute; inset:0; opacity:.09;
-    background-image:linear-gradient(rgba(120,180,255,.9) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.9) 1px,transparent 1px);
-    background-size:44px 44px; -webkit-mask-image:radial-gradient(900px 520px at 72% 42%, #000 18%, transparent 75%); }
-  .left { position:absolute; left:60px; top:52px; width:560px; z-index:3; }
+  .copy { position:absolute; left:60px; top:52px; width:560px; z-index:3; }
   .brand { display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:14px; letter-spacing:.18em; text-transform:uppercase; color:#a1a1a6; }
   .brand b { color:#fff; }
   .word { margin:20px 0 0; font-size:96px; line-height:.95; font-weight:800; letter-spacing:-.05em; white-space:nowrap;
     background:linear-gradient(92deg,#fff 0%,#e3f0ff 38%,var(--signal) 74%,var(--cyan) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; padding-bottom:6px; }
   .tag { margin:14px 0 0; font-size:31px; line-height:1.15; font-weight:700; letter-spacing:-.02em; }
   .tag em { font-style:normal; color:var(--signal); }
-  .lede { margin:12px 0 0; font-size:18px; line-height:1.45; color:#b8b8bf; width:520px; }
+  .lede { margin:12px 0 0; font-size:18px; line-height:1.45; color:#b8b8bf; width:520px; text-shadow:0 1px 12px #000; }
   .stats { margin-top:24px; display:flex; gap:32px; }
   .stat b { display:block; font-size:34px; font-weight:800; letter-spacing:-.03em; color:#fff; }
   .stat span { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:#8e8e93; }
   .pill { position:absolute; left:60px; bottom:40px; display:flex; gap:10px; z-index:3; }
-  .pill span { font-family:var(--mono); font-size:13.5px; font-weight:700; padding:7px 13px; border-radius:18px; border:1.5px solid rgba(255,255,255,.2); color:#e5e5ea; background:rgba(255,255,255,.04); }
+  .pill span { font-family:var(--mono); font-size:13.5px; font-weight:700; padding:7px 13px; border-radius:18px; border:1.5px solid rgba(255,255,255,.2); color:#e5e5ea; background:rgba(0,0,0,.6); }
   .pill span.b { background:var(--blue); border-color:var(--blue); color:#fff; box-shadow:0 0 24px rgba(0,113,227,.55); }
-
-  .right { position:absolute; left:652px; top:96px; width:560px; z-index:2; }
-  .win { position:relative; width:560px; border-radius:16px; overflow:hidden; z-index:2;
-    background:linear-gradient(180deg, rgba(22,24,30,.94), rgba(10,11,14,.96));
-    box-shadow:0 50px 100px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.14), 0 0 90px rgba(41,151,255,.22);
-    transform:perspective(1600px) rotateY(-14deg) rotateX(4deg); transform-origin:left center; }
-  .bar { height:34px; display:flex; align-items:center; gap:8px; padding:0 14px; background:rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.07); }
-  .bar i { width:11px; height:11px; border-radius:50%; background:#ff5f57; } .bar i:nth-child(2){background:#febc2e} .bar i:nth-child(3){background:#28c840}
-  .bar em { margin-left:auto; margin-right:auto; font-style:normal; font-family:var(--mono); font-size:12px; color:#8e8e93; transform:translateX(-24px); }
-  .term { min-height:214px; padding:20px 22px 24px; font-family:var(--mono); font-size:15.5px; line-height:1.75; }
-  .l { white-space:pre; overflow:hidden; text-overflow:ellipsis; color:#f5f5f7; }
-  .l .p { color:var(--signal); font-weight:700; }
-  .l.out { color:#a1a1a6; }
-  .l.cm { color:#6e6e73; }
-  .l.ok { color:#d1f7dc; } .l.ok span { color:var(--green); font-weight:700; }
-  .l.warn { color:#ffe1b0; } .l.warn span { color:var(--amber); font-weight:700; }
-  .cur { display:inline-block; width:9px; height:18px; background:var(--signal); vertical-align:-3px; box-shadow:0 0 12px var(--signal); }
-  .chips { margin:34px 0 0 38px; width:480px; display:flex; flex-wrap:wrap; gap:10px; position:relative; z-index:3; }
-  .chips span { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.04em; padding:7px 12px; border-radius:14px;
-    color:#cfe6ff; background:rgba(10,20,35,.82); border:1px solid rgba(41,151,255,.45); box-shadow:0 0 18px rgba(41,151,255,.18); }
+  .art { position:absolute; left:520px; top:0; width:680px; height:630px; z-index:2; }
+  .art svg { display:block; }
+  #labels { position:absolute; inset:0; z-index:4; pointer-events:none; }
+  .lbl { position:absolute; font-family:var(--mono); font-size:12.5px; color:#a1a1a6; text-align:center; transform:translate(-50%,-50%); white-space:nowrap; }
+  .lbl b { display:block; font-size:12px; letter-spacing:.16em; text-transform:uppercase; color:#e5e5ea; }
+  .lbl span { display:block; margin-top:3px; }
+  .lbl.box { padding:7px 12px; border-radius:12px; background:rgba(8,10,14,.85); border:1px solid rgba(255,255,255,.14); }
+  .lbl.chip { padding:6px 11px; border-radius:13px; font-size:12.5px; font-weight:700; color:#cfe6ff; background:rgba(10,20,35,.85); border:1px solid rgba(41,151,255,.5); box-shadow:0 0 16px rgba(41,151,255,.2); }
+  .lbl.left { transform:translate(0,-50%); text-align:left; }
+  .lbl.right { transform:translate(-100%,-50%); text-align:right; }
+  .ok { color:var(--green) !important; } .warn { color:var(--amber) !important; } .bad { color:var(--red) !important; } .sig { color:var(--signal) !important; } .cy { color:var(--cyan) !important; } .vi { color:var(--violet) !important; }
 </style>
 </head>
 <body>
 <div class="aurora"></div>
-<div class="grid"></div>
-<div class="left">
+<div class="art"><svg id="art" width="680" height="630" viewBox="0 0 680 630" xmlns="http://www.w3.org/2000/svg"></svg></div>
+<div id="labels"></div>
+<div class="copy">
   <div class="brand"><svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><defs><linearGradient id="zb" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff5a15"/><stop offset="1" stop-color="#cc420a"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#zb)"/><path d="M18.5,20.5 45.5,20.5 18.5,43.5 45.5,43.5" fill="none" stroke="#fff" stroke-width="8.3" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Zyvor</b><span>&middot;</span><span>Offline VM assurance</span></div>
   <div class="word">GuestKit</div>
   <div class="tag">Know it will boot.<br><em>Before you power it on.</em></div>
@@ -67,8 +56,95 @@
   <div class="stats"><div class="stat"><b>100+</b><span>CLI commands</span></div><div class="stat"><b>6</b><span>disk formats</span></div><div class="stat"><b>0-100</b><span>boot score</span></div></div>
 </div>
 <div class="pill"><span class="b">github.com/zyvorai/zyvor-guestkit</span><span>Apache-2.0</span></div>
-<div class="right"><div class="win"><div class="bar"><i></i><i></i><i></i><em>guestkit</em></div>
-<div class="term"><div class="l"><span class="p">$</span> guestkit doctor vm.qcow2 --target kvm</div><div class="l out">Bootability Assessment</div><div class="l ok"><span>&#10003;</span> 82% boot assurance score on kvm (confidence: 90%)</div><div class="l out">[BOOT-006] Virtio modules available</div><div class="l"><span class="p">$</span> <i class="cur"></i></div></div></div>
-<div class="chips"><span>Rust</span><span>Python</span><span>qcow2/VMDK/VHDX</span><span>QEMU</span><span>KubeVirt</span><span>GitHub Action</span></div></div>
+<script>
+var Z = (function () {
+  var NS = 'http://www.w3.org/2000/svg', svg = document.getElementById('art'), labels = document.getElementById('labels');
+  var seed = 20261004;
+  function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+  function el(tag, a, parent) { var n = document.createElementNS(NS, tag); for (var k in a) n.setAttribute(k, a[k]); (parent || svg).appendChild(n); return n; }
+  function g(attrs) { return el('g', attrs || {}); }
+  function label(x, y, inner, cls, style) { var d = document.createElement('div'); d.className = 'lbl ' + (cls || ''); d.style.left = (520 + x) + 'px'; d.style.top = y + 'px'; if (style) d.setAttribute('style', d.getAttribute('style') + ';' + style); d.innerHTML = inner; labels.appendChild(d); return d; }
+  return { NS: NS, svg: svg, W: 680, H: 630, rnd: rnd, el: el, g: g, label: label,
+    reseed: function (s) { seed = s; },
+    c: { blue: '#0071e3', signal: '#2997ff', cyan: '#64d2ff', green: '#30d158', amber: '#ff9f0a', red: '#ff453a', violet: '#bf5af2', teal: '#40c8e0', indigo: '#5e5ce6', pink: '#ff375f', white: '#f5f5f7', grey: '#8e8e93' } };
+})();
+(function () {
+// GuestKit: a powered-off disk platter read under a scanning head, wrapped by a 0-100 boot readiness gauge, with a Passport stamp.
+var C = Z.c, cx = 380, cy = 300, R = 182, D2R = Math.PI / 180;
+var defs = Z.el('defs', {});
+defs.innerHTML = '<filter id="gkgl" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>' +
+  '<filter id="gksf" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="14"/></filter>' +
+  '<radialGradient id="gkpl" cx=".42" cy=".38" r=".7"><stop offset="0" stop-color="#1c2a3d"/><stop offset=".55" stop-color="#0d1522"/><stop offset="1" stop-color="#070b12"/></radialGradient>' +
+  '<radialGradient id="gksheen" cx=".3" cy=".25" r=".6"><stop offset="0" stop-color="#9fd0ff" stop-opacity=".16"/><stop offset="1" stop-color="#9fd0ff" stop-opacity="0"/></radialGradient>' +
+  '<linearGradient id="gkarc" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#2997ff"/><stop offset=".6" stop-color="#64d2ff"/><stop offset="1" stop-color="#30d158"/></linearGradient>';
+function pt(r, a) { return [cx + r * Math.cos(a * D2R), cy + r * Math.sin(a * D2R)]; }
+function arc(r, a0, a1) {
+  var p = pt(r, a0), q = pt(r, a1), big = (a1 - a0) > 180 ? 1 : 0;
+  return 'M' + p[0].toFixed(1) + ',' + p[1].toFixed(1) + ' A' + r + ',' + r + ' 0 ' + big + ' 1 ' + q[0].toFixed(1) + ',' + q[1].toFixed(1);
+}
+Z.el('circle', { cx: cx, cy: cy, r: R + 40, fill: C.signal, opacity: .1, filter: 'url(#gksf)' });
+// platter
+Z.el('circle', { cx: cx, cy: cy, r: R, fill: 'url(#gkpl)', stroke: 'rgba(160,200,255,.28)', 'stroke-width': 1.2 });
+var headA = -58, scanFrom = headA - 95;
+for (var r = 62; r <= R - 10; r += 9) {
+  Z.el('circle', { cx: cx, cy: cy, r: r, fill: 'none', stroke: 'rgba(140,190,255,.07)', 'stroke-width': 1 });
+  var n = Math.round(r / 5.5), step = 360 / n;
+  for (var s = 0; s < n; s++) {
+    var a0 = s * step - 90, a1 = a0 + step * 0.78, mid = a0 + step / 2, v = Z.rnd();
+    var norm = ((mid - scanFrom) % 360 + 360) % 360, scanned = norm < (headA - scanFrom);
+    var col = 'rgba(120,170,230,1)', op = 0.05 + v * 0.12;
+    if (scanned) { col = C.cyan; op = 0.25 + v * 0.45; }
+    if (v > 0.985 && scanned) { col = C.amber; op = 0.95; }
+    Z.el('path', { d: arc(r, a0, a1), fill: 'none', stroke: col, 'stroke-width': 4.5, opacity: op.toFixed(2) });
+  }
+}
+// scan wedge trailing the head
+for (var k = 0; k < 14; k++) {
+  var w0 = headA - (k + 1) * 6, w1 = headA - k * 6;
+  var p0 = pt(R - 6, w0), p1 = pt(R - 6, w1);
+  Z.el('path', { d: 'M' + cx + ',' + cy + ' L' + p0[0].toFixed(1) + ',' + p0[1].toFixed(1) + ' A' + (R - 6) + ',' + (R - 6) + ' 0 0 1 ' + p1[0].toFixed(1) + ',' + p1[1].toFixed(1) + 'Z',
+    fill: C.cyan, opacity: (0.16 * (1 - k / 14)).toFixed(3) });
+}
+Z.el('circle', { cx: cx, cy: cy, r: R, fill: 'url(#gksheen)' });
+// spindle hub
+Z.el('circle', { cx: cx, cy: cy, r: 52, fill: 'rgba(6,10,18,.95)', stroke: C.signal, 'stroke-width': 2, filter: 'url(#gkgl)' });
+Z.el('circle', { cx: cx, cy: cy, r: 44, fill: 'none', stroke: 'rgba(120,185,255,.25)', 'stroke-dasharray': '2 4' });
+// readiness gauge 0..100 around the platter
+var GR = 222, g0 = 135, gs = 270, score = 82;
+Z.el('path', { d: arc(GR, g0, g0 + gs), fill: 'none', stroke: 'rgba(255,255,255,.08)', 'stroke-width': 10, 'stroke-linecap': 'round' });
+Z.el('path', { d: arc(GR, g0, g0 + gs * score / 100), fill: 'none', stroke: 'url(#gkarc)', 'stroke-width': 10, 'stroke-linecap': 'round', filter: 'url(#gkgl)' });
+for (var t = 0; t <= 100; t += 5) {
+  var ta = g0 + gs * t / 100, a = pt(GR + 13, ta), b = pt(GR + (t % 25 === 0 ? 22 : 17), ta);
+  Z.el('line', { x1: a[0], y1: a[1], x2: b[0], y2: b[1], stroke: t <= score ? 'rgba(100,210,255,.7)' : 'rgba(255,255,255,.22)', 'stroke-width': t % 25 === 0 ? 1.6 : 1 });
+}
+[0, 50, 100].forEach(function (t) {
+  var p = pt(GR + 36, g0 + gs * t / 100);
+  var tx = Z.el('text', { x: p[0], y: p[1] + 4, 'text-anchor': 'middle', fill: '#8e8e93', 'font-family': 'SF Mono, Menlo, monospace', 'font-size': 11 });
+  tx.textContent = t;
+});
+var ep = pt(GR, g0 + gs * score / 100);
+Z.el('circle', { cx: ep[0], cy: ep[1], r: 7, fill: '#fff', filter: 'url(#gkgl)' });
+// read head arm
+var pv = [606, 104], hp = pt(132, headA);
+var ang = Math.atan2(hp[1] - pv[1], hp[0] - pv[0]), nx = -Math.sin(ang), ny = Math.cos(ang);
+Z.el('path', { d: 'M' + (pv[0] + nx * 9) + ',' + (pv[1] + ny * 9) + ' L' + (hp[0] + nx * 3) + ',' + (hp[1] + ny * 3) + ' L' + (hp[0] - nx * 3) + ',' + (hp[1] - ny * 3) + ' L' + (pv[0] - nx * 9) + ',' + (pv[1] - ny * 9) + 'Z',
+  fill: 'rgba(200,225,255,.22)', stroke: 'rgba(200,225,255,.55)', 'stroke-width': 1 });
+Z.el('circle', { cx: pv[0], cy: pv[1], r: 15, fill: 'rgba(10,16,26,.95)', stroke: 'rgba(200,225,255,.55)', 'stroke-width': 1.5 });
+Z.el('circle', { cx: pv[0], cy: pv[1], r: 5, fill: C.signal });
+Z.el('circle', { cx: hp[0], cy: hp[1], r: 6, fill: '#fff', filter: 'url(#gkgl)' });
+Z.el('circle', { cx: hp[0], cy: hp[1], r: 14, fill: 'none', stroke: C.cyan, opacity: .6 });
+// passport stamp
+var st = Z.el('g', { transform: 'translate(566,548) rotate(-9)' });
+Z.el('rect', { x: -78, y: -32, width: 156, height: 64, rx: 9, fill: 'rgba(48,209,88,.07)', stroke: C.green, 'stroke-width': 2.4, opacity: .95 }, st);
+Z.el('rect', { x: -71, y: -25, width: 142, height: 50, rx: 6, fill: 'none', stroke: C.green, 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: .7 }, st);
+var t1 = Z.el('text', { x: 0, y: 2, 'text-anchor': 'middle', fill: C.green, 'font-family': 'SF Mono, Menlo, monospace', 'font-size': 18, 'font-weight': 800, 'letter-spacing': 4 }, st);
+t1.textContent = 'PASSPORT';
+var t2 = Z.el('text', { x: 0, y: 17, 'text-anchor': 'middle', fill: C.green, 'font-family': 'SF Mono, Menlo, monospace', 'font-size': 9, 'letter-spacing': 2.5, opacity: .85 }, st);
+t2.textContent = 'CUTOVER CERTIFIED';
+Z.label(cx, cy, '<b style="font-size:30px;letter-spacing:-.02em;color:#fff">82</b><span>boot score</span>');
+Z.label(652, 46, '<b>offline read</b><span>qcow2 &middot; VMDK &middot; VHDX</span>', 'right');
+Z.label(170, 92, 'guest off', 'chip');
+})();
+</script>
 </body>
 </html>
