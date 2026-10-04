@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GuestKit: vs libguestfs + virt-v2v</title>
+<!-- README card, 1600x400 at 2x. Build: ./docs/ux/build-readme-cards.sh -->
+<style>
+  :root { --acc:#5e9cff; --sans:'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif; --mono:'SF Mono',Menlo,Consolas,monospace; }
+  * { box-sizing:border-box; } html,body { margin:0; padding:0; }
+  body { width:1600px; min-height:400px; overflow:hidden; background:#000; color:#f5f5f7; font-family:var(--sans); position:relative; }
+  .glow { position:absolute; inset:0; background:radial-gradient(800px 420px at 92% -10%, color-mix(in srgb, var(--acc) 34%, transparent), transparent 65%),
+    radial-gradient(700px 380px at -5% 115%, rgba(0,113,227,.22), transparent 60%); }
+  .rail { position:absolute; left:0; top:0; bottom:0; width:6px; background:linear-gradient(180deg, var(--acc), rgba(41,151,255,.2)); }
+  .wrap { position:relative; padding:40px 64px 28px; }
+  .top { display:flex; align-items:center; justify-content:space-between; }
+  .brand { display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:15px; letter-spacing:.18em; text-transform:uppercase; color:#a1a1a6; }
+  .brand b { color:#fff; }
+  .kicker { font-family:var(--mono); font-size:15px; letter-spacing:.18em; text-transform:uppercase; color:var(--acc); }
+  h1 { margin:18px 0 0; font-size:50px; line-height:1.05; font-weight:800; letter-spacing:-.03em; white-space:nowrap; }
+  h1 em { font-style:normal; color:var(--acc); }
+  .foot { margin-top:28px; display:flex; justify-content:space-between; align-items:center; font-family:var(--mono); font-size:16px; color:#8e8e93; padding-top:18px; border-top:1px solid rgba(255,255,255,.08); }
+  .foot b { color:#f5f5f7; font-size:17px; }
+  .card { border-radius:16px; background:linear-gradient(180deg, rgba(28,30,36,.92), rgba(14,15,19,.95)); border:1px solid rgba(255,255,255,.12); position:relative; overflow:hidden; }
+  .tag { display:inline-block; font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; padding:4px 10px; border-radius:10px; border:1px solid currentColor; }
+
+  .cols { margin-top:26px; display:grid; grid-template-columns:1fr 1fr; gap:40px; }
+  .ch { font-size:27px; font-weight:800; letter-spacing:-.02em; margin-bottom:14px; }
+  .ch small { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:#a1a1a6; margin-left:10px; }
+  .alts { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .alt { padding:12px 14px; min-height:66px; }
+  .alt b { display:block; font-size:19px; } .alt span { display:block; margin-top:3px; font-size:14.5px; color:#a1a1a6; }
+  .alt.bad { background:linear-gradient(180deg, rgba(70,20,18,.75), rgba(36,12,12,.85)); border-color:rgba(255,69,58,.4); }
+  .alt.bad b { color:#ff8f87; }
+  .ours { display:grid; gap:12px; }
+  .our { display:flex; align-items:center; gap:16px; padding:14px 18px; border-left:4px solid var(--c); }
+  .our b { font-size:23px; white-space:nowrap; } .our span { font-size:16px; color:#a1a1a6; flex:1; } .our i { font-style:normal; font-family:var(--mono); font-size:15px; font-weight:700; }
+  .note { margin-top:14px; padding:14px 18px; font-size:17px; line-height:1.45; color:#d1d1d6; border-radius:14px; border:1px solid rgba(41,151,255,.45); background:rgba(0,40,90,.25); }
+  .facts { margin-top:24px; display:grid; grid-template-columns:repeat(4,1fr); gap:20px; }
+  .fact { padding:14px 18px; min-height:90px; }
+  .fact b { display:block; font-family:var(--mono); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--acc); }
+  .fact span { display:block; margin-top:6px; font-size:16.5px; line-height:1.35; color:#e5e5ea; }
+</style>
+</head>
+<body>
+<div class="glow"></div><div class="rail"></div>
+<div class="wrap">
+<div class="top"><div class="brand"><svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><defs><linearGradient id="zb" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff5a15"/><stop offset="1" stop-color="#cc420a"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#zb)"/><path d="M18.5,20.5 45.5,20.5 18.5,43.5 45.5,43.5" fill="none" stroke="#fff" stroke-width="8.3" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Zyvor</b><span>&middot;</span><span>GuestKit</span></div><div class="kicker">GuestKit vs libguestfs + virt-v2v</div></div><h1>Not just convert it. <em>Prove it will boot.</em></h1><div class="cols"><div><div class="ch">libguestfs + virt-v2v<small>the usual toolkit</small></div><div class="alts"><div class="card alt"><b>guestfish</b><span>shell into a disk</span></div><div class="card alt"><b>virt-inspector</b><span>OS inventory</span></div><div class="card alt"><b>virt-customize</b><span>edit an image</span></div><div class="card alt"><b>virt-v2v</b><span>convert to KVM</span></div><div class="card alt bad"><b>Appliance VM</b><span>boots to read a disk</span></div><div class="card alt bad"><b>No boot score</b><span>find out at power-on</span></div><div class="card alt bad"><b>No sign-off</b><span>no cutover record</span></div><div class="card alt"><b>Scripts</b><span>glue for each check</span></div></div></div><div><div class="ch">GuestKit<small>assurance first</small></div><div class="ours"><div class="card our" style="--c:#2997ff"><b>doctor</b><span>boot score + blockers</span><i style="color:#2997ff">0-100</i></div><div class="card our" style="--c:#ff9f0a"><b>plan apply</b><span>fixes with rollback</span><i style="color:#ff9f0a">plan</i></div><div class="card our" style="--c:#30d158"><b>passport</b><span>signed cutover proof</span><i style="color:#30d158">Ed25519</i></div><div class="card our" style="--c:#bf5af2"><b>Action</b><span>fail the CI job</span><i style="color:#bf5af2">CI</i></div></div><div class="note">One engine for scoring, repair, certification and launch, so the CI gate, the Passport and the QEMU launch all use the same evidence.</div></div></div><div class="facts"><div class="card fact"><b>Disk access</b><span>Rust engine over qemu-nbd or loop mounts, no appliance VM</span></div><div class="card fact"><b>Readiness</b><span>A 0-100 first-boot score with the blockers explained</span></div><div class="card fact"><b>Evidence</b><span>Signed Cutover Passport and a CI gate on the same score</span></div><div class="card fact"><b>Choose libguestfs</b><span>when you need its broad filesystem coverage or virt-v2v&#x27;s full conversion</span></div></div><div class="foot"><b>github.com/zyvorai/zyvor-guestkit</b><span>libguestfs, VMware and Hyper-V are trademarks of their respective owners</span></div>
+</div>
+<script>document.body.setAttribute('data-h', Math.ceil(document.querySelector('.wrap').getBoundingClientRect().height));</script>
+</body>
+</html>
