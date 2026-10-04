@@ -12,10 +12,10 @@ const config: Config = {
   },
 
   url: 'https://zyvorai.github.io',
-  baseUrl: '/guestkit/',
+  baseUrl: '/zyvor-guestkit/',
 
   organizationName: 'zyvorai',
-  projectName: 'guestkit',
+  projectName: 'zyvor-guestkit',
 
   // Serve the repo's existing screenshot/social assets in place instead of
   // duplicating them into static/, so the README and this site share one copy.
@@ -43,7 +43,7 @@ const config: Config = {
           path: '../docs',
           routeBasePath: 'docs',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/zyvorai/guestkit/tree/main/docs/',
+          editUrl: 'https://github.com/zyvorai/zyvor-guestkit/tree/main/docs/',
         },
         blog: false,
         theme: {
@@ -56,7 +56,8 @@ const config: Config = {
   themeConfig: {
     image: 'guestkit-share-card.png',
     colorMode: {
-      respectPrefersColorScheme: true,
+      defaultMode: 'dark',
+      respectPrefersColorScheme: false,
     },
     navbar: {
       hideOnScroll: false,
@@ -75,7 +76,7 @@ const config: Config = {
         {to: '/gallery', label: 'Gallery', position: 'left'},
         {to: '/resources', label: 'Resources', position: 'left'},
         {
-          href: 'https://github.com/zyvorai/guestkit',
+          href: 'https://github.com/zyvorai/zyvor-guestkit',
           label: 'GitHub',
           position: 'right',
         },
@@ -102,15 +103,15 @@ const config: Config = {
         {
           title: 'Project',
           items: [
-            {label: 'GitHub', href: 'https://github.com/zyvorai/guestkit'},
+            {label: 'GitHub', href: 'https://github.com/zyvorai/zyvor-guestkit'},
             {label: 'crates.io', href: 'https://crates.io/crates/guestkit'},
-            {label: 'License (Apache-2.0)', href: 'https://github.com/zyvorai/guestkit/blob/main/LICENSE'},
+            {label: 'License (Apache-2.0)', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/LICENSE'},
           ],
         },
         {
           title: 'Zyvor Enterprise',
           items: [
-            {label: '30-day Enterprise trial', href: 'https://github.com/zyvorai/guestkit/blob/main/docs/enterprise-trial-install.md'},
+            {label: '30-day Enterprise trial', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/docs/enterprise-trial-install.md'},
             {label: 'Book a demo', href: 'https://zyvor.dev/contact?utm_source=github&utm_medium=guestkit&intent=demo'},
           ],
         },

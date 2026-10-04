@@ -4,7 +4,7 @@
 
 **Offline VM intelligence and migration assurance.** Score boot readiness before power-on, repair disks offline, and certify cutover with a Passport.
 
-📖 Published at **[zyvorai.github.io/guestkit](https://zyvorai.github.io/guestkit/)** · source: [`docs/`](https://github.com/zyvorai/guestkit/tree/main/docs)
+📖 Published at **[zyvorai.github.io/zyvor-guestkit](https://zyvorai.github.io/zyvor-guestkit/)** · source: [`docs/`](https://github.com/zyvorai/zyvor-guestkit/tree/main/docs)
 
 ## Product tour
 
