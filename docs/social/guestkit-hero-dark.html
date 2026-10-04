@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GuestKit hero card</title>
+<!--
+  1200x630 dark hero card: README hero and GitHub social preview.
+  Build: ./docs/social/build-hero-dark.sh  ->  guestkit-hero-dark.jpg (2400x1260)
+-->
+<style>
+  :root { --blue:#0071e3; --signal:#2997ff; --cyan:#64d2ff; --green:#30d158; --amber:#ff9f0a;
+    --sans:'SF Pro Display','Helvetica Neue',Helvetica,Arial,sans-serif; --mono:'SF Mono',Menlo,Consolas,monospace; }
+  * { box-sizing:border-box; }
+  html,body { margin:0; padding:0; }
+  body { width:1200px; height:630px; overflow:hidden; color:#f5f5f7; font-family:var(--sans); position:relative; background:#000; }
+  .aurora { position:absolute; inset:0;
+    background:radial-gradient(720px 460px at 80% 16%, rgba(41,151,255,.40), transparent 62%),
+               radial-gradient(600px 420px at 104% 98%, rgba(100,210,255,.20), transparent 60%),
+               radial-gradient(520px 380px at 6% 110%, rgba(0,113,227,.28), transparent 60%); }
+  .grid { position:absolute; inset:0; opacity:.09;
+    background-image:linear-gradient(rgba(120,180,255,.9) 1px,transparent 1px),linear-gradient(90deg,rgba(120,180,255,.9) 1px,transparent 1px);
+    background-size:44px 44px; -webkit-mask-image:radial-gradient(900px 520px at 72% 42%, #000 18%, transparent 75%); }
+  .left { position:absolute; left:60px; top:52px; width:560px; z-index:3; }
+  .brand { display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:14px; letter-spacing:.18em; text-transform:uppercase; color:#a1a1a6; }
+  .brand b { color:#fff; }
+  .word { margin:20px 0 0; font-size:96px; line-height:.95; font-weight:800; letter-spacing:-.05em; white-space:nowrap;
+    background:linear-gradient(92deg,#fff 0%,#e3f0ff 38%,var(--signal) 74%,var(--cyan) 100%); -webkit-background-clip:text; background-clip:text; color:transparent; padding-bottom:6px; }
+  .tag { margin:14px 0 0; font-size:31px; line-height:1.15; font-weight:700; letter-spacing:-.02em; }
+  .tag em { font-style:normal; color:var(--signal); }
+  .lede { margin:12px 0 0; font-size:18px; line-height:1.45; color:#b8b8bf; width:520px; }
+  .stats { margin-top:24px; display:flex; gap:32px; }
+  .stat b { display:block; font-size:34px; font-weight:800; letter-spacing:-.03em; color:#fff; }
+  .stat span { font-family:var(--mono); font-size:12px; letter-spacing:.12em; text-transform:uppercase; color:#8e8e93; }
+  .pill { position:absolute; left:60px; bottom:40px; display:flex; gap:10px; z-index:3; }
+  .pill span { font-family:var(--mono); font-size:13.5px; font-weight:700; padding:7px 13px; border-radius:18px; border:1.5px solid rgba(255,255,255,.2); color:#e5e5ea; background:rgba(255,255,255,.04); }
+  .pill span.b { background:var(--blue); border-color:var(--blue); color:#fff; box-shadow:0 0 24px rgba(0,113,227,.55); }
+
+  .right { position:absolute; left:652px; top:96px; width:560px; z-index:2; }
+  .win { position:relative; width:560px; border-radius:16px; overflow:hidden; z-index:2;
+    background:linear-gradient(180deg, rgba(22,24,30,.94), rgba(10,11,14,.96));
+    box-shadow:0 50px 100px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.14), 0 0 90px rgba(41,151,255,.22);
+    transform:perspective(1600px) rotateY(-14deg) rotateX(4deg); transform-origin:left center; }
+  .bar { height:34px; display:flex; align-items:center; gap:8px; padding:0 14px; background:rgba(255,255,255,.05); border-bottom:1px solid rgba(255,255,255,.07); }
+  .bar i { width:11px; height:11px; border-radius:50%; background:#ff5f57; } .bar i:nth-child(2){background:#febc2e} .bar i:nth-child(3){background:#28c840}
+  .bar em { margin-left:auto; margin-right:auto; font-style:normal; font-family:var(--mono); font-size:12px; color:#8e8e93; transform:translateX(-24px); }
+  .term { min-height:214px; padding:20px 22px 24px; font-family:var(--mono); font-size:15.5px; line-height:1.75; }
+  .l { white-space:pre; overflow:hidden; text-overflow:ellipsis; color:#f5f5f7; }
+  .l .p { color:var(--signal); font-weight:700; }
+  .l.out { color:#a1a1a6; }
+  .l.cm { color:#6e6e73; }
+  .l.ok { color:#d1f7dc; } .l.ok span { color:var(--green); font-weight:700; }
+  .l.warn { color:#ffe1b0; } .l.warn span { color:var(--amber); font-weight:700; }
+  .cur { display:inline-block; width:9px; height:18px; background:var(--signal); vertical-align:-3px; box-shadow:0 0 12px var(--signal); }
+  .chips { margin:34px 0 0 38px; width:480px; display:flex; flex-wrap:wrap; gap:10px; position:relative; z-index:3; }
+  .chips span { font-family:var(--mono); font-size:13px; font-weight:700; letter-spacing:.04em; padding:7px 12px; border-radius:14px;
+    color:#cfe6ff; background:rgba(10,20,35,.82); border:1px solid rgba(41,151,255,.45); box-shadow:0 0 18px rgba(41,151,255,.18); }
+</style>
+</head>
+<body>
+<div class="aurora"></div>
+<div class="grid"></div>
+<div class="left">
+  <div class="brand"><svg viewBox="0 0 64 64" width="30" height="30" aria-hidden="true"><defs><linearGradient id="zb" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#ff5a15"/><stop offset="1" stop-color="#cc420a"/></linearGradient></defs><rect width="64" height="64" rx="15" fill="url(#zb)"/><path d="M18.5,20.5 45.5,20.5 18.5,43.5 45.5,43.5" fill="none" stroke="#fff" stroke-width="8.3" stroke-linecap="round" stroke-linejoin="round"/></svg><b>Zyvor</b><span>&middot;</span><span>Offline VM assurance</span></div>
+  <div class="word">GuestKit</div>
+  <div class="tag">Know it will boot.<br><em>Before you power it on.</em></div>
+  <div class="lede">Reads a VM disk while the guest is off, scores first-boot readiness 0-100, repairs it offline and certifies cutover with a Passport.</div>
+  <div class="stats"><div class="stat"><b>100+</b><span>CLI commands</span></div><div class="stat"><b>6</b><span>disk formats</span></div><div class="stat"><b>0-100</b><span>boot score</span></div></div>
+</div>
+<div class="pill"><span class="b">github.com/zyvorai/zyvor-guestkit</span><span>Apache-2.0</span></div>
+<div class="right"><div class="win"><div class="bar"><i></i><i></i><i></i><em>guestkit</em></div>
+<div class="term"><div class="l"><span class="p">$</span> guestkit doctor vm.qcow2 --target kvm</div><div class="l out">Bootability Assessment</div><div class="l ok"><span>&#10003;</span> 82% boot assurance score on kvm (confidence: 90%)</div><div class="l out">[BOOT-006] Virtio modules available</div><div class="l"><span class="p">$</span> <i class="cur"></i></div></div></div>
+<div class="chips"><span>Rust</span><span>Python</span><span>qcow2/VMDK/VHDX</span><span>QEMU</span><span>KubeVirt</span><span>GitHub Action</span></div></div>
+</body>
+</html>

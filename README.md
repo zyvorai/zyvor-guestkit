@@ -1,9 +1,6 @@
 <div align="center">
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/social/guestkit-share-card-dark.png">
-  <img src="docs/social/guestkit-share-card.png" alt="GuestKit — offline VM intelligence and migration assurance" width="820">
-</picture>
+<img src="docs/social/guestkit-hero-dark.jpg" alt="GuestKit - Know it will boot. Before you power it on." width="100%">
 
 # GuestKit
 
@@ -11,7 +8,7 @@
 
 Score boot readiness before power-on, repair disks offline, and certify cutover with a Passport.
 
-[![CI](https://img.shields.io/github/actions/workflow/status/zyvorai/guestkit/ci.yml?branch=main&style=flat-square&labelColor=1d1d1f&label=CI)](https://github.com/zyvorai/guestkit/actions/workflows/ci.yml)
+[![CI](https://img.shields.io/github/actions/workflow/status/zyvorai/zyvor-guestkit/ci.yml?branch=main&style=flat-square&labelColor=1d1d1f&label=CI)](https://github.com/zyvorai/zyvor-guestkit/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://crates.io/crates/guestkit)
 [![PyPI](https://img.shields.io/pypi/v/zyvor-guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://pypi.org/project/zyvor-guestkit/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-0071e3?style=flat-square&labelColor=1d1d1f)](LICENSE)
@@ -19,7 +16,7 @@ Score boot readiness before power-on, repair disks offline, and certify cutover 
 
 **[Book a demo](https://zyvor.dev/schedule?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero)** · **[Start a 30-day PoC](https://zyvor.dev/poc?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero)** · [30-day Enterprise trial](docs/enterprise-trial-install.md)
 
-[**Quick start**](#quick-start) · [**Gallery**](docs/gallery.md) · [**Docs**](https://zyvorai.github.io/guestkit/) · [**Product**](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero) · [**Wiki**](https://github.com/zyvorai/guestkit/wiki) · [**FluxVM**](https://github.com/zyvorai/fluxvm) · [**h2kvm**](https://github.com/zyvorai/h2kvm)
+[**Quick start**](#quick-start) · [**Gallery**](docs/gallery.md) · [**Docs**](https://zyvorai.github.io/zyvor-guestkit/) · [**Product**](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero) · [**Wiki**](https://github.com/zyvorai/zyvor-guestkit/wiki) · [**FluxVM**](https://github.com/zyvorai/zyvor-fluxvm) · [**h2kvm**](https://github.com/zyvorai/zyvor-h2kvm)
 
 </div>
 
@@ -92,7 +89,7 @@ CLI, TUI, QEMU, Python, web console, in-guest agent and a GitHub Action.<br>
 
 ```bash
 # v1.2.5 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/guestkit/releases/download/v1.2.5/guestkit-1.2.5-linux-amd64.tar.gz
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.5/guestkit-1.2.5-linux-amd64.tar.gz
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
@@ -142,7 +139,7 @@ Every hypervisor exit fails the same way: you discover the disk was broken **at 
 
 </div>
 
-**Export with [Transiva](https://github.com/zyvorai/transiva) (Apache-2.0) → convert & deploy with [h2kvm](https://github.com/zyvorai/h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/guestkit) (Apache-2.0) → operate on [Zorvia](https://github.com/zyvorai/zorvia/blob/main/docs/leave-openshift.md) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
+**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Apache-2.0) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Apache-2.0) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia/blob/main/docs/leave-openshift.md) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
 
 <a id="why-teams-switch"></a>
 
@@ -176,7 +173,7 @@ The [full comparison](docs/why-teams-switch.md) has four more rows.
 
 | Goal | Document |
 |------|----------|
-| Docs site | [zyvorai.github.io/guestkit](https://zyvorai.github.io/guestkit/) |
+| Docs site | [zyvorai.github.io/zyvor-guestkit](https://zyvorai.github.io/zyvor-guestkit/) |
 | Docs home | [docs/README.md](docs/README.md) · [INDEX](docs/INDEX.md) |
 | DevOps runbooks | [docs/devops](docs/devops/README.md) |
 | Feature guide | [guestkit-user-feature-guide.md](docs/guestkit-user-feature-guide.md) |
