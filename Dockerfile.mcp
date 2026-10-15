@@ -1,0 +1,37 @@
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: Apache-2.0
+#
+# guestkit-mcp: `guestkit mcp-serve` (stdio MCP server, six read-only evidence
+# tools for ONE VM disk image) packaged for the MCP Registry (server.json).
+# The image path is a runtime argument; bind-mount the disk and pass its
+# in-container path, e.g.
+#   docker run -i --rm -v /vms:/vms:ro ghcr.io/zyvorai/guestkit-mcp:<ver> /vms/web01.qcow2
+# The top-level Dockerfile (guestkit CLI image) is intentionally untouched.
+FROM rust:slim-bookworm AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      pkg-config libssl-dev libsystemd-dev \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /build
+COPY Cargo.toml Cargo.lock ./
+COPY src ./src
+COPY benches ./benches
+COPY templates ./templates
+COPY crates ./crates
+RUN cargo build --release --locked --features mcp --bin guestkit
+
+FROM debian:bookworm-slim
+# The MCP Registry verifies ownership of an OCI package by this label; it must
+# equal "name" in server.json (scripts/check-mcp-registry.sh gates that).
+LABEL io.modelcontextprotocol.server.name="io.github.zyvorai/guestkit"
+LABEL org.opencontainers.image.source="https://github.com/zyvorai/zyvor-guestkit"
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      qemu-utils kmod util-linux libsystemd0 ca-certificates \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd --gid 65532 nonroot \
+    && useradd --uid 65532 --gid 65532 --no-create-home --shell /usr/sbin/nologin nonroot
+COPY --from=builder /build/target/release/guestkit /usr/local/bin/guestkit
+USER nonroot:nonroot
+# stdout carries JSON-RPC; keep logging off it.
+ENV RUST_LOG=warn \
+    PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENTRYPOINT ["/usr/local/bin/guestkit", "mcp-serve"]

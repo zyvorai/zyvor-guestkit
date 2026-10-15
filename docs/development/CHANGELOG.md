@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **MCP Registry packaging** — `Dockerfile.mcp` (`ghcr.io/zyvorai/guestkit-mcp`,
+  entrypoint `guestkit mcp-serve`, nonroot), `server.json`
+  (`io.github.zyvorai/guestkit`), `publish-mcp` release job and
+  `scripts/check-mcp-registry.sh` version/label gate.
+
 ## [1.2.5] - 2026-10-03
 
 ### Fixed

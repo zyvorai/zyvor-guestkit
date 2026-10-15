@@ -108,6 +108,69 @@ jobs:
           chmod +x deploy/scripts/publish-images.sh
           REGISTRY=ghcr.io/zyvorai bash deploy/scripts/publish-images.sh
 
+  mcp-image:
+    name: Build and push guestkit-mcp image (MCP Registry)
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write   # keyless cosign
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version gate (Cargo.toml, server.json, Dockerfile.mcp, tag)
+        run: bash scripts/check-mcp-registry.sh "${GITHUB_REF_NAME}"
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push (amd64 + arm64)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.mcp
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/zyvorai/guestkit-mcp:${{ needs.create-release.outputs.version }}
+            ghcr.io/zyvorai/guestkit-mcp:latest
+
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign the image digest (keyless)
+        run: cosign sign --yes ghcr.io/zyvorai/guestkit-mcp@${{ steps.build.outputs.digest }}
+
+  publish-mcp:
+    name: Publish to the MCP Registry
+    # Registry metadata only: the image above is what clients pull.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: mcp-image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # GitHub OIDC login to the MCP Registry, no long-lived token
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher (pinned)
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+      - run: ./mcp-publisher validate server.json
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish server.json
+
   build-and-upload:
     name: Build and Upload Assets (${{ matrix.arch_suffix }})
     needs: create-release

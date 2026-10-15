@@ -135,6 +135,39 @@ token is unset.
 
 ---
 
+## Install from the MCP Registry (OCI)
+
+`guestkit mcp-serve` (six read-only evidence tools for **one** VM disk image,
+over stdio) is listed in the MCP Registry as `io.github.zyvorai/guestkit` and
+ships as the multi-arch, cosign-signed image `ghcr.io/zyvorai/guestkit-mcp`,
+built from `Dockerfile.mcp` (the top-level `Dockerfile` CLI image is separate).
+Registry entries are published from `server.json` by the `publish-mcp` job in
+`.github/workflows/release.yml` on every `v*` tag; `scripts/check-mcp-registry.sh`
+keeps `server.json`, the image label and `Cargo.toml` in step.
+
+The server serves one image, so the disk is supplied at launch: bind-mount its
+directory and pass the in-container path as the argument. Client configuration
+(any stdio MCP client):
+
+```json
+{
+  "mcpServers": {
+    "guestkit": {
+      "command": "docker",
+      "args": ["run", "-i", "--rm", "-v", "/srv/vms:/vms:ro",
+               "ghcr.io/zyvorai/guestkit-mcp:1.2.5",
+               "/vms/web01.qcow2", "--target", "kvm"]
+    }
+  }
+}
+```
+
+The image runs as the unprivileged `nonroot` user (uid 65532). Opening a disk
+uses the same loop/NBD access as the CLI, which needs root and device access:
+in practice add `--user 0 --privileged` (or `--cap-add SYS_ADMIN` plus the
+loop/NBD devices) to the `docker run` args in the client config.
+
+
 ## Quick Start
 
 ### Build the Image
