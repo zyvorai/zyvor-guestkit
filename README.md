@@ -211,6 +211,8 @@ Targets: `kvm` · `proxmox` · `qemu` · `kubevirt` · `aws` · `azure` · `gcp`
 
 Python (v1.1.0+), on **[PyPI](https://pypi.org/project/zyvor-guestkit/)**: `pip install zyvor-guestkit`, then `guestkit.run_doctor("vm.qcow2", target="kvm", explain=True)`. The full quick start, shrink and Python examples: [docs/quick-start.md](docs/quick-start.md).
 
+**MCP server** — `guestkit mcp-serve <image> [--target kvm]` is a stdio [MCP](https://modelcontextprotocol.io) server exposing six read-only evidence tools for one disk image. Build with `cargo build --release --features mcp`. Registry name `io.github.zyvorai/guestkit`; OCI image `ghcr.io/zyvorai/guestkit-mcp`. Opening a disk needs loop/NBD, so the container must run as root with `--privileged` (or `SYS_ADMIN` plus devices) despite its `nonroot` default user. See [docs/guides/MCP.md](docs/guides/MCP.md) and [DOCKER.md](docs/guides/DOCKER.md#install-from-the-mcp-registry-oci).
+
 ---
 
 <a id="documentation"></a>
