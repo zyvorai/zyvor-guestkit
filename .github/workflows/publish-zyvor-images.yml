@@ -1,3 +1,5 @@
+# CI routing: runs on the org self-hosted zyvor-build runners (plain docker
+# build/push, no sudo); pull_request-triggered runs would stay on ubuntu-latest.
 name: Publish Zyvor Images
 
 on:
@@ -26,9 +28,13 @@ permissions:
 env:
   REGISTRY: ghcr.io/zyvorai
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
     steps:
       - uses: actions/checkout@v4
 
