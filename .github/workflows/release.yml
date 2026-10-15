@@ -1,3 +1,8 @@
+# CI routing: publish-release-images (plain `docker build`/push) and publish-mcp
+# (curl + sha256sum) run on the org self-hosted zyvor-build runners; PR runs stay
+# hosted. mcp-image stays hosted (qemu binfmt + buildx for arm64 needs privileged
+# containers); build-and-upload/publish-crate/publish-pypi/build-agent-artifacts
+# stay hosted because they `sudo apt-get install`, which the runner user lacks.
 name: Release
 
 on:
@@ -7,6 +12,10 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   create-release:
@@ -82,7 +91,7 @@ jobs:
   publish-release-images:
     name: Publish GHCR Release Images
     needs: create-release
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
     permissions:
       contents: read
       packages: write
@@ -153,7 +162,7 @@ jobs:
     # Registry metadata only: the image above is what clients pull.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: mcp-image
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
     permissions:
       contents: read
       id-token: write   # GitHub OIDC login to the MCP Registry, no long-lived token

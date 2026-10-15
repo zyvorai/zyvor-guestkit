@@ -1,3 +1,6 @@
+# CI routing: only `fmt` (no sudo needed) uses the self-hosted zyvor-build runners
+# off pull_request. test/benchmark/clippy stay hosted: they `sudo apt-get install`
+# and (test/benchmark) need KVM/libvirt/loop/NBD, reserved for a later kernel host.
 name: Integration Tests
 
 on:
@@ -314,7 +317,7 @@ jobs:
 
   fmt:
     name: Format Check
-    runs-on: ubuntu-latest
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
 
     steps:
       - uses: actions/checkout@v4
