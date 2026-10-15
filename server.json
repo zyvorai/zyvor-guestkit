@@ -1,0 +1,60 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.zyvorai/guestkit",
+  "title": "GuestKit",
+  "description": "Read-only evidence and boot-readiness tools for one VM disk image, offline.",
+  "version": "1.2.5",
+  "repository": {
+    "url": "https://github.com/zyvorai/zyvor-guestkit",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/zyvorai/zyvor-guestkit",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/zyvorai/guestkit-mcp:1.2.5",
+      "transport": { "type": "stdio" },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--volume",
+          "description": "Bind-mount the directory holding the disk image read-only, as host_dir:container_dir:ro.",
+          "isRequired": true,
+          "format": "string",
+          "value": "{vm_dir}:/vms:ro",
+          "variables": {
+            "vm_dir": {
+              "description": "Absolute host directory containing the VM disk image.",
+              "isRequired": true,
+              "format": "string"
+            }
+          }
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "valueHint": "image_path",
+          "description": "In-container path of the disk image to serve (qcow2, raw, vmdk, ...), under /vms.",
+          "isRequired": true,
+          "format": "string",
+          "value": "/vms/{image_file}",
+          "variables": {
+            "image_file": {
+              "description": "File name of the disk image inside the mounted directory.",
+              "isRequired": true,
+              "format": "string"
+            }
+          }
+        },
+        {
+          "type": "named",
+          "name": "--target",
+          "description": "Boot-readiness target hypervisor: kvm, proxmox, hyperv or cloud.",
+          "format": "string",
+          "default": "kvm"
+        }
+      ]
+    }
+  ]
+}
