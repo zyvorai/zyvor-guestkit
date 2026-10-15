@@ -20,6 +20,7 @@ The OSS web console in its offline demo mode (the JSON that ships in `deploy/ui`
 |------|----------|
 | Getting started | [getting-started.md](user-guides/getting-started.md) |
 | Run from GHCR (Docker/Helm) | [guides/DOCKER.md](guides/DOCKER.md#published-images-ghcr) |
+| MCP server (`guestkit mcp-serve`) | [guides/MCP.md](guides/MCP.md) |
 | Web Image Vault (OSS UI) | [user/using-the-dashboard.md](user/using-the-dashboard.md) |
 | CLI guide | [cli-guide.md](user-guides/cli-guide.md) |
 | Migration assurance | [migration-assurance.md](features/migration-assurance.md) |

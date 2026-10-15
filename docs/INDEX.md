@@ -55,6 +55,7 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 | [**DevOps runbooks**](devops/README.md) | Passport CI gate, repair worker, air-gap packages, fleet, cutover weekend, triage |
 | [Run from GHCR](guides/DOCKER.md#published-images-ghcr) | Pull `ghcr.io/zyvorai/*` images, `docker compose up`, or Helm |
 | [Docker](guides/DOCKER.md) | Container usage (web stack + CLI) |
+| [MCP server](guides/MCP.md) | `guestkit mcp-serve`, MCP Registry / OCI image |
 | [Cloud disk sources](guides/cloud-disk-sources.md) | S3 / GCS / Azure URI pulls + cache + CI recipe |
 | [Remote deploy](guides/DEPLOY-REMOTE.md) | SSH deploy to Linux hosts + web console access |
 | [RPM build](development/RPM-BUILD.md) | Fedora/RHEL packages |

@@ -9,6 +9,7 @@
 | **DevOps runbooks** | [docs/devops](devops/README.md) |
 | Feature guide | [guestkit-user-feature-guide.md](guestkit-user-feature-guide.md) |
 | Docker / GHCR | [DOCKER.md](guides/DOCKER.md#published-images-ghcr) |
+| MCP server | [MCP.md](guides/MCP.md) |
 | Remote deploy | [DEPLOY-REMOTE.md](guides/DEPLOY-REMOTE.md) |
 | **h2kvm integration** | [hyper2kvm-integration.md](features/hyper2kvm-integration.md) |
 | **QEMU / VirtIO runtime** | [qemu-runtime.md](features/qemu-runtime.md) |
