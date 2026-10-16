@@ -75,6 +75,7 @@ const config: Config = {
         },
         {to: '/gallery', label: 'Gallery', position: 'left'},
         {to: '/resources', label: 'Resources', position: 'left'},
+        {to: '/support', label: 'Support', position: 'right'},
         {
           href: 'https://github.com/zyvorai/zyvor-guestkit',
           label: 'GitHub',
@@ -104,6 +105,7 @@ const config: Config = {
           title: 'Project',
           items: [
             {label: 'GitHub', href: 'https://github.com/zyvorai/zyvor-guestkit'},
+            {label: 'Support', to: '/support'},
             {label: 'crates.io', href: 'https://crates.io/crates/guestkit'},
             {label: 'License (Apache-2.0)', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/LICENSE'},
           ],
