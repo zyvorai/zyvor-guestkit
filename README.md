@@ -32,7 +32,7 @@
 
 | Release | What changed |
 |---|---|
-| **Agent (main)** | Per-container eBPF network policy and BPF-LSM controls in the guest agent (`guestkit.netpolicy` / `guestkit.lsm`), off by default, audit first, enforce only under a time-bound lease |
+| **Agent (1.2.6)** | Per-container eBPF network policy and BPF-LSM controls in the guest agent (`guestkit.netpolicy` / `guestkit.lsm`), off by default, audit first, enforce only under a time-bound lease |
 | **1.2.5** | Offline inject on `run_migrate_repair`: hostname, network, users, services, first-boot scripts, cloud-init, AD rejoin, Windows KMS and RDP, appended to the repair plan |
 | **1.2.5** | Online snapshots freeze the filesystem through the privileged helper, so KubeVirt snapshots of PVC-backed VMs work with the unprivileged agent |
 | **1.2.5** | Linux agent connects to the virtio channel on stock distros (udev rule shipped in DEB, RPM and tarball); concurrent NBD mounts no longer race |
@@ -187,8 +187,8 @@ Architecture in depth: [docs/architecture/overview.md](docs/architecture/overvie
 ## Quickstart
 
 ```bash
-# v1.2.5 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.5/guestkit-1.2.5-linux-amd64.tar.gz
+# v1.2.6 GitHub Release — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.6/guestkit-1.2.6-linux-amd64.tar.gz
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
@@ -258,7 +258,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Maturity
 
-GuestKit is at **v1.2.5** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
+GuestKit is at **v1.2.6** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
 
 | Area | Status |
 |---|---|

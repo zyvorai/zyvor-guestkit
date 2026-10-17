@@ -4,6 +4,7 @@ High-level direction for GuestKit / GuestCtl. Full release notes are in [CHANGEL
 
 ## Shipped (recent)
 
+- **v1.2.6** — Agent: per-container eBPF network policy and BPF-LSM controls. `guestkit mcp-serve` packaged for the MCP Registry (OCI). `exists()` follows guest symlinks. ratatui 0.30 (drops the `lru` advisory).
 - **v1.2.5** — Agent: freeze/thaw go through the privileged helper (online snapshots of PVC-backed VMs no longer fail), udev rule for the virtio channel, NBD allocate+connect lock, offline inject on `run_migrate_repair`.
 - **v1.2.4** — Docs: GitHub Release install, `zyvor-guestkit` on PyPI, GHCR pins, serial console without `grubby`.
 - **v1.2.3** — Serial console without `grubby` (grub2, BLS, syslinux, extlinux, zipl). XFS remount, real guest `/` resolution, Windows root mounted read-write for offline `guestkitd` inject. Python package is [`zyvor-guestkit`](https://pypi.org/project/zyvor-guestkit/) on the [zyvor](https://pypi.org/user/zyvor/) account. GHCR is `ghcr.io/zyvorai`.

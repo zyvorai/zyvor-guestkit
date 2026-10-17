@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-10-17
+
+### Added
+- **Per-container eBPF network policy and LSM MAC in the guest agent** (`guestkit.netpolicy` / `guestkit.lsm`).
+- **MCP Registry packaging** — `guestkit mcp-serve` is packaged as an OCI image (`ghcr.io/zyvorai/guestkit-mcp`) with `server.json` for the MCP Registry; the MCP server and registry listing are documented.
+- **Docs** — sales-ready README with capability, comparison and architecture cards, new hero and social cards, a voluntary donation link (Support section, page, `FUNDING.yml`).
+
+### Fixed
+- **`exists()` resolves symlinks inside the guest** — `Guestfs::exists` follows guest symlinks relative to the guest root instead of the host filesystem.
+
+### Changed
+- **Dependencies** — ratatui 0.30 and crossterm 0.29, which drops `lru` 0.12 and its RUSTSEC `IterMut` soundness advisory.
+- **Docs site** — served from `/zyvor-guestkit/` after the organization rename, dark by default.
+- **CI** — heavy trusted jobs run on self-hosted `zyvor-build` runners.
+
 ## [1.2.5] - 2026-10-03
 
 ### Fixed
