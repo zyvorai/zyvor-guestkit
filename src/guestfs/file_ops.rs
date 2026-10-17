@@ -142,7 +142,14 @@ impl Guestfs {
         }
 
         let host_path = self.resolve_guest_path(path)?;
-        Ok(host_path.exists())
+        if host_path.exists() {
+            return Ok(true);
+        }
+        // The host's view can disagree with the guest's: an absolute symlink such as
+        // Alpine's /bin/sh -> /bin/busybox points at the *host's* /bin/busybox when
+        // followed natively. Re-resolve it with the guest root as "/".
+        let root = self.find_root_mountpoint()?;
+        Ok(guest_path_exists(Path::new(root), path))
     }
 
     /// Read file content as bytes
@@ -930,6 +937,67 @@ impl Guestfs {
     }
 }
 
+/// Does `guest_path` exist inside the guest rooted at `root`?
+///
+/// Symlinks are resolved as the guest would: absolute targets restart at `root`
+/// (not the host's `/`), and `..` cannot climb above `root`.
+pub(crate) fn guest_path_exists(root: &Path, guest_path: &str) -> bool {
+    use std::collections::VecDeque;
+    use std::ffi::OsString;
+    use std::path::Component;
+
+    const MAX_SYMLINK_HOPS: u32 = 40;
+
+    let mut pending: VecDeque<OsString> = Path::new(guest_path)
+        .components()
+        .filter_map(|c| match c {
+            Component::Normal(n) => Some(n.to_os_string()),
+            Component::ParentDir => Some(OsString::from("..")),
+            _ => None,
+        })
+        .collect();
+    let mut stack: Vec<OsString> = Vec::new();
+    let mut hops = 0;
+
+    while let Some(name) = pending.pop_front() {
+        if name == ".." {
+            stack.pop();
+            continue;
+        }
+        let mut candidate = root.to_path_buf();
+        candidate.extend(&stack);
+        candidate.push(&name);
+        let Ok(meta) = fs::symlink_metadata(&candidate) else {
+            return false;
+        };
+        if meta.file_type().is_symlink() {
+            hops += 1;
+            if hops > MAX_SYMLINK_HOPS {
+                return false;
+            }
+            let Ok(target) = fs::read_link(&candidate) else {
+                return false;
+            };
+            if target.is_absolute() {
+                stack.clear();
+            }
+            let mut head: VecDeque<OsString> = target
+                .components()
+                .filter_map(|c| match c {
+                    Component::Normal(n) => Some(n.to_os_string()),
+                    Component::ParentDir => Some(OsString::from("..")),
+                    _ => None,
+                })
+                .collect();
+            head.extend(pending.drain(..));
+            pending = head;
+        } else {
+            stack.push(name);
+        }
+    }
+    true
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -938,5 +1006,30 @@ mod tests {
     fn test_file_ops_api_exists() {
         let _g = Guestfs::new().unwrap();
         // API structure tests
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn guest_path_exists_follows_absolute_symlinks_inside_the_guest() {
+        use std::os::unix::fs::symlink;
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        fs::create_dir_all(root.join("bin")).unwrap();
+        fs::create_dir_all(root.join("usr/lib")).unwrap();
+        fs::write(root.join("bin/busybox"), b"").unwrap();
+        fs::write(root.join("usr/lib/os-release"), b"ID=alpine\n").unwrap();
+        fs::create_dir_all(root.join("etc")).unwrap();
+        // Alpine layout: absolute and relative symlinks, plus a dangling and a looping one.
+        symlink("/bin/busybox", root.join("bin/sh")).unwrap();
+        symlink("../usr/lib/os-release", root.join("etc/os-release")).unwrap();
+        symlink("/nowhere", root.join("bin/dangling")).unwrap();
+        symlink("/bin/loop", root.join("bin/loop")).unwrap();
+
+        assert!(guest_path_exists(root, "/bin/sh"));
+        assert!(guest_path_exists(root, "/etc/os-release"));
+        assert!(guest_path_exists(root, "/bin/busybox"));
+        assert!(!guest_path_exists(root, "/bin/dangling"));
+        assert!(!guest_path_exists(root, "/bin/loop"));
+        assert!(!guest_path_exists(root, "/etc/missing"));
     }
 }
