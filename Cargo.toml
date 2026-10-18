@@ -84,10 +84,10 @@ base64 = "0.22"
 libc = "0.2"
 
 # Windows registry parsing (pure Rust)
-nt_hive2 = "4.2"
+nt_hive2 = "4.2.4"
 
 # Windows event log parsing (pure Rust)
-evtx = { version = "0.12", default-features = false, optional = true }
+evtx = { version = "0.12.2", default-features = false, optional = true }
 
 # Report generation and export
 printpdf = "0.12"
@@ -121,7 +121,7 @@ sysinfo = { version = "0.33", optional = true }
 nix = { version = "0.29", features = ["user", "fs"], optional = true }
 zbus = { version = "5", default-features = false, features = ["tokio", "blocking-api"], optional = true }
 futures-util = { version = "0.3", optional = true }
-tar = { version = "0.4", optional = true }
+tar = { version = "0.4.40", optional = true }
 zstd = { version = "0.13", optional = true }
 flate2 = { version = "1", optional = true }
 ed25519-dalek = { version = "2", features = ["rand_core"], optional = true }
