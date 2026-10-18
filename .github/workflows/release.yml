@@ -256,14 +256,19 @@ jobs:
             echo "Skipping crates.io publish (CARGO_TOKEN not configured)"
             exit 0
           fi
-          if ! output=$(cargo publish --locked --token "${CARGO_REGISTRY_TOKEN}" 2>&1); then
-            if echo "$output" | grep -qi "already uploaded"; then
-              echo "Version already on crates.io, skipping"
-              exit 0
+          # Workspace dependencies must be on the registry before the crate that uses them.
+          for pkg in guestkit-ebpf-common guestkit-ebpf-runtime guestkit; do
+            if ! output=$(cargo publish --locked -p "$pkg" --token "${CARGO_REGISTRY_TOKEN}" 2>&1); then
+              if echo "$output" | grep -qi "already uploaded\|already exists"; then
+                echo "$pkg: version already on crates.io, skipping"
+                continue
+              fi
+              echo "$output" >&2
+              exit 1
             fi
-            echo "$output" >&2
-            exit 1
-          fi
+            # let the index pick up the new crate before the next one resolves it
+            sleep 20
+          done
 
   publish-pypi:
     name: Publish Python wheel to PyPI
