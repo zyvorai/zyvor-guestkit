@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.9] - 2026-10-18
+
+### Fixed
+- **`zyvor-api` image build** — the Dockerfile now copies the eBPF workspace crates that `guestkit` depends on.
+
 ## [1.2.8] - 2026-10-18
 
 ### Fixed
