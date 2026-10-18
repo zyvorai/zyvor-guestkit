@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.8] - 2026-10-18
+
+### Fixed
+- **Release workflow** — the self-hosted GHCR and MCP Registry jobs reclaim workspace ownership before checkout, so root-owned files from earlier container builds no longer break them.
+
 ## [1.2.7] - 2026-10-18
 
 ### Fixed
