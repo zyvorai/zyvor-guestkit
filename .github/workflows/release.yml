@@ -96,6 +96,14 @@ jobs:
       contents: read
       packages: write
     steps:
+      - name: Reclaim workspace ownership
+        # Earlier container builds on this self-hosted runner left root-owned dist/ and target/
+        # files that actions/checkout cannot delete.
+        run: |
+          if [ -d "$GITHUB_WORKSPACE" ]; then
+            docker run --rm -v "$GITHUB_WORKSPACE":/w alpine chown -R "$(id -u):$(id -g)" /w || true
+          fi
+
       - uses: actions/checkout@v4
 
       - name: Log in to GHCR
@@ -169,6 +177,14 @@ jobs:
     env:
       MCP_PUBLISHER_VERSION: v1.8.1
     steps:
+      - name: Reclaim workspace ownership
+        # Earlier container builds on this self-hosted runner left root-owned dist/ and target/
+        # files that actions/checkout cannot delete.
+        run: |
+          if [ -d "$GITHUB_WORKSPACE" ]; then
+            docker run --rm -v "$GITHUB_WORKSPACE":/w alpine chown -R "$(id -u):$(id -g)" /w || true
+          fi
+
       - uses: actions/checkout@v4
       - name: Install mcp-publisher (pinned)
         run: |
