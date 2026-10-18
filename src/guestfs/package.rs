@@ -135,11 +135,7 @@ impl Guestfs {
         }
 
         // Try RPM
-        if self.exists("/var/lib/rpm")? && self.command(&["rpm", "-q", package]).is_ok() {
-            return Ok(true);
-        }
-
-        Ok(false)
+        Ok(self.exists("/var/lib/rpm")? && self.command(&["rpm", "-q", package]).is_ok())
     }
 
     /// List package files

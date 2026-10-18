@@ -46,11 +46,7 @@ impl Guestfs {
 
         // Check chkconfig (RHEL/CentOS)
         let chkconfig_path = format!("/etc/rc.d/rc3.d/S??{}", service);
-        if self.exists(&chkconfig_path)? {
-            return Ok(true);
-        }
-
-        Ok(false)
+        self.exists(&chkconfig_path)
     }
 
     /// List enabled services
