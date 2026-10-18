@@ -17,6 +17,7 @@ jobs:
           # assert the fallback string, and comments that name the old command.
           hits=$(git grep -n 'qemu-agent-command' -- \
             ':!docs/**' \
+            ':!.github/workflows/no-virsh.yml' \
             ':!*.md' \
             ':!crates/zyvor-api/src/qga_socket.rs' \
             ':!src/agent/qga_client.rs' \

@@ -16,7 +16,8 @@ use aya::{
     include_bytes_aligned,
     maps::{Array, HashMap, MapData, PerCpuHashMap, RingBuf},
     programs::{
-        cgroup_skb::CgroupSkbLinkId, lsm::LsmLinkId, CgroupAttachMode, CgroupSkb, CgroupSkbAttachType, Lsm,
+        cgroup_skb::CgroupSkbLinkId, lsm::LsmLinkId, CgroupAttachMode, CgroupSkb,
+        CgroupSkbAttachType, Lsm,
     },
     Ebpf, EbpfLoader, Pod,
 };
@@ -26,8 +27,11 @@ use crate::{decode_event, Event};
 
 static OBJECT: &[u8] = include_bytes_aligned!(concat!(env!("OUT_DIR"), "/guestkit-ebpf.o"));
 
-const LSM_HOOKS: &[(&str, &str)] =
-    &[("gk_lsm_exec", "bprm_check_security"), ("gk_lsm_mprotect", "file_mprotect"), ("gk_lsm_open", "file_open")];
+const LSM_HOOKS: &[(&str, &str)] = &[
+    ("gk_lsm_exec", "bprm_check_security"),
+    ("gk_lsm_mprotect", "file_mprotect"),
+    ("gk_lsm_open", "file_open"),
+];
 const LSM_LIST: &str = "/sys/kernel/security/lsm";
 const EVENT_CAP: usize = 512;
 
@@ -38,7 +42,10 @@ pub fn programs_compiled() -> bool {
 
 /// CLOCK_MONOTONIC in ns (same clock as `bpf_ktime_get_ns`).
 pub fn monotonic_ns() -> u64 {
-    let mut ts = libc::timespec { tv_sec: 0, tv_nsec: 0 };
+    let mut ts = libc::timespec {
+        tv_sec: 0,
+        tv_nsec: 0,
+    };
     unsafe {
         libc::clock_gettime(libc::CLOCK_MONOTONIC, &mut ts);
     }
@@ -46,7 +53,9 @@ pub fn monotonic_ns() -> u64 {
 }
 
 pub fn lsm_list() -> String {
-    std::fs::read_to_string(LSM_LIST).map(|s| s.trim().to_string()).unwrap_or_default()
+    std::fs::read_to_string(LSM_LIST)
+        .map(|s| s.trim().to_string())
+        .unwrap_or_default()
 }
 
 /// BPF-LSM hooks only run when `bpf` is in the kernel's active LSM list.
@@ -55,7 +64,10 @@ pub fn lsm_active() -> bool {
 }
 
 fn bump_memlock() {
-    let rlim = libc::rlimit { rlim_cur: libc::RLIM_INFINITY, rlim_max: libc::RLIM_INFINITY };
+    let rlim = libc::rlimit {
+        rlim_cur: libc::RLIM_INFINITY,
+        rlim_max: libc::RLIM_INFINITY,
+    };
     unsafe {
         libc::setrlimit(libc::RLIMIT_MEMLOCK, &rlim);
     }
@@ -102,8 +114,13 @@ impl GuestEbpf {
             bail!("guestkit was built without its eBPF programs (needs nightly + bpf-linker at build time)");
         }
         bump_memlock();
-        let mut ebpf = EbpfLoader::new().load(OBJECT).context("load guestkit-ebpf object")?;
-        let rb = RingBuf::try_from(ebpf.take_map("GK_EVENTS").ok_or_else(|| anyhow!("map GK_EVENTS missing"))?)?;
+        let mut ebpf = EbpfLoader::new()
+            .load(OBJECT)
+            .context("load guestkit-ebpf object")?;
+        let rb = RingBuf::try_from(
+            ebpf.take_map("GK_EVENTS")
+                .ok_or_else(|| anyhow!("map GK_EVENTS missing"))?,
+        )?;
         let events = Arc::new(Mutex::new(VecDeque::new()));
         let stop = Arc::new(AtomicBool::new(false));
         let drain = {
@@ -124,23 +141,43 @@ impl GuestEbpf {
     }
 
     fn hash<K: Pod, V: Pod>(&mut self, name: &str) -> Result<HashMap<&mut MapData, K, V>> {
-        let m = self.ebpf.map_mut(name).ok_or_else(|| anyhow!("map {name} missing"))?;
+        let m = self
+            .ebpf
+            .map_mut(name)
+            .ok_or_else(|| anyhow!("map {name} missing"))?;
         Ok(HashMap::try_from(m)?)
     }
 
-    fn remove_where<K: Pod, V: Pod>(&mut self, name: &str, pred: impl Fn(&K) -> bool) -> Result<()> {
+    fn remove_where<K: Pod, V: Pod>(
+        &mut self,
+        name: &str,
+        pred: impl Fn(&K) -> bool,
+    ) -> Result<()> {
         let mut m = self.hash::<K, V>(name)?;
-        let keys: Vec<K> = m.keys().filter_map(|r| r.ok()).filter(|k| pred(k)).collect();
+        let keys: Vec<K> = m
+            .keys()
+            .filter_map(|r| r.ok())
+            .filter(|k| pred(k))
+            .collect();
         for k in keys {
             let _ = m.remove(&k);
         }
         Ok(())
     }
 
-    fn percpu_get<K: Pod, V: Pod + Default>(&mut self, name: &str, k: &K, add: impl Fn(&mut V, &V)) -> V {
+    fn percpu_get<K: Pod, V: Pod + Default>(
+        &mut self,
+        name: &str,
+        k: &K,
+        add: impl Fn(&mut V, &V),
+    ) -> V {
         let mut s = V::default();
-        let Some(m) = self.ebpf.map_mut(name) else { return s };
-        let Ok(m) = PerCpuHashMap::<&mut MapData, K, V>::try_from(m) else { return s };
+        let Some(m) = self.ebpf.map_mut(name) else {
+            return s;
+        };
+        let Ok(m) = PerCpuHashMap::<&mut MapData, K, V>::try_from(m) else {
+            return s;
+        };
         if let Ok(per_cpu) = m.get(k, 0) {
             for c in per_cpu.iter() {
                 add(&mut s, c);
@@ -164,9 +201,13 @@ impl GuestEbpf {
             return Ok(());
         }
         for name in ["gk_np_egress", "gk_np_ingress"] {
-            let p: &mut CgroupSkb =
-                self.ebpf.program_mut(name).ok_or_else(|| anyhow!("program {name} missing"))?.try_into()?;
-            p.load().with_context(|| format!("verifier rejected {name}"))?;
+            let p: &mut CgroupSkb = self
+                .ebpf
+                .program_mut(name)
+                .ok_or_else(|| anyhow!("program {name} missing"))?
+                .try_into()?;
+            p.load()
+                .with_context(|| format!("verifier rejected {name}"))?;
         }
         self.np_loaded = true;
         Ok(())
@@ -178,7 +219,10 @@ impl GuestEbpf {
         }
         self.np_load()?;
         let mut ids = Vec::new();
-        for (name, ty) in [("gk_np_egress", CgroupSkbAttachType::Egress), ("gk_np_ingress", CgroupSkbAttachType::Ingress)] {
+        for (name, ty) in [
+            ("gk_np_egress", CgroupSkbAttachType::Egress),
+            ("gk_np_ingress", CgroupSkbAttachType::Ingress),
+        ] {
             let f = File::open(cgroup).with_context(|| format!("open {}", cgroup.display()))?;
             let p: &mut CgroupSkb = self.ebpf.program_mut(name).expect("loaded").try_into()?;
             // bpf_link attachments always coexist with other programs on the
@@ -187,7 +231,11 @@ impl GuestEbpf {
                 Ok(id) => ids.push(id),
                 Err(e) => {
                     if let Some(id) = ids.pop() {
-                        let p: &mut CgroupSkb = self.ebpf.program_mut("gk_np_egress").expect("loaded").try_into()?;
+                        let p: &mut CgroupSkb = self
+                            .ebpf
+                            .program_mut("gk_np_egress")
+                            .expect("loaded")
+                            .try_into()?;
                         let _ = p.detach(id);
                     }
                     return Err(anyhow!("attach {name} to {}: {e}", cgroup.display()));
@@ -205,22 +253,47 @@ impl GuestEbpf {
     /// descendants (the programs look up the socket's own cgroup), the first
     /// being the container cgroup itself. Rules are written before the
     /// policy so the program never sees a policy pointing at missing slots.
-    pub fn np_apply(&mut self, cgroup: &Path, ids: &[u64], policy: NpPolicy, rules: &[NpRule]) -> Result<()> {
+    pub fn np_apply(
+        &mut self,
+        cgroup: &Path,
+        ids: &[u64],
+        policy: NpPolicy,
+        rules: &[NpRule],
+    ) -> Result<()> {
         if rules.len() > NP_MAX_RULES as usize {
             bail!("at most {NP_MAX_RULES} rules per container");
         }
-        let Some(&top) = ids.first() else { bail!("no cgroup ids") };
+        let Some(&top) = ids.first() else {
+            bail!("no cgroup ids")
+        };
         self.np_attach(top, cgroup)?;
         let n = rules.len() as u32;
         for &cgroup_id in ids {
             {
                 let mut m = self.hash::<NpRuleKey, NpRule>("NP_RULES")?;
                 for (slot, r) in rules.iter().enumerate() {
-                    m.insert(NpRuleKey { cgroup_id, slot: slot as u32, _pad: 0 }, *r, 0)?;
+                    m.insert(
+                        NpRuleKey {
+                            cgroup_id,
+                            slot: slot as u32,
+                            _pad: 0,
+                        },
+                        *r,
+                        0,
+                    )?;
                 }
             }
-            self.remove_where::<NpRuleKey, NpRule>("NP_RULES", |k| k.cgroup_id == cgroup_id && k.slot >= n)?;
-            self.hash::<u64, NpPolicy>("NP_POLICIES")?.insert(cgroup_id, NpPolicy { nrules: n, ..policy }, 0)?;
+            self.remove_where::<NpRuleKey, NpRule>("NP_RULES", |k| {
+                k.cgroup_id == cgroup_id && k.slot >= n
+            })?;
+            self.hash::<u64, NpPolicy>("NP_POLICIES")?.insert(
+                cgroup_id,
+                NpPolicy {
+                    nrules: n,
+                    ..policy
+                },
+                0,
+            )?;
         }
         Ok(())
     }
@@ -236,15 +309,27 @@ impl GuestEbpf {
 
     pub fn np_remove(&mut self, ids: &[u64]) -> Result<()> {
         for &cgroup_id in ids {
-            let _ = self.hash::<u64, NpPolicy>("NP_POLICIES")?.remove(&cgroup_id);
+            let _ = self
+                .hash::<u64, NpPolicy>("NP_POLICIES")?
+                .remove(&cgroup_id);
             self.remove_where::<NpRuleKey, NpRule>("NP_RULES", |k| k.cgroup_id == cgroup_id)?;
             self.percpu_remove::<u64, NpCounters>("NP_COUNTERS", &cgroup_id);
         }
-        let Some(&top) = ids.first() else { return Ok(()) };
+        let Some(&top) = ids.first() else {
+            return Ok(());
+        };
         if let Some((eg, ing)) = self.np_links.remove(&top) {
-            let p: &mut CgroupSkb = self.ebpf.program_mut("gk_np_egress").expect("loaded").try_into()?;
+            let p: &mut CgroupSkb = self
+                .ebpf
+                .program_mut("gk_np_egress")
+                .expect("loaded")
+                .try_into()?;
             let _ = p.detach(eg);
-            let p: &mut CgroupSkb = self.ebpf.program_mut("gk_np_ingress").expect("loaded").try_into()?;
+            let p: &mut CgroupSkb = self
+                .ebpf
+                .program_mut("gk_np_ingress")
+                .expect("loaded")
+                .try_into()?;
             let _ = p.detach(ing);
         }
         Ok(())
@@ -285,9 +370,13 @@ impl GuestEbpf {
         if self.lsm_attached() {
             return Ok(());
         }
-        let cfg = lsm_layout().ok_or_else(|| anyhow!("kernel BTF lacks the file/inode layout the LSM hooks need"))?;
+        let cfg = lsm_layout()
+            .ok_or_else(|| anyhow!("kernel BTF lacks the file/inode layout the LSM hooks need"))?;
         {
-            let m = self.ebpf.map_mut("LSM_CFG").ok_or_else(|| anyhow!("map LSM_CFG missing"))?;
+            let m = self
+                .ebpf
+                .map_mut("LSM_CFG")
+                .ok_or_else(|| anyhow!("map LSM_CFG missing"))?;
             Array::<&mut MapData, LsmCfg>::try_from(m)?.set(0, cfg, 0)?;
         }
         let btf = aya::Btf::from_sys_fs().context("kernel BTF (/sys/kernel/btf/vmlinux)")?;
@@ -295,11 +384,18 @@ impl GuestEbpf {
             if self.lsm_links.iter().any(|(p, _)| p == prog) {
                 continue;
             }
-            let p: &mut Lsm = self.ebpf.program_mut(prog).ok_or_else(|| anyhow!("program {prog} missing"))?.try_into()?;
+            let p: &mut Lsm = self
+                .ebpf
+                .program_mut(prog)
+                .ok_or_else(|| anyhow!("program {prog} missing"))?
+                .try_into()?;
             if p.fd().is_err() {
-                p.load(hook, &btf).with_context(|| format!("verifier rejected {prog}"))?;
+                p.load(hook, &btf)
+                    .with_context(|| format!("verifier rejected {prog}"))?;
             }
-            let id = p.attach().with_context(|| format!("attach {prog} to lsm/{hook}"))?;
+            let id = p
+                .attach()
+                .with_context(|| format!("attach {prog} to lsm/{hook}"))?;
             self.lsm_links.push((prog, id));
         }
         Ok(())
@@ -332,22 +428,47 @@ impl GuestEbpf {
             {
                 let mut m = self.hash::<LsmFileKey, u8>("LSM_FILES")?;
                 for (ino, dev) in files {
-                    m.insert(LsmFileKey { cgroup_id, ino: *ino, dev: *dev, _pad: 0 }, 1, 0)?;
+                    m.insert(
+                        LsmFileKey {
+                            cgroup_id,
+                            ino: *ino,
+                            dev: *dev,
+                            _pad: 0,
+                        },
+                        1,
+                        0,
+                    )?;
                 }
             }
             {
                 let mut m = self.hash::<LsmDevKey, u8>("LSM_DEVICES")?;
                 for dev in devices {
-                    m.insert(LsmDevKey { cgroup_id, dev: *dev }, 1, 0)?;
+                    m.insert(
+                        LsmDevKey {
+                            cgroup_id,
+                            dev: *dev,
+                        },
+                        1,
+                        0,
+                    )?;
                 }
             }
             {
                 let mut m = self.hash::<LsmFsKey, u8>("LSM_WRITABLE")?;
                 for dev in writable {
-                    m.insert(LsmFsKey { cgroup_id, dev: *dev, _pad: 0 }, 1, 0)?;
+                    m.insert(
+                        LsmFsKey {
+                            cgroup_id,
+                            dev: *dev,
+                            _pad: 0,
+                        },
+                        1,
+                        0,
+                    )?;
                 }
             }
-            self.hash::<u64, LsmPolicy>("LSM_POLICIES")?.insert(cgroup_id, policy, 0)?;
+            self.hash::<u64, LsmPolicy>("LSM_POLICIES")?
+                .insert(cgroup_id, policy, 0)?;
         }
         Ok(())
     }
@@ -368,13 +489,21 @@ impl GuestEbpf {
 
     pub fn lsm_remove(&mut self, ids: &[u64]) -> Result<()> {
         for &cgroup_id in ids {
-            let _ = self.hash::<u64, LsmPolicy>("LSM_POLICIES")?.remove(&cgroup_id);
+            let _ = self
+                .hash::<u64, LsmPolicy>("LSM_POLICIES")?
+                .remove(&cgroup_id);
             self.lsm_clear_lists(cgroup_id)?;
         }
-        let m = self.ebpf.map_mut("LSM_COUNTERS").ok_or_else(|| anyhow!("map LSM_COUNTERS missing"))?;
+        let m = self
+            .ebpf
+            .map_mut("LSM_COUNTERS")
+            .ok_or_else(|| anyhow!("map LSM_COUNTERS missing"))?;
         let mut m = PerCpuHashMap::<&mut MapData, LsmCounterKey, u64>::try_from(m)?;
-        let keys: Vec<LsmCounterKey> =
-            m.keys().filter_map(|r| r.ok()).filter(|k| ids.contains(&k.cgroup_id)).collect();
+        let keys: Vec<LsmCounterKey> = m
+            .keys()
+            .filter_map(|r| r.ok())
+            .filter(|k| ids.contains(&k.cgroup_id))
+            .collect();
         for k in keys {
             let _ = m.remove(&k);
         }
@@ -393,7 +522,11 @@ impl GuestEbpf {
             for denied in [false, true] {
                 let mut n = 0;
                 for &cgroup_id in ids {
-                    let k = LsmCounterKey { cgroup_id, action: action as u32, denied: denied as u32 };
+                    let k = LsmCounterKey {
+                        cgroup_id,
+                        action: action as u32,
+                        denied: denied as u32,
+                    };
                     n += self.percpu_get::<LsmCounterKey, u64>("LSM_COUNTERS", &k, |s, c| *s += *c);
                 }
                 if n > 0 {
@@ -407,14 +540,22 @@ impl GuestEbpf {
     /// Most recent events (oldest first), optionally of one kind.
     pub fn events(&self, kind: Option<&str>, limit: usize) -> Vec<Event> {
         let q = self.events.lock().unwrap_or_else(|e| e.into_inner());
-        let mut v: Vec<Event> = q.iter().filter(|e| kind.is_none_or(|k| e.kind == k)).cloned().collect();
+        let mut v: Vec<Event> = q
+            .iter()
+            .filter(|e| kind.is_none_or(|k| e.kind == k))
+            .cloned()
+            .collect();
         let skip = v.len().saturating_sub(limit);
         v.drain(..skip);
         v
     }
 }
 
-fn drain_events(mut rb: RingBuf<MapData>, events: Arc<Mutex<VecDeque<Event>>>, stop: Arc<AtomicBool>) {
+fn drain_events(
+    mut rb: RingBuf<MapData>,
+    events: Arc<Mutex<VecDeque<Event>>>,
+    stop: Arc<AtomicBool>,
+) {
     while !stop.load(Ordering::Relaxed) {
         while let Some(item) = rb.next() {
             if item.len() < core::mem::size_of::<GkEvent>() {

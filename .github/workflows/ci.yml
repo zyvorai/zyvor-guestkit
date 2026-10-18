@@ -265,6 +265,8 @@ jobs:
         run: |
           cargo +nightly update -Z minimal-versions
           cargo +nightly update -p ahash@0.8.4 --precise 0.8.11
+          # log 0.4.22 fails to compile when features unify (multiple release_max_level_* features)
+          cargo +nightly update -p log --precise 0.4.32
           cargo +nightly check --all-features
 
   windows-agent-check:

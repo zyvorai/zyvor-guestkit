@@ -459,8 +459,14 @@ mod tests {
 
     #[test]
     fn ebpf_policy_methods() {
-        assert_eq!(RpcMethod::parse("guestkit.netpolicy.apply"), RpcMethod::NetpolicyApply);
-        assert_eq!(RpcMethod::parse("guestkit.netpolicy.status"), RpcMethod::NetpolicyStatus);
+        assert_eq!(
+            RpcMethod::parse("guestkit.netpolicy.apply"),
+            RpcMethod::NetpolicyApply
+        );
+        assert_eq!(
+            RpcMethod::parse("guestkit.netpolicy.status"),
+            RpcMethod::NetpolicyStatus
+        );
         assert_eq!(RpcMethod::parse("guestkit.lsm.apply"), RpcMethod::LsmApply);
         assert_eq!(RpcMethod::parse("lsm.status"), RpcMethod::LsmStatus);
         assert!(RpcMethod::NetpolicyApply.is_mutating());

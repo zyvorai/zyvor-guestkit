@@ -4291,6 +4291,7 @@ fn run_repair_plan(
 #[cfg(feature = "python-bindings")]
 #[pyfunction]
 #[pyo3(signature = (image, target = "kvm", apply = false, include_destructive = false, virtio_win = None, verbose = false, inject_json = None))]
+#[allow(clippy::too_many_arguments)]
 fn run_migrate_repair(
     py: Python<'_>,
     image: String,
@@ -4302,11 +4303,10 @@ fn run_migrate_repair(
     inject_json: Option<String>,
 ) -> PyResult<Py<PyAny>> {
     let inject = match inject_json {
-        Some(raw) if !raw.trim().is_empty() && raw.trim() != "null" => {
-            serde_json::from_str(&raw).map_err(|e| {
-                PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("inject_json: {e}"))
-            })?
-        }
+        Some(raw) if !raw.trim().is_empty() && raw.trim() != "null" => serde_json::from_str(&raw)
+            .map_err(|e| {
+            PyErr::new::<pyo3::exceptions::PyValueError, _>(format!("inject_json: {e}"))
+        })?,
         _ => crate::assurance::InjectPayload::default(),
     };
     let options = crate::assurance::MigrateRepairOptions {

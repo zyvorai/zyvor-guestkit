@@ -83,6 +83,8 @@ jobs:
       - name: Copy spec file
         run: |
           cp guestkit.spec ~/rpmbuild/SPECS/
+          # the spec carries a stale Version; the tarball is named from Cargo.toml
+          sed -i "s/^Version:.*/Version:        ${{ steps.version.outputs.VERSION }}/" ~/rpmbuild/SPECS/guestkit.spec
 
       - name: Install build dependencies from spec
         run: |
@@ -201,6 +203,8 @@ jobs:
       - name: Copy full spec file
         run: |
           cp guestkit-full.spec ~/rpmbuild/SPECS/
+          # the spec carries a stale Version; the tarball is named from Cargo.toml
+          sed -i "s/^Version:.*/Version:        ${{ steps.version.outputs.VERSION }}/" ~/rpmbuild/SPECS/guestkit-full.spec
 
       - name: Install build dependencies from spec
         run: |
@@ -296,6 +300,8 @@ jobs:
       - name: Copy spec file
         run: |
           cp guestkit.spec ~/rpmbuild/SPECS/
+          # the spec carries a stale Version; the tarball is named from Cargo.toml
+          sed -i "s/^Version:.*/Version:        ${{ steps.version.outputs.VERSION }}/" ~/rpmbuild/SPECS/guestkit.spec
 
       - name: Build SRPM
         run: |

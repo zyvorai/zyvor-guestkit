@@ -192,8 +192,17 @@ mod pod {
         ($($t:ty),*) => { $(unsafe impl aya::Pod for $t {})* };
     }
     pod!(
-        NpPolicy, NpRuleKey, NpRule, NpCounters, LsmPolicy, LsmCfg, LsmFileKey, LsmDevKey, LsmFsKey,
-        LsmCounterKey, GkEvent
+        NpPolicy,
+        NpRuleKey,
+        NpRule,
+        NpCounters,
+        LsmPolicy,
+        LsmCfg,
+        LsmFileKey,
+        LsmDevKey,
+        LsmFsKey,
+        LsmCounterKey,
+        GkEvent
     );
 }
 

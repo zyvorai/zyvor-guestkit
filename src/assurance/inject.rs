@@ -129,8 +129,17 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
         return;
     }
 
-    if let Some(host) = payload.hostname.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
-        push(plan, "Set hostname", file_write("/etc/hostname", host, Some("0644")));
+    if let Some(host) = payload
+        .hostname
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        push(
+            plan,
+            "Set hostname",
+            file_write("/etc/hostname", host, Some("0644")),
+        );
     }
 
     for file in &payload.network_files {
@@ -165,18 +174,23 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
                  }}\n"
             );
             let path = format!("/Windows/Temp/h2kvm-user-{name}.ps1");
-            push(plan, &format!("Stage Windows user {name}"), file_write(&path, &script, None));
+            push(
+                plan,
+                &format!("Stage Windows user {name}"),
+                file_write(&path, &script, None),
+            );
         } else {
             let groups = if user.groups.is_empty() {
                 String::new()
             } else {
                 format!(" -G {}", user.groups.join(","))
             };
-            let mut script = format!(
-                "#!/bin/sh\nid {name} >/dev/null 2>&1 || useradd -m{groups} {name}\n"
-            );
+            let mut script =
+                format!("#!/bin/sh\nid {name} >/dev/null 2>&1 || useradd -m{groups} {name}\n");
             if let Some(hash) = user.password_hash.as_deref().filter(|s| !s.is_empty()) {
-                script.push_str(&format!("printf '%s:%s\\n' {name} '{hash}' | chpasswd -e\n"));
+                script.push_str(&format!(
+                    "printf '%s:%s\\n' {name} '{hash}' | chpasswd -e\n"
+                ));
             } else if let Some(pw) = user.password.as_deref().filter(|s| !s.is_empty()) {
                 script.push_str(&format!("printf '%s:%s\\n' {name} '{pw}' | chpasswd\n"));
             }
@@ -190,7 +204,11 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
                 ));
             }
             let path = format!("/usr/local/sbin/h2kvm-user-{name}");
-            push(plan, &format!("Stage Linux user {name}"), file_write(&path, &script, Some("0755")));
+            push(
+                plan,
+                &format!("Stage Linux user {name}"),
+                file_write(&path, &script, Some("0755")),
+            );
             push(
                 plan,
                 &format!("Run user script for {name} on first boot"),
@@ -228,7 +246,11 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
         } else {
             format!("#!/bin/sh\n{body}\n")
         };
-        push(plan, &format!("Stage first-boot script {i}"), file_write(&path, &script, Some("0755")));
+        push(
+            plan,
+            &format!("Stage first-boot script {i}"),
+            file_write(&path, &script, Some("0755")),
+        );
         push(
             plan,
             &format!("Run first-boot script {i}"),
@@ -241,7 +263,11 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
         );
     }
 
-    if let Some(data) = payload.cloud_init_user_data.as_deref().filter(|s| !s.is_empty()) {
+    if let Some(data) = payload
+        .cloud_init_user_data
+        .as_deref()
+        .filter(|s| !s.is_empty())
+    {
         push(
             plan,
             "Write cloud-init user-data",
@@ -277,7 +303,12 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
         }
     }
 
-    if let Some(kms) = payload.license_kms.as_deref().map(str::trim).filter(|s| !s.is_empty()) {
+    if let Some(kms) = payload
+        .license_kms
+        .as_deref()
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
         let ps = format!(
             "cscript //nologo C:\\Windows\\System32\\slmgr.vbs /skms {kms}\n\
              cscript //nologo C:\\Windows\\System32\\slmgr.vbs /ato\n"
@@ -314,7 +345,11 @@ pub fn append_inject(plan: &mut FixPlan, payload: &InjectPayload) {
 }
 
 /// Commands a live SSH fix should run. The caller executes them on the guest.
-pub fn live_fix_commands(update_grub: bool, regen_initramfs: bool, remove_vmware_tools: bool) -> Vec<String> {
+pub fn live_fix_commands(
+    update_grub: bool,
+    regen_initramfs: bool,
+    remove_vmware_tools: bool,
+) -> Vec<String> {
     let mut cmds = Vec::new();
     if remove_vmware_tools {
         cmds.push(

@@ -24,10 +24,16 @@ pub fn parse_cidr(s: &str) -> Result<(IpAddr, u8), String> {
         Some((a, p)) => (a, Some(p)),
         None => (s, None),
     };
-    let addr: IpAddr = a.trim().parse().map_err(|_| format!("`{s}`: not an IP address"))?;
+    let addr: IpAddr = a
+        .trim()
+        .parse()
+        .map_err(|_| format!("`{s}`: not an IP address"))?;
     let max = if addr.is_ipv4() { 32 } else { 128 };
     let prefix = match p {
-        Some(p) => p.trim().parse::<u8>().map_err(|_| format!("`{s}`: bad prefix length"))?,
+        Some(p) => p
+            .trim()
+            .parse::<u8>()
+            .map_err(|_| format!("`{s}`: bad prefix length"))?,
         None => max,
     };
     if prefix > max {
@@ -76,7 +82,13 @@ fn words(b: &[u8]) -> [u32; 4] {
 
 /// One allow rule in the program's layout. A port only makes sense for
 /// TCP/UDP/SCTP (or "any" protocol, where it matches those).
-pub fn compile_rule(dir: u8, addr: IpAddr, prefix: u8, proto: u8, port: u16) -> Result<NpRule, String> {
+pub fn compile_rule(
+    dir: u8,
+    addr: IpAddr,
+    prefix: u8,
+    proto: u8,
+    port: u16,
+) -> Result<NpRule, String> {
     if port != 0 && !matches!(proto, 0 | 6 | 17 | 132) {
         return Err(format!("port {port} needs tcp, udp, sctp or any protocol"));
     }
@@ -92,11 +104,26 @@ pub fn compile_rule(dir: u8, addr: IpAddr, prefix: u8, proto: u8, port: u16) -> 
             (NP_FAMILY_V6, words(&n), words(&m))
         }
     };
-    Ok(NpRule { dir, family, proto, _pad: 0, port, _pad2: 0, net, mask })
+    Ok(NpRule {
+        dir,
+        family,
+        proto,
+        _pad: 0,
+        port,
+        _pad2: 0,
+        net,
+        mask,
+    })
 }
 
 /// Policy as the program sees it. `deadline_ns` only matters when enforcing.
-pub fn np_policy(egress: bool, ingress: bool, enforce: bool, nrules: u32, deadline_ns: u64) -> NpPolicy {
+pub fn np_policy(
+    egress: bool,
+    ingress: bool,
+    enforce: bool,
+    nrules: u32,
+    deadline_ns: u64,
+) -> NpPolicy {
     let mut flags = 0;
     if egress {
         flags |= NP_EGRESS_ISOLATED;
@@ -107,7 +134,11 @@ pub fn np_policy(egress: bool, ingress: bool, enforce: bool, nrules: u32, deadli
     if enforce {
         flags |= NP_ENFORCE;
     }
-    NpPolicy { flags, nrules, deadline_ns: if enforce { deadline_ns } else { 0 } }
+    NpPolicy {
+        flags,
+        nrules,
+        deadline_ns: if enforce { deadline_ns } else { 0 },
+    }
 }
 
 /// Kernel-internal dev_t (MKDEV: major << 20 | minor) from major/minor.
@@ -165,11 +196,22 @@ pub fn decode_event(e: &GkEvent) -> Event {
     };
     if e.kind == EV_KIND_NET {
         ev.kind = "net";
-        ev.action = if e.action == NP_DIR_INGRESS { "ingress" } else { "egress" };
+        ev.action = if e.action == NP_DIR_INGRESS {
+            "ingress"
+        } else {
+            "egress"
+        };
         let b = e.b.to_ne_bytes();
         // Native-endian words of the address bytes: word 0 is in the low half.
-        let (w0, w1) = (u32::from_ne_bytes([b[0], b[1], b[2], b[3]]), u32::from_ne_bytes([b[4], b[5], b[6], b[7]]));
-        let (lo, hi) = if cfg!(target_endian = "little") { (w0, w1) } else { (w1, w0) };
+        let (w0, w1) = (
+            u32::from_ne_bytes([b[0], b[1], b[2], b[3]]),
+            u32::from_ne_bytes([b[4], b[5], b[6], b[7]]),
+        );
+        let (lo, hi) = if cfg!(target_endian = "little") {
+            (w0, w1)
+        } else {
+            (w1, w0)
+        };
         ev.peer = Some(if e.family == NP_FAMILY_V4 {
             Ipv4Addr::from(lo.to_ne_bytes()).to_string()
         } else {
@@ -186,7 +228,11 @@ pub fn decode_event(e: &GkEvent) -> Event {
         LSM_ACT_EXEC | LSM_ACT_WRITE => format!("dev {}:{} ino {}", e.a >> 20, e.a & 0xfffff, e.b),
         LSM_ACT_WX => format!("prot {:#x} vm_flags {:#x}", e.a, e.b),
         LSM_ACT_DEVICE => {
-            let kind = if e.b >> 62 == DEV_KIND_BLOCK { 'b' } else { 'c' };
+            let kind = if e.b >> 62 == DEV_KIND_BLOCK {
+                'b'
+            } else {
+                'c'
+            };
             format!("{kind} {}:{}", e.a, e.b & 0xffff_ffff)
         }
         _ => String::new(),
@@ -204,7 +250,10 @@ mod tests {
 
     #[test]
     fn cidr_parsing() {
-        assert_eq!(parse_cidr("10.0.0.0/8").unwrap(), ("10.0.0.0".parse().unwrap(), 8));
+        assert_eq!(
+            parse_cidr("10.0.0.0/8").unwrap(),
+            ("10.0.0.0".parse().unwrap(), 8)
+        );
         assert_eq!(parse_cidr("10.1.2.3").unwrap().1, 32);
         assert_eq!(parse_cidr("2001:db8::/32").unwrap().1, 32);
         assert_eq!(parse_cidr("::1").unwrap().1, 128);
@@ -238,7 +287,14 @@ mod tests {
 
     #[test]
     fn v6_rule_partial_byte_prefix() {
-        let r = compile_rule(NP_DIR_INGRESS, "2001:db8:abcd::1".parse().unwrap(), 36, 0, 0).unwrap();
+        let r = compile_rule(
+            NP_DIR_INGRESS,
+            "2001:db8:abcd::1".parse().unwrap(),
+            36,
+            0,
+            0,
+        )
+        .unwrap();
         assert_eq!(r.family, NP_FAMILY_V6);
         assert_eq!(r.mask[0], ne([0xff, 0xff, 0xff, 0xff]));
         assert_eq!(r.mask[1], ne([0xf0, 0, 0, 0]));
@@ -265,7 +321,10 @@ mod tests {
         assert_eq!(p.flags, NP_EGRESS_ISOLATED);
         assert_eq!(p.deadline_ns, 0, "audit mode carries no deadline");
         let p = np_policy(true, true, true, 0, 99);
-        assert_eq!(p.flags, NP_EGRESS_ISOLATED | NP_INGRESS_ISOLATED | NP_ENFORCE);
+        assert_eq!(
+            p.flags,
+            NP_EGRESS_ISOLATED | NP_INGRESS_ISOLATED | NP_ENFORCE
+        );
         assert_eq!(p.deadline_ns, 99);
     }
 

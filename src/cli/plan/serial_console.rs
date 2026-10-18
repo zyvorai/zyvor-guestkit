@@ -203,7 +203,10 @@ fn try_grub_mkconfig(g: &mut Guestfs) {
             g.command(&[bin])
         };
         match result {
-            Ok(_) => eprintln!("Regenerated GRUB config with {}", bin.rsplit('/').next().unwrap_or(bin)),
+            Ok(_) => eprintln!(
+                "Regenerated GRUB config with {}",
+                bin.rsplit('/').next().unwrap_or(bin)
+            ),
             Err(e) => eprintln!(
                 "{} failed ({e}); kernel lines were already written into the GRUB config",
                 bin.rsplit('/').next().unwrap_or(bin)
@@ -321,9 +324,8 @@ pub fn inject_bls(text: &str) -> String {
 pub fn inject_grub_cfg(text: &str) -> String {
     rewrite_lines(text, |ln| {
         let t = ln.trim_start();
-        let linux = t.starts_with("linux ")
-            || t.starts_with("linux16 ")
-            || t.starts_with("linuxefi ");
+        let linux =
+            t.starts_with("linux ") || t.starts_with("linux16 ") || t.starts_with("linuxefi ");
         if linux && !t.contains("console=ttyS0") {
             format!("{ln} {SERIAL_ARGS}")
         } else {
@@ -350,10 +352,7 @@ pub fn inject_syslinux(text: &str) -> String {
 pub fn inject_zipl(text: &str) -> String {
     rewrite_lines(text, |ln| {
         let t = ln.trim_start();
-        let key = t
-            .split_once('=')
-            .map(|(k, _)| k.trim())
-            .unwrap_or("");
+        let key = t.split_once('=').map(|(k, _)| k.trim()).unwrap_or("");
         if !key.eq_ignore_ascii_case("parameters") || t.contains("console=ttyS0") {
             return ln.to_string();
         }
@@ -435,16 +434,12 @@ mod tests {
 
     #[test]
     fn finds_the_bootloader_that_is_installed() {
-        let names = classify_bootloaders(
-            &["/boot/grub2/grub.cfg", "/usr/sbin/grub2-mkconfig"],
-            &[],
-        );
+        let names =
+            classify_bootloaders(&["/boot/grub2/grub.cfg", "/usr/sbin/grub2-mkconfig"], &[]);
         assert_eq!(names, vec!["grub2"]);
 
-        let names = classify_bootloaders(
-            &["/boot/syslinux/syslinux.cfg"],
-            &["/boot/loader/entries"],
-        );
+        let names =
+            classify_bootloaders(&["/boot/syslinux/syslinux.cfg"], &["/boot/loader/entries"]);
         assert_eq!(names, vec!["syslinux", "bls"]);
     }
 
