@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.7] - 2026-10-18
+
+### Fixed
+- **crates.io publish** — the release workflow now publishes `guestkit-ebpf-common` and `guestkit-ebpf-runtime` before `guestkit`; v1.2.6 could not be published because those crates were not on the registry.
+
 ## [1.2.6] - 2026-10-17
 
 ### Added
