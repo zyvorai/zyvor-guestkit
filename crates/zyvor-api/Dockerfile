@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y pkg-config libssl-dev libsystemd-dev &&
 COPY Cargo.toml Cargo.lock ./
 COPY crates/guestkit-job-spec /build/crates/guestkit-job-spec
 COPY crates/guestkit-agent-protocol /build/crates/guestkit-agent-protocol
+COPY crates/guestkit-ebpf-common /build/crates/guestkit-ebpf-common
+COPY crates/guestkit-ebpf-runtime /build/crates/guestkit-ebpf-runtime
 COPY crates/zyvor-guest-agent /build/crates/zyvor-guest-agent
 COPY crates/zyvor-api /build/crates/zyvor-api
 COPY src /build/src
