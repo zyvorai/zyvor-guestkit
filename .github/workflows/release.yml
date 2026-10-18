@@ -1,7 +1,7 @@
 # CI routing: publish-release-images (plain `docker build`/push) and publish-mcp
 # (curl + sha256sum) run on the org self-hosted zyvor-build runners; PR runs stay
 # hosted. mcp-image stays hosted (qemu binfmt + buildx for arm64 needs privileged
-# containers); build-and-upload/publish-crate/publish-pypi/build-agent-artifacts
+# containers); build-and-upload/publish-pypi/build-agent-artifacts
 # stay hosted because they `sudo apt-get install`, which the runner user lacks.
 name: Release
 
@@ -248,43 +248,6 @@ jobs:
           files: |
             dist/guestkit-${{ needs.create-release.outputs.version }}-${{ matrix.arch_suffix }}.tar.gz
             dist/guestkit-${{ needs.create-release.outputs.version }}-${{ matrix.arch_suffix }}.tar.gz.sha256
-
-  publish-crate:
-    name: Publish to crates.io
-    needs: build-and-upload
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-utils libsystemd-dev pkg-config
-
-      - name: Publish to crates.io
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_TOKEN }}
-        run: |
-          if [ -z "${CARGO_REGISTRY_TOKEN}" ]; then
-            echo "Skipping crates.io publish (CARGO_TOKEN not configured)"
-            exit 0
-          fi
-          # Workspace dependencies must be on the registry before the crate that uses them.
-          for pkg in guestkit-ebpf-common guestkit-ebpf-runtime guestkit; do
-            if ! output=$(cargo publish --locked -p "$pkg" --token "${CARGO_REGISTRY_TOKEN}" 2>&1); then
-              if echo "$output" | grep -qi "already uploaded\|already exists"; then
-                echo "$pkg: version already on crates.io, skipping"
-                continue
-              fi
-              echo "$output" >&2
-              exit 1
-            fi
-            # let the index pick up the new crate before the next one resolves it
-            sleep 20
-          done
 
   publish-pypi:
     name: Publish Python wheel to PyPI
