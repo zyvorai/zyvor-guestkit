@@ -8,10 +8,10 @@ description = "Loader for the GuestKit in-guest eBPF programs (per-container net
 [dependencies]
 anyhow = "1.0"
 serde = { version = "1", features = ["derive"] }
-guestkit-ebpf-common = { path = "../guestkit-ebpf-common" }
+guestkit-ebpf-common = { version = "0.1.0", path = "../guestkit-ebpf-common" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-guestkit-ebpf-common = { path = "../guestkit-ebpf-common", features = ["user"] }
+guestkit-ebpf-common = { version = "0.1.0", path = "../guestkit-ebpf-common", features = ["user"] }
 aya = { version = "0.14", default-features = false }
 libc = "0.2"
 
