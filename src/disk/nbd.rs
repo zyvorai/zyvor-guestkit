@@ -433,10 +433,7 @@ impl NbdDevice {
 
         // Use short flags: -c instead of --connect, -f instead of --format
         // This is important! Long flags cause qemu-nbd to exit immediately
-        cmd.arg("-c")
-            .arg(&self.device_path)
-            .arg("-f")
-            .arg(format);
+        cmd.arg("-c").arg(&self.device_path).arg("-f").arg(format);
 
         // CRITICAL: Use -r (read-only) flag to prevent file locking issues
         // This allows multiple qemu-nbd processes to access the same file
@@ -829,36 +826,34 @@ mod tests {
             let ok = ok.clone();
             let held = held.clone();
             let collisions = collisions.clone();
-            handles.push(thread::spawn(move || {
-                loop {
-                    let i = next.fetch_add(1, Ordering::SeqCst);
-                    if i >= runs {
-                        break;
+            handles.push(thread::spawn(move || loop {
+                let i = next.fetch_add(1, Ordering::SeqCst);
+                if i >= runs {
+                    break;
+                }
+                let res = (|| -> std::result::Result<(), String> {
+                    let mut nbd = NbdDevice::new().map_err(|e| e.to_string())?;
+                    nbd.connect(&image, true).map_err(|e| e.to_string())?;
+                    let path = nbd.device_path().display().to_string();
+                    {
+                        let mut h = held.lock().unwrap();
+                        if !h.insert(path.clone()) {
+                            collisions.fetch_add(1, Ordering::SeqCst);
+                            return Err(format!("COLLISION: {path} already held"));
+                        }
                     }
-                    let res = (|| -> std::result::Result<(), String> {
-                        let mut nbd = NbdDevice::new().map_err(|e| e.to_string())?;
-                        nbd.connect(&image, true).map_err(|e| e.to_string())?;
-                        let path = nbd.device_path().display().to_string();
-                        {
-                            let mut h = held.lock().unwrap();
-                            if !h.insert(path.clone()) {
-                                collisions.fetch_add(1, Ordering::SeqCst);
-                                return Err(format!("COLLISION: {path} already held"));
-                            }
-                        }
-                        thread::sleep(Duration::from_millis(100));
-                        held.lock().unwrap().remove(&path);
-                        drop(nbd);
-                        Ok(())
-                    })();
-                    match res {
-                        Ok(()) => {
-                            ok.fetch_add(1, Ordering::SeqCst);
-                        }
-                        Err(e) => {
-                            eprintln!("FAIL {i}: {e}");
-                            fail.fetch_add(1, Ordering::SeqCst);
-                        }
+                    thread::sleep(Duration::from_millis(100));
+                    held.lock().unwrap().remove(&path);
+                    drop(nbd);
+                    Ok(())
+                })();
+                match res {
+                    Ok(()) => {
+                        ok.fetch_add(1, Ordering::SeqCst);
+                    }
+                    Err(e) => {
+                        eprintln!("FAIL {i}: {e}");
+                        fail.fetch_add(1, Ordering::SeqCst);
                     }
                 }
             }));

@@ -547,7 +547,10 @@ mod tests {
             (RpcMethod::LsmApply, "guestkit.lsm.apply"),
             (RpcMethod::LsmStatus, "guestkit.lsm.status"),
         ] {
-            assert!(p.authorize(&m, wire).is_err(), "{wire} must be off by default");
+            assert!(
+                p.authorize(&m, wire).is_err(),
+                "{wire} must be off by default"
+            );
         }
         assert!(!p.enabled_categories().contains(&"ebpf".to_string()));
         let p: AgentPolicy = serde_yaml::from_str("capabilities:\n  ebpf: true\n").unwrap();
@@ -555,7 +558,10 @@ mod tests {
             .authorize(&RpcMethod::NetpolicyApply, "guestkit.netpolicy.apply")
             .is_ok());
         assert!(p.enabled_categories().contains(&"ebpf".to_string()));
-        assert!(p.capabilities.telemetry, "other toggles keep their defaults");
+        assert!(
+            p.capabilities.telemetry,
+            "other toggles keep their defaults"
+        );
     }
 
     #[test]

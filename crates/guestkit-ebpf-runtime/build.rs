@@ -54,10 +54,18 @@ fn main() {
     let ebpf_dir = manifest.join("../guestkit-ebpf");
     let common_dir = manifest.join("../guestkit-ebpf-common");
 
-    for v in ["GUESTKIT_EBPF_OBJ", "GUESTKIT_EBPF_SKIP", "GUESTKIT_EBPF_TOOLCHAIN"] {
+    for v in [
+        "GUESTKIT_EBPF_OBJ",
+        "GUESTKIT_EBPF_SKIP",
+        "GUESTKIT_EBPF_TOOLCHAIN",
+    ] {
         println!("cargo:rerun-if-env-changed={v}");
     }
-    for d in [ebpf_dir.join("src"), ebpf_dir.join("Cargo.toml"), common_dir.join("src")] {
+    for d in [
+        ebpf_dir.join("src"),
+        ebpf_dir.join("Cargo.toml"),
+        common_dir.join("src"),
+    ] {
         println!("cargo:rerun-if-changed={}", d.display());
     }
 
@@ -69,7 +77,10 @@ fn main() {
         fs::copy(&obj, &dst).expect("copy GUESTKIT_EBPF_OBJ");
         return;
     }
-    if matches!(env::var("GUESTKIT_EBPF_SKIP").as_deref(), Ok("1") | Ok("true")) {
+    if matches!(
+        env::var("GUESTKIT_EBPF_SKIP").as_deref(),
+        Ok("1") | Ok("true")
+    ) {
         stage_empty(&dst, "GUESTKIT_EBPF_SKIP set");
         return;
     }
@@ -113,11 +124,16 @@ fn main() {
     ] {
         cmd.env_remove(k);
     }
-    let output = cmd.output().expect("spawn rustup cargo build for guestkit-ebpf");
+    let output = cmd
+        .output()
+        .expect("spawn rustup cargo build for guestkit-ebpf");
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         if stderr.contains("toolchain") && stderr.contains("not installed") {
-            stage_empty(&dst, &format!("rustup toolchain `{toolchain}` not installed"));
+            stage_empty(
+                &dst,
+                &format!("rustup toolchain `{toolchain}` not installed"),
+            );
             return;
         }
         panic!("guestkit-ebpf build failed:\n{stderr}");

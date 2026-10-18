@@ -113,7 +113,8 @@ pub fn parse_mode(mode: &str, lease_secs: Option<u64>) -> Result<Mode, String> {
         "off" | "remove" => Ok(Mode::Off),
         "audit" | "observe" => Ok(Mode::Audit),
         "enforce" => {
-            let s = lease_secs.ok_or_else(|| format!("enforce needs lease_secs (1..={MAX_LEASE_SECS})"))?;
+            let s = lease_secs
+                .ok_or_else(|| format!("enforce needs lease_secs (1..={MAX_LEASE_SECS})"))?;
             if !(1..=MAX_LEASE_SECS).contains(&s) {
                 return Err(format!("lease_secs must be 1..={MAX_LEASE_SECS}"));
             }
@@ -137,7 +138,11 @@ pub fn parse_device(s: &str) -> Result<(u64, u32, u32), String> {
         return Err(bad());
     }
     let major = ma.parse::<u32>().map_err(|_| bad())?;
-    let minor = if mi == "*" { u32::MAX } else { mi.parse::<u32>().map_err(|_| bad())? };
+    let minor = if mi == "*" {
+        u32::MAX
+    } else {
+        mi.parse::<u32>().map_err(|_| bad())?
+    };
     if major >= 1 << 12 || (minor != u32::MAX && minor >= 1 << 20) {
         return Err(bad());
     }
@@ -146,7 +151,9 @@ pub fn parse_device(s: &str) -> Result<(u64, u32, u32), String> {
 
 /// The unified-hierarchy path from `/proc/<pid>/cgroup` content.
 pub fn parse_cgroup_v2(content: &str) -> Option<String> {
-    content.lines().find_map(|l| l.strip_prefix("0::").map(|p| p.trim().to_string()))
+    content
+        .lines()
+        .find_map(|l| l.strip_prefix("0::").map(|p| p.trim().to_string()))
 }
 
 /// A cgroup path the caller may name: inside /sys/fs/cgroup, no `..`.
@@ -154,7 +161,10 @@ pub fn cgroup_dir(spec: &str) -> Result<PathBuf, String> {
     if spec.split('/').any(|c| c == "..") {
         return Err(format!("cgroup `{spec}`: `..` not allowed"));
     }
-    let rel = spec.strip_prefix(CGROUP_ROOT).unwrap_or(spec).trim_start_matches('/');
+    let rel = spec
+        .strip_prefix(CGROUP_ROOT)
+        .unwrap_or(spec)
+        .trim_start_matches('/');
     if rel.is_empty() {
         return Err("refusing to police the root cgroup".into());
     }
@@ -165,7 +175,9 @@ pub fn cgroup_dir(spec: &str) -> Result<PathBuf, String> {
 pub fn target_key(t: &Target) -> Result<String, String> {
     match (&t.container, &t.cgroup) {
         (Some(c), None) if !c.trim().is_empty() => Ok(format!("container:{}", c.trim())),
-        (None, Some(g)) if !g.trim().is_empty() => Ok(format!("cgroup:{}", cgroup_dir(g.trim())?.display())),
+        (None, Some(g)) if !g.trim().is_empty() => {
+            Ok(format!("cgroup:{}", cgroup_dir(g.trim())?.display()))
+        }
         (Some(_), Some(_)) => Err("pass either container or cgroup, not both".into()),
         _ => Err("missing target: pass container (name/id) or cgroup".into()),
     }
@@ -208,7 +220,11 @@ mod imp {
         let mut g = STATE.lock().unwrap_or_else(|e| e.into_inner());
         if g.is_none() {
             let ebpf = GuestEbpf::load().map_err(|e| format!("ebpf_unavailable: {e:#}"))?;
-            *g = Some(State { ebpf, np: BTreeMap::new(), lsm: BTreeMap::new() });
+            *g = Some(State {
+                ebpf,
+                np: BTreeMap::new(),
+                lsm: BTreeMap::new(),
+            });
         }
         let s = g.as_mut().expect("initialized");
         sweep(s);
@@ -240,13 +256,21 @@ mod imp {
     }
 
     fn run(cmd: &str, args: &[&str]) -> Option<String> {
-        let out = Command::new(cmd).args(args).stderr(std::process::Stdio::null()).output().ok()?;
-        out.status.success().then(|| String::from_utf8_lossy(&out.stdout).trim().to_string())
+        let out = Command::new(cmd)
+            .args(args)
+            .stderr(std::process::Stdio::null())
+            .output()
+            .ok()?;
+        out.status
+            .success()
+            .then(|| String::from_utf8_lossy(&out.stdout).trim().to_string())
     }
 
     fn container_pid(name: &str) -> Option<u32> {
         for rt in ["docker", "podman"] {
-            if let Some(pid) = run(rt, &["inspect", "--format", "{{.State.Pid}}", name]).and_then(|s| s.parse().ok()) {
+            if let Some(pid) = run(rt, &["inspect", "--format", "{{.State.Pid}}", name])
+                .and_then(|s| s.parse().ok())
+            {
                 if pid > 0 {
                     return Some(pid);
                 }
@@ -254,7 +278,10 @@ mod imp {
         }
         let info = run("crictl", &["inspect", name])?;
         let v: Value = serde_json::from_str(&info).ok()?;
-        v.pointer("/info/pid").and_then(Value::as_u64).map(|p| p as u32).filter(|p| *p > 0)
+        v.pointer("/info/pid")
+            .and_then(Value::as_u64)
+            .map(|p| p as u32)
+            .filter(|p| *p > 0)
     }
 
     /// The cgroup directory and its descendants' inode numbers (== cgroup ids).
@@ -262,10 +289,16 @@ mod imp {
         let mut out = Vec::new();
         let mut stack = vec![dir.to_path_buf()];
         while let Some(d) = stack.pop() {
-            let Ok(md) = std::fs::metadata(&d) else { continue };
+            let Ok(md) = std::fs::metadata(&d) else {
+                continue;
+            };
             out.push(md.ino());
             if let Ok(rd) = std::fs::read_dir(&d) {
-                stack.extend(rd.flatten().filter(|e| e.file_type().is_ok_and(|t| t.is_dir())).map(|e| e.path()));
+                stack.extend(
+                    rd.flatten()
+                        .filter(|e| e.file_type().is_ok_and(|t| t.is_dir()))
+                        .map(|e| e.path()),
+                );
             }
         }
         out
@@ -274,14 +307,21 @@ mod imp {
     fn resolve(t: &Target) -> Result<Resolved, String> {
         let (cgroup, root) = if let Some(name) = &t.container {
             let name = name.trim();
-            let pid = container_pid(name).ok_or_else(|| format!("container `{name}` not found or not running"))?;
+            let pid = container_pid(name)
+                .ok_or_else(|| format!("container `{name}` not found or not running"))?;
             let cg = std::fs::read_to_string(format!("/proc/{pid}/cgroup"))
                 .ok()
                 .and_then(|c| parse_cgroup_v2(&c))
                 .ok_or_else(|| format!("container `{name}`: no cgroup v2 path for pid {pid}"))?;
-            (cgroup_dir(&cg)?, Some(PathBuf::from(format!("/proc/{pid}/root"))))
+            (
+                cgroup_dir(&cg)?,
+                Some(PathBuf::from(format!("/proc/{pid}/root"))),
+            )
         } else {
-            (cgroup_dir(t.cgroup.as_deref().unwrap_or_default().trim())?, None)
+            (
+                cgroup_dir(t.cgroup.as_deref().unwrap_or_default().trim())?,
+                None,
+            )
         };
         if !cgroup.is_dir() {
             return Err(format!("cgroup {} not found", cgroup.display()));
@@ -331,7 +371,10 @@ mod imp {
             .into_iter()
             .map(|e| {
                 let target = keys.get(&e.cgroup_id).cloned();
-                merge(serde_json::to_value(&e).unwrap_or_default(), json!({ "target": target }))
+                merge(
+                    serde_json::to_value(&e).unwrap_or_default(),
+                    json!({ "target": target }),
+                )
             })
             .collect()
     }
@@ -339,7 +382,8 @@ mod imp {
     // ---- netpolicy ------------------------------------------------------
 
     pub fn netpolicy_apply(params: &Value) -> Result<Value, String> {
-        let req: NetpolicyApply = serde_json::from_value(params.clone()).map_err(|e| format!("invalid params: {e}"))?;
+        let req: NetpolicyApply =
+            serde_json::from_value(params.clone()).map_err(|e| format!("invalid params: {e}"))?;
         let key = target_key(&req.target)?;
         let mode = parse_mode(&req.mode, req.lease_secs)?;
         let mut rules = Vec::new();
@@ -347,7 +391,13 @@ mod imp {
             let dir = rt::parse_direction(&r.direction)?;
             let (addr, prefix) = rt::parse_cidr(&r.cidr)?;
             let proto = rt::parse_proto(r.proto.as_deref().unwrap_or("any"))?;
-            rules.push(rt::compile_rule(dir, addr, prefix, proto, r.port.unwrap_or(0))?);
+            rules.push(rt::compile_rule(
+                dir,
+                addr,
+                prefix,
+                proto,
+                r.port.unwrap_or(0),
+            )?);
         }
         if rules.len() > NP_MAX_RULES as usize {
             return Err(format!("at most {NP_MAX_RULES} rules"));
@@ -371,17 +421,43 @@ mod imp {
                 }
             }
             let (enforce, deadline) = lease_deadline(mode);
-            let policy = rt::np_policy(req.egress, req.ingress, enforce, rules.len() as u32, deadline);
-            s.ebpf.np_apply(&r.cgroup, &r.ids, policy, &rules).map_err(|e| format!("{e:#}"))?;
+            let policy = rt::np_policy(
+                req.egress,
+                req.ingress,
+                enforce,
+                rules.len() as u32,
+                deadline,
+            );
+            s.ebpf
+                .np_apply(&r.cgroup, &r.ids, policy, &rules)
+                .map_err(|e| format!("{e:#}"))?;
             let spec = json!({ "egress": req.egress, "ingress": req.ingress, "rules": req.rules });
-            let entry = Entry { cgroup: r.cgroup, ids: r.ids, enforce, deadline, lease_expired: false, spec };
-            s.np.insert(key.clone(), (entry, NpPolicy { nrules: rules.len() as u32, ..policy }));
+            let entry = Entry {
+                cgroup: r.cgroup,
+                ids: r.ids,
+                enforce,
+                deadline,
+                lease_expired: false,
+                spec,
+            };
+            s.np.insert(
+                key.clone(),
+                (
+                    entry,
+                    NpPolicy {
+                        nrules: rules.len() as u32,
+                        ..policy
+                    },
+                ),
+            );
             Ok(np_target_json(s, &key))
         })
     }
 
     fn np_target_json(s: &mut State, key: &str) -> Value {
-        let Some((e, _)) = s.np.get(key) else { return Value::Null };
+        let Some((e, _)) = s.np.get(key) else {
+            return Value::Null;
+        };
         let (ids, top) = (e.ids.clone(), e.ids.first().copied().unwrap_or(0));
         let base = merge(
             json!({
@@ -404,10 +480,16 @@ mod imp {
     pub fn netpolicy_status(params: &Value) -> Result<Value, String> {
         let only = filter_key(params)?;
         let res = with_state(|s| {
-            let keys: Vec<String> = s.np.keys().filter(|k| only.as_ref().is_none_or(|o| o == *k)).cloned().collect();
+            let keys: Vec<String> =
+                s.np.keys()
+                    .filter(|k| only.as_ref().is_none_or(|o| o == *k))
+                    .cloned()
+                    .collect();
             let targets: Vec<Value> = keys.iter().map(|k| np_target_json(s, k)).collect();
             let by_id: BTreeMap<u64, String> =
-                s.np.iter().flat_map(|(k, (e, _))| e.ids.iter().map(move |i| (*i, k.clone()))).collect();
+                s.np.iter()
+                    .flat_map(|(k, (e, _))| e.ids.iter().map(move |i| (*i, k.clone())))
+                    .collect();
             Ok(json!({
                 "available": true,
                 "programs_compiled": true,
@@ -421,12 +503,18 @@ mod imp {
     // ---- LSM ------------------------------------------------------------
 
     pub fn lsm_apply(params: &Value) -> Result<Value, String> {
-        let req: LsmApply = serde_json::from_value(params.clone()).map_err(|e| format!("invalid params: {e}"))?;
+        let req: LsmApply =
+            serde_json::from_value(params.clone()).map_err(|e| format!("invalid params: {e}"))?;
         let key = target_key(&req.target)?;
         let mode = parse_mode(&req.mode, req.lease_secs)?;
         let sp = &req.spec;
-        if mode != Mode::Off && !(sp.deny_exec || sp.deny_wx || sp.restrict_devices || sp.restrict_writes) {
-            return Err("enable at least one of deny_exec, deny_wx, restrict_devices, restrict_writes".into());
+        if mode != Mode::Off
+            && !(sp.deny_exec || sp.deny_wx || sp.restrict_devices || sp.restrict_writes)
+        {
+            return Err(
+                "enable at least one of deny_exec, deny_wx, restrict_devices, restrict_writes"
+                    .into(),
+            );
         }
         let active = rt::lsm_active();
         if matches!(mode, Mode::Enforce { .. }) && !active {
@@ -437,7 +525,11 @@ mod imp {
             ));
         }
         let mut devices = Vec::new();
-        for d in DEFAULT_DEVICES.iter().copied().chain(sp.allow_devices.iter().map(String::as_str)) {
+        for d in DEFAULT_DEVICES
+            .iter()
+            .copied()
+            .chain(sp.allow_devices.iter().map(String::as_str))
+        {
             let (kind, ma, mi) = parse_device(d)?;
             devices.push(dev_key(kind, ma, mi));
         }
@@ -454,7 +546,8 @@ mod imp {
             let r = resolve(&req.target)?;
             let mut files = Vec::new();
             for p in &sp.allow_exec {
-                let md = std::fs::metadata(inside(&r.root, p)).map_err(|e| format!("allow_exec `{p}`: {e}"))?;
+                let md = std::fs::metadata(inside(&r.root, p))
+                    .map_err(|e| format!("allow_exec `{p}`: {e}"))?;
                 if !md.is_file() {
                     return Err(format!("allow_exec `{p}`: not a file"));
                 }
@@ -462,7 +555,8 @@ mod imp {
             }
             let mut writable = Vec::new();
             for p in &sp.writable_paths {
-                let md = std::fs::metadata(inside(&r.root, p)).map_err(|e| format!("writable_paths `{p}`: {e}"))?;
+                let md = std::fs::metadata(inside(&r.root, p))
+                    .map_err(|e| format!("writable_paths `{p}`: {e}"))?;
                 writable.push(kdev(md.dev()));
             }
             writable.sort_unstable();
@@ -487,10 +581,23 @@ mod imp {
                     flags |= f;
                 }
             }
-            let policy = LsmPolicy { flags, _pad: 0, deadline_ns: deadline };
-            s.ebpf.lsm_apply(&r.ids, policy, &files, &devices, &writable).map_err(|e| format!("{e:#}"))?;
+            let policy = LsmPolicy {
+                flags,
+                _pad: 0,
+                deadline_ns: deadline,
+            };
+            s.ebpf
+                .lsm_apply(&r.ids, policy, &files, &devices, &writable)
+                .map_err(|e| format!("{e:#}"))?;
             let spec = serde_json::to_value(sp).unwrap_or_default();
-            let entry = Entry { cgroup: r.cgroup, ids: r.ids, enforce, deadline, lease_expired: false, spec };
+            let entry = Entry {
+                cgroup: r.cgroup,
+                ids: r.ids,
+                enforce,
+                deadline,
+                lease_expired: false,
+                spec,
+            };
             s.lsm.insert(key.clone(), (entry, policy));
             let mut v = lsm_target_json(s, &key);
             if !active {
@@ -508,7 +615,9 @@ mod imp {
     }
 
     fn lsm_target_json(s: &mut State, key: &str) -> Value {
-        let Some((e, _)) = s.lsm.get(key) else { return Value::Null };
+        let Some((e, _)) = s.lsm.get(key) else {
+            return Value::Null;
+        };
         let ids = e.ids.clone();
         let base = merge(
             json!({
@@ -531,10 +640,18 @@ mod imp {
         let only = filter_key(params)?;
         let active = rt::lsm_active();
         let res = with_state(|s| {
-            let keys: Vec<String> = s.lsm.keys().filter(|k| only.as_ref().is_none_or(|o| o == *k)).cloned().collect();
+            let keys: Vec<String> = s
+                .lsm
+                .keys()
+                .filter(|k| only.as_ref().is_none_or(|o| o == *k))
+                .cloned()
+                .collect();
             let targets: Vec<Value> = keys.iter().map(|k| lsm_target_json(s, k)).collect();
-            let by_id: BTreeMap<u64, String> =
-                s.lsm.iter().flat_map(|(k, (e, _))| e.ids.iter().map(move |i| (*i, k.clone()))).collect();
+            let by_id: BTreeMap<u64, String> = s
+                .lsm
+                .iter()
+                .flat_map(|(k, (e, _))| e.ids.iter().map(move |i| (*i, k.clone())))
+                .collect();
             Ok(json!({
                 "available": true,
                 "programs_compiled": true,
@@ -546,7 +663,12 @@ mod imp {
                 "events": events_for(s, "lsm", &by_id),
             }))
         });
-        Ok(res.unwrap_or_else(|e| merge(unavailable(e), json!({ "lsm_active": active, "lsm_list": rt::lsm_list() }))))
+        Ok(res.unwrap_or_else(|e| {
+            merge(
+                unavailable(e),
+                json!({ "lsm_active": active, "lsm_list": rt::lsm_list() }),
+            )
+        }))
     }
 
     fn filter_key(params: &Value) -> Result<Option<String>, String> {
@@ -572,7 +694,8 @@ mod imp {
 mod imp {
     use super::*;
 
-    const WHY: &str = "ebpf_unavailable: this guestkit build has no eBPF support (Linux + `ebpf` feature)";
+    const WHY: &str =
+        "ebpf_unavailable: this guestkit build has no eBPF support (Linux + `ebpf` feature)";
 
     pub fn netpolicy_apply(_: &Value) -> Result<Value, String> {
         Err(WHY.into())
@@ -581,7 +704,9 @@ mod imp {
         Err(WHY.into())
     }
     pub fn netpolicy_status(_: &Value) -> Result<Value, String> {
-        Ok(json!({ "available": false, "programs_compiled": false, "reason": WHY, "targets": [], "events": [] }))
+        Ok(
+            json!({ "available": false, "programs_compiled": false, "reason": WHY, "targets": [], "events": [] }),
+        )
     }
     pub fn lsm_status(params: &Value) -> Result<Value, String> {
         netpolicy_status(params)
@@ -601,7 +726,10 @@ mod tests {
         assert!(parse_mode("enforce", None).is_err());
         assert!(parse_mode("enforce", Some(0)).is_err());
         assert!(parse_mode("enforce", Some(MAX_LEASE_SECS + 1)).is_err());
-        assert_eq!(parse_mode("enforce", Some(60)).unwrap(), Mode::Enforce { lease_secs: 60 });
+        assert_eq!(
+            parse_mode("enforce", Some(60)).unwrap(),
+            Mode::Enforce { lease_secs: 60 }
+        );
         assert!(parse_mode("block", None).is_err());
     }
 
@@ -622,14 +750,23 @@ mod tests {
     #[test]
     fn cgroup_v2_line() {
         let c = "12:pids:/legacy\n0::/system.slice/docker-abc.scope\n";
-        assert_eq!(parse_cgroup_v2(c).as_deref(), Some("/system.slice/docker-abc.scope"));
+        assert_eq!(
+            parse_cgroup_v2(c).as_deref(),
+            Some("/system.slice/docker-abc.scope")
+        );
         assert_eq!(parse_cgroup_v2("3:cpu:/x\n"), None);
     }
 
     #[test]
     fn cgroup_paths_stay_under_root() {
-        assert_eq!(cgroup_dir("/sys/fs/cgroup/a/b").unwrap(), PathBuf::from("/sys/fs/cgroup/a/b"));
-        assert_eq!(cgroup_dir("/system.slice/x.scope").unwrap(), PathBuf::from("/sys/fs/cgroup/system.slice/x.scope"));
+        assert_eq!(
+            cgroup_dir("/sys/fs/cgroup/a/b").unwrap(),
+            PathBuf::from("/sys/fs/cgroup/a/b")
+        );
+        assert_eq!(
+            cgroup_dir("/system.slice/x.scope").unwrap(),
+            PathBuf::from("/sys/fs/cgroup/system.slice/x.scope")
+        );
         assert_eq!(cgroup_dir("a").unwrap(), PathBuf::from("/sys/fs/cgroup/a"));
         assert!(cgroup_dir("/sys/fs/cgroup/../etc").is_err());
         assert!(cgroup_dir("/").is_err());
@@ -638,12 +775,21 @@ mod tests {
 
     #[test]
     fn target_keys() {
-        let t = Target { container: Some("web".into()), cgroup: None };
+        let t = Target {
+            container: Some("web".into()),
+            cgroup: None,
+        };
         assert_eq!(target_key(&t).unwrap(), "container:web");
-        let t = Target { container: None, cgroup: Some("gk/test".into()) };
+        let t = Target {
+            container: None,
+            cgroup: Some("gk/test".into()),
+        };
         assert_eq!(target_key(&t).unwrap(), "cgroup:/sys/fs/cgroup/gk/test");
         assert!(target_key(&Target::default()).is_err());
-        let both = Target { container: Some("a".into()), cgroup: Some("b".into()) };
+        let both = Target {
+            container: Some("a".into()),
+            cgroup: Some("b".into()),
+        };
         assert!(target_key(&both).is_err());
     }
 
@@ -657,7 +803,8 @@ mod tests {
         assert_eq!(p.mode, "audit");
         assert!(p.egress && !p.ingress);
         assert_eq!(p.rules[0].port, Some(443));
-        let l: LsmApply = serde_json::from_value(json!({ "cgroup": "x", "deny_wx": true })).unwrap();
+        let l: LsmApply =
+            serde_json::from_value(json!({ "cgroup": "x", "deny_wx": true })).unwrap();
         assert_eq!(l.mode, "audit");
         assert!(l.spec.deny_wx && !l.spec.deny_exec);
     }

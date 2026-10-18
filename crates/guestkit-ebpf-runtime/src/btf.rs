@@ -50,7 +50,8 @@ fn u32_at(b: &[u8], off: usize) -> Option<u32> {
 
 impl Btf {
     pub fn from_sys_fs() -> Result<Self, String> {
-        let data = std::fs::read("/sys/kernel/btf/vmlinux").map_err(|e| format!("read vmlinux BTF: {e}"))?;
+        let data = std::fs::read("/sys/kernel/btf/vmlinux")
+            .map_err(|e| format!("read vmlinux BTF: {e}"))?;
         Self::parse(&data)
     }
 
@@ -68,8 +69,18 @@ impl Btf {
             .get(hdr_len + type_off..hdr_len + type_off + type_len)
             .ok_or_else(bad)?
             .to_vec();
-        let strings = data.get(hdr_len + str_off..hdr_len + str_off + str_len).ok_or_else(bad)?.to_vec();
-        let mut tys = vec![Ty { name: 0, kind: 0, vlen: 0, kflag: false, size_or_type: 0, extra: 0 }];
+        let strings = data
+            .get(hdr_len + str_off..hdr_len + str_off + str_len)
+            .ok_or_else(bad)?
+            .to_vec();
+        let mut tys = vec![Ty {
+            name: 0,
+            kind: 0,
+            vlen: 0,
+            kflag: false,
+            size_or_type: 0,
+            extra: 0,
+        }];
         let mut off = 0;
         while off + 12 <= types.len() {
             let name = u32_at(&types, off).ok_or_else(bad)?;
@@ -86,10 +97,22 @@ impl Btf {
                 KIND_ENUM64 => 12 * vlen as usize,
                 _ => 0,
             };
-            tys.push(Ty { name, kind, vlen, kflag: info >> 31 != 0, size_or_type, extra });
+            tys.push(Ty {
+                name,
+                kind,
+                vlen,
+                kflag: info >> 31 != 0,
+                size_or_type,
+                extra,
+            });
             off = extra + trailer;
         }
-        let mut btf = Self { types, strings, tys, by_name: HashMap::new() };
+        let mut btf = Self {
+            types,
+            strings,
+            tys,
+            by_name: HashMap::new(),
+        };
         for id in 1..btf.tys.len() as u32 {
             let t = btf.tys[id as usize];
             if matches!(t.kind, KIND_STRUCT | KIND_UNION) && t.name != 0 {
@@ -109,9 +132,13 @@ impl Btf {
     /// Strip typedef / qualifiers.
     fn resolve(&self, mut id: u32) -> u32 {
         for _ in 0..32 {
-            let Some(t) = self.tys.get(id as usize) else { return id };
+            let Some(t) = self.tys.get(id as usize) else {
+                return id;
+            };
             match t.kind {
-                KIND_TYPEDEF | KIND_VOLATILE | KIND_CONST | KIND_RESTRICT | KIND_TYPE_TAG => id = t.size_or_type,
+                KIND_TYPEDEF | KIND_VOLATILE | KIND_CONST | KIND_RESTRICT | KIND_TYPE_TAG => {
+                    id = t.size_or_type
+                }
                 _ => return id,
             }
         }
@@ -150,7 +177,9 @@ impl Btf {
             let mut id = start;
             let mut bits = 0;
             for part in path.split('.') {
-                let Some((o, ty)) = self.member(self.resolve(id), part, 0) else { continue 'outer };
+                let Some((o, ty)) = self.member(self.resolve(id), part, 0) else {
+                    continue 'outer;
+                };
                 bits += o;
                 id = ty;
             }
@@ -161,4 +190,3 @@ impl Btf {
         None
     }
 }
-

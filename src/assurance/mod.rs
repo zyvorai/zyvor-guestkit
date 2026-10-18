@@ -11,7 +11,9 @@ mod inject;
 mod passport;
 mod repair_extras;
 
-pub use inject::{append_inject, live_fix_commands, AdRejoin, InjectPayload, NetworkFile, UserSpec};
+pub use inject::{
+    append_inject, live_fix_commands, AdRejoin, InjectPayload, NetworkFile, UserSpec,
+};
 
 pub use copilot::{
     answer_copilot_question, build_evidence_digest, generate_briefing, CopilotAction,
