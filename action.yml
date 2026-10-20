@@ -80,9 +80,11 @@ runs:
     - name: Resolve GuestKit version
       id: resolve-version
       shell: bash
+      env:
+        GK_VERSION: ${{ inputs.version }}
       run: |
         set -euo pipefail
-        VERSION="${{ inputs.version }}"
+        VERSION="${GK_VERSION}"
         if [[ "${VERSION}" == "latest" ]]; then
           # Capture the full body before parsing — piping straight into
           # `grep -m1` lets grep close the pipe after its first match,
@@ -161,6 +163,10 @@ runs:
         GK_ISSUER: ${{ inputs.issuer }}
         GK_REQUIRE_SIG: ${{ inputs.require-signature }}
         GK_TRUST_KEYS: ${{ inputs.trust-keys }}
+        GK_HANDOFF: ${{ inputs.handoff }}
+        GK_RESCUE: ${{ inputs.rescue }}
+        GK_RESCUE_USER: ${{ inputs.rescue-user }}
+        GK_SBOM: ${{ inputs.sbom }}
       run: |
         set -uo pipefail
         OUTDIR="${RUNNER_TEMP}/guestkit-passport-gate"
@@ -201,19 +207,19 @@ runs:
           exit 1
         fi
 
-        if [[ "${{ inputs.handoff }}" == "true" ]]; then
+        if [[ "${GK_HANDOFF}" == "true" ]]; then
           guestkit passport handoff "${OUTDIR}/passport.json" -o "${OUTDIR}/handoff.yaml" --fail-below "${GK_FLOOR}" || true
         fi
 
-        if [[ -n "${{ inputs.rescue }}" ]]; then
-          RESCUE_ARGS=(rescue "${GK_DISK}" -o "${{ inputs.rescue }}" --export-plan "${OUTDIR}/rescue.yaml")
-          if [[ -n "${{ inputs.rescue-user }}" ]]; then
-            RESCUE_ARGS+=(-u "${{ inputs.rescue-user }}")
+        if [[ -n "${GK_RESCUE}" ]]; then
+          RESCUE_ARGS=(rescue "${GK_DISK}" -o "${GK_RESCUE}" --export-plan "${OUTDIR}/rescue.yaml")
+          if [[ -n "${GK_RESCUE_USER}" ]]; then
+            RESCUE_ARGS+=(-u "${GK_RESCUE_USER}")
           fi
           guestkit "${RESCUE_ARGS[@]}" || echo "::warning::rescue dry-run export failed"
         fi
 
-        if [[ "${{ inputs.sbom }}" == "true" ]]; then
+        if [[ "${GK_SBOM}" == "true" ]]; then
           guestkit inventory "${GK_DISK}" --format spdx -o "${OUTDIR}/sbom.spdx.json" || echo "::warning::sbom emit failed"
         fi
 

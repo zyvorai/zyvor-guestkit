@@ -92,7 +92,7 @@ impl LivePlanExecutor {
     pub fn apply(&self, plan: &FixPlan) -> Result<ApplyResult> {
         let plan_id = plan_id_for(plan);
         let rollback_dir = self.rollback_root().join(&plan_id);
-        let sorted = topological_sort(plan);
+        let sorted = topological_sort(plan)?;
 
         let mut outcomes: Vec<OperationOutcome> = Vec::with_capacity(sorted.len());
 
