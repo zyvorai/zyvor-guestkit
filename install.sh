@@ -53,7 +53,9 @@ echo
 read -p "Install systemd service? (y/N) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    cat > /tmp/guestkit-worker.service <<'EOF'
+    UNIT_TMP="$(mktemp)"
+    trap 'rm -f "$UNIT_TMP"' EXIT
+    cat > "$UNIT_TMP" <<EOF
 [Unit]
 Description=Guestkit Worker Daemon
 After=network.target
@@ -62,7 +64,7 @@ After=network.target
 Type=simple
 User=nobody
 Group=nobody
-ExecStart=/usr/local/bin/guestkit-worker daemon --transport http
+ExecStart=$INSTALL_DIR/guestkit-worker daemon --transport http
 Restart=always
 RestartSec=10
 
@@ -77,7 +79,7 @@ ReadWritePaths=/tmp/guestkit-worker
 WantedBy=multi-user.target
 EOF
 
-    $SUDO cp /tmp/guestkit-worker.service "$SYSTEMD_DIR/guestkit-worker.service"
+    $SUDO cp "$UNIT_TMP" "$SYSTEMD_DIR/guestkit-worker.service"
     $SUDO systemctl daemon-reload
 
     echo "✓ Systemd service installed"
