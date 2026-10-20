@@ -168,7 +168,7 @@ impl PlanApplicator {
         }
 
         // Topological sort of operations
-        let sorted_ops = super::topo_sort::topological_sort(plan);
+        let sorted_ops = super::topo_sort::topological_sort(plan)?;
 
         let mut applied = 0usize;
         let mut failed = 0usize;

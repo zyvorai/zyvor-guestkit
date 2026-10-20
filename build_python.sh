@@ -68,7 +68,7 @@ else
     if [ -n "$VIRTUAL_ENV" ]; then
         echo
         echo "Installing wheel..."
-        WHEEL=$(ls -t target/wheels/guestkit-*.whl | head -1)
+        WHEEL=$(ls -t target/wheels/zyvor_guestkit-*.whl | head -1)
         pip install --force-reinstall "$WHEEL"
     fi
 fi
