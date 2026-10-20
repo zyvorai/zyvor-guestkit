@@ -7,6 +7,22 @@ use base64::{engine::general_purpose::STANDARD, Engine};
 use serde_json::{json, Value};
 use std::process::{Command, Stdio};
 
+/// Exit code of a finished process. A process killed by a signal has no exit
+/// code; report the shell convention 128+signal instead of a generic 1.
+fn exit_code(status: &std::process::ExitStatus) -> i64 {
+    if let Some(c) = status.code() {
+        return c as i64;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::ExitStatusExt;
+        if let Some(sig) = status.signal() {
+            return 128 + sig as i64;
+        }
+    }
+    1
+}
+
 /// Run a command synchronously and return exit code + stdout/stderr.
 pub fn exec_sync(args: &Value) -> Result<Value, String> {
     let path = args
@@ -27,7 +43,7 @@ pub fn exec_sync(args: &Value) -> Result<Value, String> {
 
     Ok(json!({
         "exited": true,
-        "exitcode": output.status.code().unwrap_or(1),
+        "exitcode": exit_code(&output.status),
         "stdout": String::from_utf8_lossy(&output.stdout),
         "stderr": String::from_utf8_lossy(&output.stderr),
     }))
@@ -51,4 +67,21 @@ pub fn exec_sync_qga(args: &Value) -> Result<Value, String> {
         }
     }
     Ok(ret)
+}
+
+#[cfg(all(test, unix))]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn signal_killed_process_reports_128_plus_signal() {
+        let r = exec_sync(&json!({"path": "/bin/sh", "arg": ["-c", "kill -9 $$"]})).unwrap();
+        assert_eq!(r["exitcode"], 137);
+    }
+
+    #[test]
+    fn normal_exit_code_is_preserved() {
+        let r = exec_sync(&json!({"path": "/bin/sh", "arg": ["-c", "exit 3"]})).unwrap();
+        assert_eq!(r["exitcode"], 3);
+    }
 }
