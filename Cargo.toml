@@ -87,7 +87,7 @@ libc = "0.2"
 nt_hive2 = "4.2.4"
 
 # Windows event log parsing (pure Rust)
-evtx = { version = "0.12.2", default-features = false, optional = true }
+evtx = { version = "0.15.1", default-features = false, optional = true }
 
 # Report generation and export
 printpdf = "0.12"
