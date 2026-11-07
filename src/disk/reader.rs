@@ -89,34 +89,61 @@ impl DiskReader {
 
     /// Detect disk image format from magic bytes
     fn detect_format(file: &mut File) -> Result<DiskFormat> {
-        let mut magic = [0u8; 4];
+        let mut header = [0u8; 512];
         file.seek(SeekFrom::Start(0)).map_err(Error::Io)?;
 
-        // Use read() instead of read_exact() for block devices
-        // Block devices might not fill the entire buffer
-        let bytes_read = file.read(&mut magic).map_err(Error::Io)?;
+        // Use read() in a loop instead of read_exact(): block devices and
+        // short files may return fewer bytes than requested.
+        let mut bytes_read = 0;
+        while bytes_read < header.len() {
+            let n = file.read(&mut header[bytes_read..]).map_err(Error::Io)?;
+            if n == 0 {
+                break;
+            }
+            bytes_read += n;
+        }
 
-        if bytes_read < 4 {
+        Ok(Self::detect_format_from_header(&header[..bytes_read]))
+    }
+
+    /// Classify an image from its first bytes (up to 512).
+    fn detect_format_from_header(header: &[u8]) -> DiskFormat {
+        if header.len() < 4 {
             // Not enough data to detect format, assume raw
-            return Ok(DiskFormat::Raw);
+            return DiskFormat::Raw;
         }
 
         // QCOW2 magic: "QFI\xfb"
-        if &magic == b"QFI\xfb" {
-            return Ok(DiskFormat::Qcow2);
+        if header.starts_with(b"QFI\xfb") {
+            return DiskFormat::Qcow2;
         }
 
-        // Check for other formats
-        // VMDK magic at start
-        if &magic[0..3] == b"KDM" || &magic[0..3] == b"COW" {
-            return Ok(DiskFormat::Vmdk);
+        // VMDK: sparse extent ("KDMV"), ESX COWD extent, or text descriptor
+        if header.starts_with(b"KDMV")
+            || header.starts_with(b"COWD")
+            || header.starts_with(b"# Disk DescriptorFile")
+        {
+            return DiskFormat::Vmdk;
         }
 
-        // VHD magic at end (512 bytes from end) "conectix"
-        // VDI magic "<<< "
+        // VHDX file type identifier at offset 0
+        if header.starts_with(b"vhdxfile") {
+            return DiskFormat::Vhdx;
+        }
+
+        // Dynamic and differencing VHDs start with a copy of the "conectix"
+        // footer. (Fixed VHDs only carry it at the end and read correctly as raw.)
+        if header.starts_with(b"conectix") {
+            return DiskFormat::Vhd;
+        }
+
+        // VDI: signature 0xBEDA107F (little-endian) at offset 0x40
+        if header.len() >= 0x44 && header[0x40..0x44] == [0x7f, 0x10, 0xda, 0xbe] {
+            return DiskFormat::Vdi;
+        }
 
         // Default to raw if no magic found
-        Ok(DiskFormat::Raw)
+        DiskFormat::Raw
     }
 
     /// Read bytes at offset
@@ -176,5 +203,46 @@ mod tests {
         assert!(!DiskReader::is_block_device(std::path::Path::new(
             "/nonexistent"
         )));
+    }
+
+    fn header_with(prefix: &[u8]) -> Vec<u8> {
+        let mut header = vec![0u8; 512];
+        header[..prefix.len()].copy_from_slice(prefix);
+        header
+    }
+
+    #[test]
+    fn test_detect_format_from_header() {
+        let detect = DiskReader::detect_format_from_header;
+
+        assert_eq!(detect(&header_with(b"QFI\xfb")), DiskFormat::Qcow2);
+        assert_eq!(detect(&header_with(b"KDMV")), DiskFormat::Vmdk);
+        assert_eq!(detect(&header_with(b"COWD")), DiskFormat::Vmdk);
+        assert_eq!(
+            detect(&header_with(b"# Disk DescriptorFile\nversion=1\n")),
+            DiskFormat::Vmdk
+        );
+        assert_eq!(detect(&header_with(b"vhdxfile")), DiskFormat::Vhdx);
+        assert_eq!(detect(&header_with(b"conectix")), DiskFormat::Vhd);
+
+        let mut vdi = header_with(b"<<< Oracle VM VirtualBox Disk Image >>>\n");
+        vdi[0x40..0x44].copy_from_slice(&[0x7f, 0x10, 0xda, 0xbe]);
+        assert_eq!(detect(&vdi), DiskFormat::Vdi);
+
+        let mut mbr = vec![0u8; 512];
+        mbr[510] = 0x55;
+        mbr[511] = 0xAA;
+        assert_eq!(detect(&mbr), DiskFormat::Raw);
+        assert_eq!(detect(b"QF"), DiskFormat::Raw);
+    }
+
+    #[test]
+    fn test_detect_image_format_reads_file() {
+        let mut file = tempfile::NamedTempFile::new().unwrap();
+        std::io::Write::write_all(&mut file, &header_with(b"vhdxfile")).unwrap();
+        assert_eq!(
+            DiskReader::detect_image_format(file.path()).unwrap(),
+            DiskFormat::Vhdx
+        );
     }
 }
