@@ -1409,11 +1409,10 @@ impl Guestfs {
                 pkg_info.manager = "apk".to_string();
                 if let Ok(output) = guestfs.command(&["apk", "info", "-v"]) {
                     for line in output.lines() {
-                        // Format: package-version
-                        if let Some(pos) = line.rfind('-') {
+                        if let Some((name, version)) = split_apk_name_version(line) {
                             pkg_info.packages.push(Package {
-                                name: line[..pos].to_string(),
-                                version: line[pos + 1..].to_string(),
+                                name: name.to_string(),
+                                version: version.to_string(),
                                 manager: "apk".to_string(),
                             });
                         }
@@ -2148,4 +2147,50 @@ pub struct HostEntry {
 struct ParsedResolved {
     dns: Vec<String>,
     fallback_dns: Vec<String>,
+}
+
+/// Split one line of `apk info -v` output into package name and version.
+///
+/// apk prints `<name>-<version>-r<release>` (e.g. `busybox-1.36.1-r5`), and
+/// names may contain `-` themselves (`py3-setuptools-70.3.0-r0`), so the
+/// version is the last two `-` separated fields.
+fn split_apk_name_version(line: &str) -> Option<(&str, &str)> {
+    let line = line.trim();
+    let release_pos = line.rfind('-')?;
+    let release = &line[release_pos + 1..];
+    if let Some(digits) = release.strip_prefix('r') {
+        if !digits.is_empty() && digits.chars().all(|c| c.is_ascii_digit()) {
+            let version_pos = line[..release_pos].rfind('-')?;
+            return Some((&line[..version_pos], &line[version_pos + 1..]));
+        }
+    }
+    // No `-rN` release suffix: fall back to the last `-`.
+    Some((&line[..release_pos], release))
+}
+
+#[cfg(test)]
+mod apk_tests {
+    use super::split_apk_name_version;
+
+    #[test]
+    fn splits_name_version_and_release() {
+        assert_eq!(
+            split_apk_name_version("busybox-1.36.1-r5"),
+            Some(("busybox", "1.36.1-r5"))
+        );
+        assert_eq!(
+            split_apk_name_version("py3-setuptools-70.3.0-r0"),
+            Some(("py3-setuptools", "70.3.0-r0"))
+        );
+        assert_eq!(
+            split_apk_name_version("alpine-baselayout-3.6.5-r0"),
+            Some(("alpine-baselayout", "3.6.5-r0"))
+        );
+    }
+
+    #[test]
+    fn handles_lines_without_release_or_dash() {
+        assert_eq!(split_apk_name_version("foo-1.0"), Some(("foo", "1.0")));
+        assert_eq!(split_apk_name_version("nodash"), None);
+    }
 }
