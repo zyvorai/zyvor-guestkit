@@ -29,38 +29,65 @@ fn is_debug_enabled() -> bool {
 
 /// Cross-process exclusive lock held for the whole choose-and-connect window.
 ///
-/// Prefer `/run/lock/guestkit-nbd.lock`; fall back to `/tmp` when `/run/lock`
-/// is missing or not writable (unprivileged / container hosts).
+/// Prefer `/run/lock/guestkit-nbd.lock`; fall back to the per-user runtime
+/// directory (`$XDG_RUNTIME_DIR`, `/run/user/<uid>`). Never a world-writable
+/// predictable path such as `/tmp`: the file is opened with `O_NOFOLLOW`, mode
+/// 0600, and must be a regular file owned by the current user.
 struct NbdAllocLock {
     _file: File,
 }
 
 impl NbdAllocLock {
+    /// Ordered lock file locations (existing directories only are usable).
+    #[cfg(unix)]
+    fn lock_candidates() -> Vec<PathBuf> {
+        let mut v = vec![PathBuf::from("/run/lock/guestkit-nbd.lock")];
+        if let Some(dir) = std::env::var_os("XDG_RUNTIME_DIR") {
+            let dir = PathBuf::from(dir);
+            if dir.is_absolute() {
+                v.push(dir.join("guestkit-nbd.lock"));
+            }
+        }
+        let uid = unsafe { libc::geteuid() };
+        let run_user = PathBuf::from(format!("/run/user/{uid}/guestkit-nbd.lock"));
+        if !v.contains(&run_user) {
+            v.push(run_user);
+        }
+        v
+    }
+
+    /// Open (creating with 0600) a lock file without following symlinks, and
+    /// verify it is a regular file owned by us.
+    #[cfg(unix)]
+    fn open_lock_file(path: &Path) -> std::io::Result<File> {
+        use std::os::unix::fs::{MetadataExt, OpenOptionsExt};
+        let file = OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .read(true)
+            .write(true)
+            .mode(0o600)
+            .custom_flags(libc::O_NOFOLLOW | libc::O_CLOEXEC)
+            .open(path)?;
+        let meta = file.metadata()?;
+        if !meta.is_file() || meta.uid() != unsafe { libc::geteuid() } {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                "lock file is not a regular file owned by the current user",
+            ));
+        }
+        Ok(file)
+    }
+
     fn acquire() -> Result<Self> {
         #[cfg(unix)]
         {
             use std::os::unix::io::AsRawFd;
 
-            let candidates = [
-                Path::new("/run/lock/guestkit-nbd.lock"),
-                Path::new("/tmp/guestkit-nbd.lock"),
-            ];
             let mut last_err: Option<String> = None;
 
-            for path in candidates {
-                if let Some(parent) = path.parent() {
-                    if let Err(e) = std::fs::create_dir_all(parent) {
-                        last_err = Some(format!("create {}: {e}", parent.display()));
-                        continue;
-                    }
-                }
-                match OpenOptions::new()
-                    .create(true)
-                    .truncate(false)
-                    .read(true)
-                    .write(true)
-                    .open(path)
-                {
+            for path in Self::lock_candidates() {
+                match Self::open_lock_file(&path) {
                     Ok(file) => {
                         let rc = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX) };
                         if rc != 0 {
@@ -668,14 +695,8 @@ impl NbdDevice {
             self.device_path.display()
         );
 
-        // Kill and wait on the qemu-nbd child process if we still hold it
-        if let Some(mut child) = self.qemu_nbd_process.take() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
-
-        // Still mark as disconnected so Drop doesn't retry infinitely, but this is a real error
-        self.connected = false;
+        // Keep `connected == true` (and keep the qemu-nbd child) so that a retry,
+        // or Drop, attempts the disconnect again instead of leaking the device.
 
         // Return an error to notify caller that cleanup failed
         Err(Error::CommandFailed(format!(
@@ -768,6 +789,27 @@ mod tests {
                 eprintln!("NBD device creation failed (expected): {}", e);
             }
         }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn test_lock_file_refuses_symlink_and_is_private() {
+        use std::os::unix::fs::PermissionsExt;
+        let dir = tempfile::tempdir().unwrap();
+        let victim = dir.path().join("victim");
+        std::fs::write(&victim, b"keep").unwrap();
+        let link = dir.path().join("lock");
+        std::os::unix::fs::symlink(&victim, &link).unwrap();
+        assert!(NbdAllocLock::open_lock_file(&link).is_err());
+        assert_eq!(std::fs::read(&victim).unwrap(), b"keep");
+
+        let ok = dir.path().join("real.lock");
+        NbdAllocLock::open_lock_file(&ok).unwrap();
+        let mode = std::fs::metadata(&ok).unwrap().permissions().mode() & 0o777;
+        assert_eq!(mode, 0o600);
+        assert!(!NbdAllocLock::lock_candidates()
+            .iter()
+            .any(|p| p.starts_with("/tmp")));
     }
 
     #[test]
