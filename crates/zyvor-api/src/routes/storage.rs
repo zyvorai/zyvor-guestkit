@@ -193,14 +193,10 @@ pub async fn import_from_storage(
         .canonicalize()
         .map_err(|e| ApiError::bad_request(e.to_string()))?;
 
-    let (object_key, dest_path) = if abs_canon.starts_with(&storage_root) {
-        let key = unique_object_key(&state, filename).await?;
-        (key.clone(), storage_root.join(&key))
-    } else {
-        let id = Uuid::new_v4();
-        let key = format!("{id}.{format}");
-        (key.clone(), storage_root.join(&key))
-    };
+    let in_storage = abs_canon.starts_with(&storage_root);
+    let key_taken = in_storage && unique_object_key(&state, filename).await? != filename;
+    let object_key = pick_object_key(&storage_root, &abs_canon, filename, &format, key_taken);
+    let dest_path = storage_root.join(&object_key);
 
     if abs_canon != dest_path {
         tokio::fs::create_dir_all(&storage_root)
@@ -238,6 +234,30 @@ pub async fn import_from_storage(
         size_bytes,
         path: dest_path.display().to_string(),
     })))
+}
+
+/// Choose the object key (file name under the storage root) for an import.
+///
+/// A file already inside the storage root keeps its name only when that does
+/// not collide with a registered image or with a different file that already
+/// sits at `<storage_root>/<filename>` (the copy would silently overwrite it,
+/// e.g. importing `storage/sub/a.qcow2` over an unrelated `storage/a.qcow2`).
+fn pick_object_key(
+    storage_root: &Path,
+    abs_canon: &Path,
+    filename: &str,
+    format: &str,
+    key_taken_in_db: bool,
+) -> String {
+    let keep_name = abs_canon.starts_with(storage_root) && !key_taken_in_db && {
+        let dest = storage_root.join(filename);
+        dest == abs_canon || !dest.exists()
+    };
+    if keep_name {
+        filename.to_string()
+    } else {
+        format!("{}.{}", Uuid::new_v4(), format)
+    }
 }
 
 fn storage_roots(state: &AppState) -> Vec<StorageRoot> {
@@ -375,4 +395,37 @@ async fn load_vm(state: &AppState, id: Uuid) -> ApiResult<VmImage> {
     .await
     .map_err(|e| ApiError::internal(e.to_string()))?
     .ok_or_else(|| ApiError::not_found("VM image not found"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn import_key_does_not_overwrite_a_different_file() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().canonicalize().unwrap();
+        std::fs::create_dir_all(root.join("sub")).unwrap();
+        std::fs::write(root.join("a.qcow2"), b"other").unwrap();
+        std::fs::write(root.join("sub/a.qcow2"), b"mine").unwrap();
+
+        // Different file already at the top-level name: must get a fresh key.
+        let k = pick_object_key(&root, &root.join("sub/a.qcow2"), "a.qcow2", "qcow2", false);
+        assert_ne!(k, "a.qcow2");
+        assert!(k.ends_with(".qcow2"));
+
+        // The same file keeps its name; DB collision forces a new key.
+        assert_eq!(
+            pick_object_key(&root, &root.join("a.qcow2"), "a.qcow2", "qcow2", false),
+            "a.qcow2"
+        );
+        assert_ne!(
+            pick_object_key(&root, &root.join("a.qcow2"), "a.qcow2", "qcow2", true),
+            "a.qcow2"
+        );
+        // Outside the storage root always gets a generated key.
+        let out = tempfile::tempdir().unwrap();
+        let outside = out.path().canonicalize().unwrap().join("b.qcow2");
+        assert_ne!(pick_object_key(&root, &outside, "b.qcow2", "qcow2", false), "b.qcow2");
+    }
 }
