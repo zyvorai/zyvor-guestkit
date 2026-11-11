@@ -11,6 +11,9 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # The Fedora build containers share a small runner; an unbounded cargo build OOM-kills it
+  # ("The runner has received a shutdown signal", exit 137).
+  CARGO_BUILD_JOBS: 2
 
 # Newer pushes supersede older runs of the same branch; release tags are never cancelled.
 concurrency:
