@@ -536,6 +536,11 @@ impl NbdDevice {
     /// Wait for NBD device to become available
     fn wait_for_device(&self) -> Result<()> {
         for _i in 0..50 {
+            #[cfg(target_os = "linux")]
+            if super::loop_device::sysfs_block_size_bytes(&self.device_path).is_some_and(|b| b > 0)
+            {
+                return Ok(());
+            }
             // Try to read from device
             if std::fs::metadata(&self.device_path).is_ok() {
                 // Check if device is actually readable and has non-zero size
