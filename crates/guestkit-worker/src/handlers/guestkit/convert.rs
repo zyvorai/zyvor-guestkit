@@ -33,6 +33,32 @@ fn default_format() -> String {
 
 pub struct ConvertHandler;
 
+/// Formats accepted for `-f` / `-O`. Anything else is rejected before it is used
+/// to build the output file name (`with_extension`) or the qemu-img command line.
+const ALLOWED_FORMATS: &[&str] = &[
+    "raw",
+    "qcow2",
+    "qcow",
+    "vmdk",
+    "vdi",
+    "vhd",
+    "vpc",
+    "vhdx",
+    "qed",
+    "parallels",
+];
+
+fn check_format(label: &str, fmt: &str) -> WorkerResult<()> {
+    if ALLOWED_FORMATS.contains(&fmt.to_lowercase().as_str()) {
+        Ok(())
+    } else {
+        Err(WorkerError::ExecutionError(format!(
+            "unsupported {label} '{fmt}' (allowed: {})",
+            ALLOWED_FORMATS.join(", ")
+        )))
+    }
+}
+
 #[async_trait]
 impl OperationHandler for ConvertHandler {
     fn name(&self) -> &str {
@@ -49,6 +75,8 @@ impl OperationHandler for ConvertHandler {
         if p.image.path.is_empty() {
             return Err(WorkerError::ExecutionError("image.path is required".into()));
         }
+        check_format("image.format", &p.image.format)?;
+        check_format("target_format", &p.target_format)?;
         Ok(())
     }
 
@@ -72,8 +100,22 @@ impl OperationHandler for ConvertHandler {
             )));
         }
 
+        check_format("image.format", &p.image.format)?;
+        check_format("target_format", &p.target_format)?;
+        // Absolute, so a relative name such as "-O.img" is never parsed as an option.
+        let src = if src.is_absolute() {
+            src
+        } else {
+            std::env::current_dir().map(|d| d.join(&src)).unwrap_or(src)
+        };
         let target_fmt = p.target_format.to_lowercase();
         let out_path = src.with_extension(&target_fmt);
+        if out_path == src {
+            return Err(WorkerError::ExecutionError(format!(
+                "output would overwrite the source image: {}",
+                src.display()
+            )));
+        }
         let mut cmd = Command::new("qemu-img");
         cmd.arg("convert")
             .arg("-p")
@@ -117,5 +159,19 @@ impl OperationHandler for ConvertHandler {
                 "target_format": target_fmt,
                 "size_bytes": meta.len(),
             })))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::check_format;
+
+    #[test]
+    fn format_allowlist() {
+        assert!(check_format("t", "qcow2").is_ok());
+        assert!(check_format("t", "RAW").is_ok());
+        assert!(check_format("t", "../../etc/x").is_err());
+        assert!(check_format("t", "-o").is_err());
+        assert!(check_format("t", "").is_err());
     }
 }
