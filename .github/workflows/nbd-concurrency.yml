@@ -28,6 +28,11 @@ env:
 permissions:
   contents: read
 
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   nbd-concurrency-unit:
     name: NBD alloc lock (unit)
