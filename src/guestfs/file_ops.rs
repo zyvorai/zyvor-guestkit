@@ -57,53 +57,15 @@ impl Guestfs {
         // 2. Find root mount
         let root_mountpoint = self.find_root_mountpoint()?;
 
-        // 3. Build candidate path
-        let guest_path_clean = guest_path.trim_start_matches('/');
-        let candidate_path = PathBuf::from(root_mountpoint).join(guest_path_clean);
-
-        // 4. Canonicalize path to resolve symlinks and get absolute path
-        // Note: canonicalize() requires the path to exist, so we handle
-        // non-existent paths by canonicalizing the parent and appending the filename.
-        let canonical = match candidate_path.canonicalize() {
-            Ok(p) => p,
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                // Path doesn't exist yet (e.g., write(), mkdir(), touch() for new files).
-                // Try canonicalizing the parent directory and appending the filename.
-                if let (Some(parent), Some(file_name)) =
-                    (candidate_path.parent(), candidate_path.file_name())
-                {
-                    match parent.canonicalize() {
-                        Ok(canonical_parent) => canonical_parent.join(file_name),
-                        Err(_) => {
-                            // Parent also doesn't exist; use the constructed path directly.
-                            // This allows mkdir_p to create deeply nested directories.
-                            candidate_path.clone()
-                        }
-                    }
-                } else {
-                    return Err(Error::NotFound(format!(
-                        "Path does not exist: {}",
-                        guest_path
-                    )));
-                }
-            }
-            Err(e) => return Err(Error::Io(e)),
-        };
-
-        // 5. Get canonical root for security check
+        // 3. Resolve inside the guest root. Symlinks are followed relative to the
+        // guest's "/", never the host's: an absolute guest symlink such as
+        // /etc/mtab -> /proc/self/mounts must not be re-evaluated against the host
+        // (it either failed spuriously, or, for a dangling link, let write()
+        // escape to a host path).
         let root_canonical = PathBuf::from(root_mountpoint).canonicalize().map_err(|e| {
             Error::InvalidState(format!("Failed to canonicalize mount root: {}", e))
         })?;
-
-        // 6. Security check: ensure resolved path is within guest root
-        if !canonical.starts_with(&root_canonical) {
-            return Err(Error::InvalidOperation(format!(
-                "Path '{}' escapes guest root (symlink attack or path traversal)",
-                guest_path
-            )));
-        }
-
-        Ok(canonical)
+        resolve_in_root(&root_canonical, guest_path)
     }
 
     /// Check if path is a file
@@ -937,6 +899,72 @@ impl Guestfs {
     }
 }
 
+/// Resolve `guest_path` to a host path under `root`, following symlinks as a
+/// `chroot(root)` would: absolute targets restart at `root`, `..` never climbs
+/// above `root`. Components that do not exist yet (write/mkdir targets) are
+/// appended lexically. The result never traverses a symlink that exists now.
+pub(crate) fn resolve_in_root(root: &Path, guest_path: &str) -> Result<PathBuf> {
+    use std::collections::VecDeque;
+    use std::ffi::OsString;
+    use std::path::Component;
+
+    const MAX_SYMLINK_HOPS: u32 = 40;
+
+    fn components(p: &Path) -> VecDeque<OsString> {
+        p.components()
+            .filter_map(|c| match c {
+                Component::Normal(n) => Some(n.to_os_string()),
+                Component::ParentDir => Some(OsString::from("..")),
+                _ => None,
+            })
+            .collect()
+    }
+
+    let mut pending = components(Path::new(guest_path));
+    let mut stack: Vec<OsString> = Vec::new();
+    let mut hops = 0;
+    let mut exists = true;
+
+    while let Some(name) = pending.pop_front() {
+        if name == ".." {
+            stack.pop();
+            continue;
+        }
+        if exists {
+            let mut candidate = root.to_path_buf();
+            candidate.extend(&stack);
+            candidate.push(&name);
+            match fs::symlink_metadata(&candidate) {
+                Ok(meta) if meta.file_type().is_symlink() => {
+                    hops += 1;
+                    if hops > MAX_SYMLINK_HOPS {
+                        return Err(Error::InvalidOperation(format!(
+                            "Too many levels of symbolic links: {}",
+                            guest_path
+                        )));
+                    }
+                    let target = fs::read_link(&candidate).map_err(Error::Io)?;
+                    if target.is_absolute() {
+                        stack.clear();
+                    }
+                    let mut head = components(&target);
+                    head.append(&mut pending);
+                    pending = head;
+                    continue;
+                }
+                Ok(_) => {}
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => exists = false,
+                Err(e) => return Err(Error::Io(e)),
+            }
+        }
+        stack.push(name);
+    }
+
+    let mut out = root.to_path_buf();
+    out.extend(&stack);
+    Ok(out)
+}
+
 /// Does `guest_path` exist inside the guest rooted at `root`?
 ///
 /// Symlinks are resolved as the guest would: absolute targets restart at `root`
@@ -1031,5 +1059,65 @@ mod tests {
         assert!(!guest_path_exists(root, "/bin/dangling"));
         assert!(!guest_path_exists(root, "/bin/loop"));
         assert!(!guest_path_exists(root, "/etc/missing"));
+    }
+
+    #[test]
+    fn resolve_in_root_confines_symlinks_to_the_guest() {
+        use std::os::unix::fs::symlink;
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("root");
+        let outside = dir.path().join("outside");
+        fs::create_dir_all(root.join("etc")).unwrap();
+        fs::create_dir_all(root.join("usr/lib")).unwrap();
+        fs::create_dir_all(&outside).unwrap();
+        fs::write(root.join("usr/lib/os-release"), b"ID=x\n").unwrap();
+        // absolute symlink to a guest file: must resolve inside the guest
+        symlink("/usr/lib/os-release", root.join("etc/os-release")).unwrap();
+        // dangling absolute symlink to a host-side location
+        let host_target = outside.join("new.txt");
+        symlink(&host_target, root.join("etc/evil")).unwrap();
+        // relative escape
+        symlink("../../../../../..", root.join("etc/up")).unwrap();
+
+        let r = resolve_in_root(&root, "/etc/os-release").unwrap();
+        assert_eq!(r, root.join("usr/lib/os-release"));
+
+        let r = resolve_in_root(&root, "/etc/evil").unwrap();
+        assert!(r.starts_with(&root), "escaped to {}", r.display());
+        let r = resolve_in_root(&root, "/etc/up/outside/new.txt").unwrap();
+        assert!(r.starts_with(&root), "escaped to {}", r.display());
+        // non-existent suffix is appended
+        let r = resolve_in_root(&root, "/etc/a/b/c").unwrap();
+        assert_eq!(r, root.join("etc/a/b/c"));
+        // loop
+        symlink("/etc/loop", root.join("etc/loop")).unwrap();
+        assert!(resolve_in_root(&root, "/etc/loop").is_err());
+    }
+
+    #[test]
+    fn write_through_dangling_absolute_symlink_stays_in_guest() {
+        use crate::guestfs::handle::GuestfsState;
+        use std::os::unix::fs::symlink;
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("root");
+        let outside = dir.path().join("outside");
+        fs::create_dir_all(root.join("etc")).unwrap();
+        fs::create_dir_all(&outside).unwrap();
+        let host_target = outside.join("pwned.txt");
+        symlink(&host_target, root.join("etc/evil")).unwrap();
+
+        let mut g = Guestfs::new().unwrap();
+        g.state = GuestfsState::Ready;
+        g.mount_root = Some(root.clone());
+        g.mounted
+            .insert("/dev/fake1".into(), root.to_string_lossy().into_owned());
+        let res = g.write("/etc/evil", b"x");
+        let leaked = host_target.exists();
+        // detach fake state so Drop does not try to unmount
+        g.mounted.clear();
+        g.mount_root = None;
+        g.state = GuestfsState::Config;
+        assert!(!leaked, "write() followed a guest symlink onto the host");
+        let _ = res;
     }
 }

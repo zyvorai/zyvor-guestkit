@@ -69,7 +69,9 @@ impl PathValidator {
         }
 
         // Check for path traversal attempts
-        if path.contains("..") {
+        // Only a whole ".." component is traversal; names such as "a..b" or
+        // "backup..tar" are ordinary file names.
+        if path.split('/').any(|c| c == "..") {
             return Err(Error::InvalidOperation(format!(
                 "Path contains '..' (path traversal attack): {}",
                 path
@@ -180,6 +182,10 @@ mod tests {
         assert!(PathValidator::validate_fs_path("/etc/passwd").is_ok());
         assert!(PathValidator::validate_fs_path("/home/user/file.txt").is_ok());
         assert!(PathValidator::validate_fs_path("relative/path").is_ok());
+        // ".." inside a file name is not traversal
+        assert!(PathValidator::validate_fs_path("/var/log/app..log").is_ok());
+        assert!(PathValidator::validate_fs_path("/a/..b/c..").is_ok());
+        assert!(PathValidator::validate_fs_path("/a/..").is_err());
     }
 
     #[test]
