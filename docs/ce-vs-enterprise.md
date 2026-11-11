@@ -5,7 +5,7 @@
 
 Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) · [Book a demo](https://zyvor.dev/schedule?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) · [sales@zyvor.dev](mailto:sales@zyvor.dev)
 
-**30-day Enterprise trial (binary):** [latest trial release](https://github.com/zyvorai/guestkit/releases?q=enterprise-trial) · [install guide](enterprise-trial-install.md)
+**30-day Enterprise trial (binary):** [latest trial release](https://github.com/zyvorai/zyvor-guestkit/releases?q=enterprise-trial) · [install guide](enterprise-trial-install.md)
 
 ---
 

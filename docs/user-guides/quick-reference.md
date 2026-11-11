@@ -8,7 +8,6 @@ guestkit inspect disk.qcow2
 
 # Verbose mode (detailed logging)
 guestkit inspect disk.qcow2 --verbose
-guestkit inspect disk.qcow2 -v
 ```
 
 ## 📋 What Gets Inspected
@@ -147,7 +146,7 @@ Config: `~/.config/guestkit/tui.toml` — `default_migration_target`, `assurance
 guestkit inspect vm-disk.qcow2
 
 # Inspect with verbose logging
-guestkit inspect vm-disk.qcow2 -v 2>verbose.log
+guestkit inspect vm-disk.qcow2 --verbose 2>verbose.log
 
 # Inspect a RAW disk
 guestkit inspect disk.img
@@ -156,7 +155,7 @@ guestkit inspect disk.img
 guestkit inspect disk.qcow2 > inspection-report.txt
 
 # Inspect with verbose to separate files
-guestkit inspect disk.qcow2 -v >report.txt 2>debug.log
+guestkit inspect disk.qcow2 --verbose >report.txt 2>debug.log
 ```
 
 ## 📊 Sample Output Sections
@@ -210,7 +209,7 @@ guestkit inspect disk.qcow2 -v >report.txt 2>debug.log
 ## 🔍 Verbose Output Examples
 
 ```bash
-$ guestkit inspect disk.qcow2 -v
+$ guestkit inspect disk.qcow2 --verbose
 
 [VERBOSE] Adding drive: disk.qcow2
 [VERBOSE] Launching QEMU appliance...
@@ -270,10 +269,10 @@ guestkit inspect disk.qcow2 | grep -A 20 "Systemd Services"
 ### 4. Debugging Issues
 ```bash
 # Full verbose output for troubleshooting
-guestkit inspect problematic.qcow2 -v 2>&1 | tee full-debug.log
+guestkit inspect problematic.qcow2 --verbose 2>&1 | tee full-debug.log
 
 # Check what failed
-guestkit inspect disk.qcow2 -v 2>&1 | grep -i "error\|failed"
+guestkit inspect disk.qcow2 --verbose 2>&1 | grep -i "error\|failed"
 ```
 
 ### 5. Automation

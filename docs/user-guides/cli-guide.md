@@ -1,4 +1,4 @@
-# CLI reference (v1.2.6)
+# CLI reference (v1.2.10)
 
 `guestkit` and `guestctl` share the same command surface. The separate
 **`guestkit-qemu`** binary plans and launches QEMU from the same assurance
@@ -72,7 +72,7 @@ Details: [fix-plans.md](../features/fix-plans.md), [cloud-disk-sources.md](../gu
 
 ## Disk formats
 
-QCOW2, VMDK, VDI, VHD, RAW, IMG — auto-detected. RAW/IMG often use loop devices; QCOW2/VMDK use NBD. Use **`--trace`** to see which path is used.
+QCOW2, VMDK, VDI, VHD, VHDX, RAW, IMG — detected from the file header (not the extension; v1.2.10 added VHDX, VDI, dynamic VHD and VMDK descriptor images). RAW/IMG/ISO use loop devices; the other formats use `qemu-nbd` and the `nbd` kernel module. Use **`--debug`** to see which path is used. Attaching a disk needs root (GuestKit uses `sudo` when it is not root); on Ubuntu 26.04 the device nodes are `root:disk 0660`, see [Prerequisites](../prerequisites-and-build.md#device-node-permissions-ubuntu-2604-and-other-recent-kernels).
 
 ## JSON output
 

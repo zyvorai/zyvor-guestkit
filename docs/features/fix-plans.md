@@ -77,7 +77,7 @@ Migration repair and plan apply can inject Windows VirtIO drivers when the host 
 
 ```bash
 export GUESTKIT_VIRTIO_WIN=/mnt/virtio-win   # extracted ISO or layout
-guestkit migrate-repair win.qcow2 --target kvm --apply --yes
+guestkit migrate-repair win.qcow2 --target kvm --apply
 # equivalent: --virtio-win /mnt/virtio-win
 ```
 
@@ -521,7 +521,7 @@ Rollback: Available for all operations
 ### 1. **Security Hardening**
 ```bash
 # Generate security fixes
-guestkit profile security prod-web.qcow2 --plan security.yaml
+guestkit plan generate prod-web.qcow2 --profile security --output security.yaml
 
 # Review and approve
 guestkit plan preview security.yaml
@@ -536,7 +536,7 @@ guestkit plan apply security.yaml --backup /backups/
 ### 2. **Fleet Management**
 ```bash
 # Generate plan from one VM
-guestkit profile security template.qcow2 --plan fleet-security.yaml
+guestkit plan generate template.qcow2 --profile security --output fleet-security.yaml
 
 # Export to Ansible
 guestkit plan export fleet-security.yaml --format ansible > fleet.yml
@@ -548,7 +548,7 @@ ansible-playbook -i inventory fleet.yml
 ### 3. **Compliance Automation**
 ```bash
 # Generate compliance fixes
-guestkit profile compliance vm.qcow2 --plan compliance.yaml
+guestkit plan generate vm.qcow2 --profile security --output compliance.yaml
 
 # Store in version control
 git add compliance.yaml
@@ -564,7 +564,7 @@ guestkit plan apply compliance.yaml
 ### 4. **Migration Preparation**
 ```bash
 # Generate migration fixes
-guestkit profile migration hyperv-vm.vhdx --plan migration.yaml
+guestkit migrate-plan hyperv-vm.vhdx --target kvm --export migration.yaml
 
 # Preview changes
 guestkit plan preview migration.yaml
