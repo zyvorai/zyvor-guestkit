@@ -11,6 +11,14 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # The Fedora build containers share a small runner; an unbounded cargo build OOM-kills it
+  # ("The runner has received a shutdown signal", exit 137).
+  CARGO_BUILD_JOBS: 2
+  # guestctl links with fat LTO and one codegen unit (Cargo.toml [profile.release]); rustc needs more memory
+  # for that than the 7 GB runner has. Branch and pull request builds use thin LTO; tag builds keep the
+  # shipped profile exactly.
+  CARGO_PROFILE_RELEASE_LTO: ${{ startsWith(github.ref, 'refs/tags/') && 'true' || 'thin' }}
+  CARGO_PROFILE_RELEASE_CODEGEN_UNITS: ${{ startsWith(github.ref, 'refs/tags/') && '1' || '4' }}
 
 # Newer pushes supersede older runs of the same branch; release tags are never cancelled.
 concurrency:

@@ -381,16 +381,15 @@ pub fn filesystem_mounts_normalized() -> Result<Value, String> {
                 .get("avail-bytes")
                 .and_then(|v| v.as_u64())
                 .unwrap_or(total.saturating_sub(used));
+            let computed_percent = if total > 0 {
+                (used as f64 / total as f64) * 100.0
+            } else {
+                0.0
+            };
             let use_percent = entry
                 .get("use-percent")
                 .and_then(|v| v.as_f64())
-                .unwrap_or_else(|| {
-                    if total > 0 {
-                        (used as f64 / total as f64) * 100.0
-                    } else {
-                        0.0
-                    }
-                });
+                .unwrap_or(computed_percent);
             mounts.push(json!({
                 "mount": mountpoint,
                 "filesystem": entry.get("name").and_then(|v| v.as_str()),

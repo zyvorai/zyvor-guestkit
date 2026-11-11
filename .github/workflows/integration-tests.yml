@@ -64,7 +64,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            qemu-kvm \
+            qemu-system-x86 \
             qemu-utils \
             libvirt-daemon-system \
             libvirt-clients \
@@ -76,6 +76,11 @@ jobs:
         run: |
           sudo modprobe loop || true
           sudo modprobe nbd max_part=8 || true
+          # Ubuntu 26.04 creates /dev/loopN and /dev/nbdN on demand (they are not all pre-created at boot), so the
+          # chmod above misses every node created later and the unprivileged test process gets EACCES. A udev rule
+          # applies the mode to nodes as they appear.
+          printf 'KERNEL=="loop[0-9]*", MODE="0666"\nKERNEL=="nbd[0-9]*", MODE="0666"\n' | sudo tee /etc/udev/rules.d/99-guestkit-test-devices.rules >/dev/null
+          sudo udevadm control --reload-rules
           ls -la /dev/loop* /dev/nbd* 2>/dev/null || true
 
       - name: Setup KVM permissions
@@ -269,6 +274,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
           sudo modprobe nbd max_part=8 || true
+          # Ubuntu 26.04 creates /dev/loopN and /dev/nbdN on demand (they are not all pre-created at boot), so the
+          # chmod above misses every node created later and the unprivileged test process gets EACCES. A udev rule
+          # applies the mode to nodes as they appear.
+          printf 'KERNEL=="loop[0-9]*", MODE="0666"\nKERNEL=="nbd[0-9]*", MODE="0666"\n' | sudo tee /etc/udev/rules.d/99-guestkit-test-devices.rules >/dev/null
+          sudo udevadm control --reload-rules
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

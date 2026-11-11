@@ -989,7 +989,7 @@ pub(crate) fn guest_path_exists(root: &Path, guest_path: &str) -> bool {
                     _ => None,
                 })
                 .collect();
-            head.extend(pending.drain(..));
+            head.append(&mut pending);
             pending = head;
         } else {
             stack.push(name);
