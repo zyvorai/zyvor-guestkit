@@ -327,6 +327,21 @@ impl Drop for LoopDevice {
     }
 }
 
+/// Size in bytes of a block device read from sysfs (`/sys/class/block/<name>/size`,
+/// 512-byte sectors). World-readable, so it works when the device node itself is
+/// `root:disk 0660` and the caller is unprivileged (a loop or NBD device attached
+/// through `sudo`). Returns `None` when it cannot be read.
+#[cfg(target_os = "linux")]
+pub(crate) fn sysfs_block_size_bytes(device: &std::path::Path) -> Option<u64> {
+    let name = device.file_name()?.to_str()?;
+    let sectors: u64 = std::fs::read_to_string(format!("/sys/class/block/{name}/size"))
+        .ok()?
+        .trim()
+        .parse()
+        .ok()?;
+    Some(sectors * 512)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -395,19 +410,4 @@ mod tests {
         assert!(loop_dev.device_path().is_none());
         assert!(!loop_dev.direct_io);
     }
-}
-
-/// Size in bytes of a block device read from sysfs (`/sys/class/block/<name>/size`,
-/// 512-byte sectors). World-readable, so it works when the device node itself is
-/// `root:disk 0660` and the caller is unprivileged (a loop or NBD device attached
-/// through `sudo`). Returns `None` when it cannot be read.
-#[cfg(target_os = "linux")]
-pub(crate) fn sysfs_block_size_bytes(device: &std::path::Path) -> Option<u64> {
-    let name = device.file_name()?.to_str()?;
-    let sectors: u64 = std::fs::read_to_string(format!("/sys/class/block/{name}/size"))
-        .ok()?
-        .trim()
-        .parse()
-        .ok()?;
-    Some(sectors * 512)
 }
