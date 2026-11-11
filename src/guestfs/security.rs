@@ -125,11 +125,7 @@ impl Guestfs {
         let _host_path = self.resolve_guest_path(path)?;
 
         let mut cmd = Command::new("chroot");
-        let root_mountpoint = self
-            .mounted
-            .values()
-            .next()
-            .ok_or_else(|| Error::InvalidState("No filesystem mounted".to_string()))?;
+        let root_mountpoint = self.find_root_mountpoint()?;
 
         cmd.arg(root_mountpoint);
         cmd.arg("restorecon");
