@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **`glob_expand`, `grub_update`, `selinux_relabel`** — no longer pick an arbitrary mount (`HashMap` order); they use the guest root mount like the other file operations. `glob_expand` now always resolves patterns against the guest root (never the host cwd), rejects `..`, drops hits that escape the root via symlinked directories, and returns guest paths instead of host paths.
+- **NBD allocation lock** — no longer falls back to the predictable `/tmp/guestkit-nbd.lock`. It uses `/run/lock`, then `$XDG_RUNTIME_DIR` / `/run/user/<uid>`, opened with `O_NOFOLLOW`, mode 0600, and must be a regular file owned by the caller; failure is reported as an error.
+- **`NbdDevice::disconnect`** — when the device stays busy it now keeps `connected` set (and the qemu-nbd child), so a retry or `Drop` attempts the disconnect again instead of leaking the device.
+- **Job ids** — `JobValidator` rejects job ids that are not a single safe path component (`../`, `/`, leading `.`, >128 chars); the file transport also refuses them in `ack_job`/`nack_job`. Job ids were used to build spool/result file names.
+- **`zyvor-api` storage import** — importing a file from a subdirectory of the storage root no longer overwrites an unrelated file already stored under the same name.
+
 ## [1.2.10] - 2026-11-11
 
 ### Fixed
