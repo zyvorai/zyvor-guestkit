@@ -360,7 +360,8 @@ impl NbdDevice {
             ));
         }
 
-        let image_path = image_path.as_ref();
+        let image_path = super::absolute_path(image_path.as_ref());
+        let image_path = image_path.as_path();
         if !image_path.exists() {
             return Err(Error::NotFound(format!(
                 "Image file does not exist: {}",
@@ -375,6 +376,16 @@ impl NbdDevice {
         let mut last_err: Option<Error> = None;
 
         for device in candidates {
+            // A device that flipped to in-use between the scan and now belongs to
+            // someone else: skip it WITHOUT cleanup_failed_connect(), which would
+            // run `qemu-nbd --disconnect` on their device.
+            if Self::is_nbd_device_in_use(&device) {
+                last_err = Some(Error::InvalidState(format!(
+                    "NBD device {} became busy before connect",
+                    device.display()
+                )));
+                continue;
+            }
             self.device_path = device;
             match self.connect_one(image_path, read_only, &format) {
                 Ok(()) => {
@@ -404,16 +415,7 @@ impl NbdDevice {
     /// Spawn qemu-nbd against `self.device_path` and wait until the device is ready.
     /// Caller must hold [`NbdAllocLock`] and have set `self.device_path` to a free device.
     fn connect_one(&mut self, image_path: &Path, read_only: bool, format: &str) -> Result<()> {
-        // Under the alloc lock we only select devices that looked free. If one
-        // flipped to in-use (external qemu-nbd, not guestkit), skip — do not
-        // qemu-nbd --disconnect another owner's device.
-        if Self::is_nbd_device_in_use(&self.device_path) {
-            return Err(Error::InvalidState(format!(
-                "NBD device {} became busy before connect",
-                self.device_path.display()
-            )));
-        }
-
+        // (Busy devices are skipped by the caller before this point.)
         let need_sudo = crate::guestfs::mount::need_sudo();
         if is_debug_enabled() {
             eprintln!(

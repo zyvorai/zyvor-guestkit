@@ -94,7 +94,8 @@ impl LoopDevice {
             ));
         }
 
-        let image_path = image_path.as_ref();
+        let image_path = super::absolute_path(image_path.as_ref());
+        let image_path = image_path.as_path();
         if !image_path.exists() {
             return Err(Error::NotFound(format!(
                 "Image file does not exist: {}",
@@ -147,16 +148,19 @@ impl LoopDevice {
         let device_str = String::from_utf8_lossy(&output.stdout);
         let device_path = PathBuf::from(device_str.trim());
 
+        // Record the attached device before any further check so that Drop /
+        // disconnect() detaches it on every later error path (no leaked /dev/loopN).
+        self.device_path = Some(device_path.clone());
+        self.image_path = image_path.to_path_buf();
+        self.connected = true;
+
         if !device_path.exists() {
+            let _ = self.disconnect();
             return Err(Error::CommandFailed(format!(
                 "Loop device was not created: {}",
                 device_path.display()
             )));
         }
-
-        self.device_path = Some(device_path);
-        self.image_path = image_path.to_path_buf();
-        self.connected = true;
 
         // Wait for device to be ready
         self.wait_for_device()?;
