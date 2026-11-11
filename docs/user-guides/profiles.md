@@ -382,10 +382,10 @@ guestkit inspect vm.qcow2 --profile migration --export markdown --export-output 
 
 ```bash
 # This will warn and skip profile
-guestkit inspect vm.qcow2 --profile security --cache
+guestkit inspect vm.qcow2 --profile security
 
-# Use --cache-refresh to run profile with caching
-guestkit inspect vm.qcow2 --profile security --cache --cache-refresh
+# Caching is on by default; --cache-refresh ignores cached results
+guestkit inspect vm.qcow2 --profile security --cache-refresh
 ```
 
 ## Output Formats

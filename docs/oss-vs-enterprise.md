@@ -42,7 +42,7 @@
 
 Try the control plane before you buy:
 
-1. Download the **trial** asset from [GitHub Releases](https://github.com/zyvorai/guestkit/releases?q=enterprise-trial) (`guestkit-enterprise-*-trial-linux-amd64.tar.gz`)
+1. Download the **trial** asset from [GitHub Releases](https://github.com/zyvorai/zyvor-guestkit/releases?q=enterprise-trial) (`guestkit-enterprise-*-trial-linux-amd64.tar.gz`)
 2. Verify the `.sha256`, extract, run `./install.sh`
 3. Keep bundled `trial.token` next to the install — after 30 days [book a demo](https://zyvor.dev/schedule?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) or [start a 30-day PoC](https://zyvor.dev/poc?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) (email **sales@zyvor.dev** works too)
 

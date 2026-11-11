@@ -4,6 +4,8 @@ High-level direction for GuestKit / GuestCtl. Full release notes are in [CHANGEL
 
 ## Shipped (recent)
 
+- **v1.2.10** — Ubuntu 26.04 (kernel 7.x) loop/NBD readiness via sysfs, VHDX/VDI/VHD/VMDK detection, apk version split, nine RustSec advisories cleared.
+- **v1.2.7 to v1.2.9** — Release and image-build pipeline fixes (crates.io publish order, GHCR/MCP Registry jobs, `zyvor-api` Dockerfile).
 - **v1.2.6** — Agent: per-container eBPF network policy and BPF-LSM controls. `guestkit mcp-serve` packaged for the MCP Registry (OCI). `exists()` follows guest symlinks. ratatui 0.30 (drops the `lru` advisory).
 - **v1.2.5** — Agent: freeze/thaw go through the privileged helper (online snapshots of PVC-backed VMs no longer fail), udev rule for the virtio channel, NBD allocate+connect lock, offline inject on `run_migrate_repair`.
 - **v1.2.4** — Docs: GitHub Release install, `zyvor-guestkit` on PyPI, GHCR pins, serial console without `grubby`.

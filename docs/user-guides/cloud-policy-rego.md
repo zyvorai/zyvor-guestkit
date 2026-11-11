@@ -4,7 +4,7 @@
 
 ```bash
 guestkit cloud-profile aws
-guestkit cloud-profile azure -o azure-policy.yaml
+guestkit cloud-profile azure --export azure-policy.yaml
 guestkit cloud-profile gcp --image disk.qcow2 --strict
 guestkit policy check disk.qcow2 -b aws --strict
 ```

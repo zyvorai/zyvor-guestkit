@@ -89,8 +89,8 @@ rpmbuild -ba --without python SPECS/guestkit-full.spec
 
 ```bash
 # Download release tarball
-wget https://github.com/zyvorai/guestkit/archive/v1.2.6/guestkit-1.2.6.tar.gz \
-     -O ~/rpmbuild/SOURCES/guestkit-1.2.6.tar.gz
+wget https://github.com/zyvorai/zyvor-guestkit/archive/v1.2.10/guestkit-1.2.10.tar.gz \
+     -O ~/rpmbuild/SOURCES/guestkit-1.2.10.tar.gz
 
 # Copy spec file
 cp guestkit.spec ~/rpmbuild/SPECS/

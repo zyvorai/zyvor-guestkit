@@ -3,8 +3,8 @@
 > Part of the [GuestKit README](../README.md). Back to the [documentation map](documentation-map.md).
 
 ```bash
-# v1.2.6 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/guestkit/releases/download/v1.2.6/guestkit-1.2.6-linux-amd64.tar.gz
+# v1.2.10 GitHub Release — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
@@ -29,7 +29,7 @@ guestkit shrink disk.qcow2 --min-ratio 3 --headroom-pct 20
 
 Targets: `kvm` · `proxmox` · `qemu` · `kubevirt` · `aws` · `azure` · `gcp` · `hyperv`
 
-Host needs: Linux with `qemu-img`, `losetup`, and `qemu-nbd` (mount/repair may need root).
+Host needs: Linux with `qemu-img`, `losetup` and `qemu-nbd` (Debian/Ubuntu `qemu-utils`), plus the `loop` and `nbd` kernel modules. Attaching and mounting a disk needs root (run as root, or GuestKit uses `sudo`). On Ubuntu 26.04 device nodes are created on demand and are `root:disk 0660`; see [device-node permissions](prerequisites-and-build.md#device-node-permissions-ubuntu-2604-and-other-recent-kernels).
 
 ## Python (v1.1.0+)
 

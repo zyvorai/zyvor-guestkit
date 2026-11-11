@@ -32,6 +32,7 @@
 
 | Release | What changed |
 |---|---|
+| **1.2.10** | Disk access works on Ubuntu 26.04 (loop and NBD readiness is read from sysfs, so `root:disk 0660` device nodes no longer time out); VHDX, VDI, VHD and VMDK images are detected; nine RustSec advisories cleared |
 | **Agent (1.2.6)** | Per-container eBPF network policy and BPF-LSM controls in the guest agent (`guestkit.netpolicy` / `guestkit.lsm`), off by default, audit first, enforce only under a time-bound lease |
 | **1.2.5** | Offline inject on `run_migrate_repair`: hostname, network, users, services, first-boot scripts, cloud-init, AD rejoin, Windows KMS and RDP, appended to the repair plan |
 | **1.2.5** | Online snapshots freeze the filesystem through the privileged helper, so KubeVirt snapshots of PVC-backed VMs work with the unprivileged agent |
@@ -187,8 +188,8 @@ Architecture in depth: [docs/architecture/overview.md](docs/architecture/overvie
 ## Quickstart
 
 ```bash
-# v1.2.6 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.6/guestkit-1.2.6-linux-amd64.tar.gz
+# v1.2.10 GitHub Release — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
@@ -207,7 +208,7 @@ guestkit-qemu plan vm.qcow2 --json   # assurance → QEMU definition
     fail-below: '80'
 ```
 
-Targets: `kvm` · `proxmox` · `qemu` · `kubevirt` · `aws` · `azure` · `gcp` · `hyperv`. Host needs: Linux with `qemu-img`, `losetup`, and `qemu-nbd` (mount/repair may need root).
+Targets: `kvm` · `proxmox` · `qemu` · `kubevirt` · `aws` · `azure` · `gcp` · `hyperv`. Host needs: Linux with `qemu-img`, `losetup` and `qemu-nbd` (Debian/Ubuntu `qemu-utils`), plus the `loop` and `nbd` kernel modules. Attaching and mounting a disk needs root: run as root, or GuestKit calls `sudo` for `losetup`, `qemu-nbd`, `modprobe`, `mount` and `umount`. On Ubuntu 26.04 the `/dev/loopN` and `/dev/nbdN` nodes are created on demand and are `root:disk 0660`, so unprivileged reads need `sudo`, the `disk` group or a udev rule: see [Prerequisites](docs/prerequisites-and-build.md#device-node-permissions-ubuntu-2604-and-other-recent-kernels).
 
 Python (v1.1.0+), on **[PyPI](https://pypi.org/project/zyvor-guestkit/)**: `pip install zyvor-guestkit`, then `guestkit.run_doctor("vm.qcow2", target="kvm", explain=True)`. The full quick start, shrink and Python examples: [docs/quick-start.md](docs/quick-start.md).
 
@@ -258,7 +259,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Maturity
 
-GuestKit is at **v1.2.6** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
+GuestKit is at **v1.2.10** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
 
 | Area | Status |
 |---|---|

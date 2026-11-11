@@ -29,7 +29,7 @@ guestkit vm define demo disk.qcow2 --memory-mb 4096 --vcpus 2
 guestkit vm start demo && guestkit vm status demo
 guestkit img check disk.qcow2 --repair
 guestkit domain-disks /etc/libvirt/qemu/web01.xml
-guestkit firstboot win.qcow2 --hostname web01 --run 'echo hi'
+guestkit firstboot win.qcow2 --target kvm --socket /run/qga.sock
 guestkit gate --image disk.qcow2 --fail-below 80 --rego policies/cutover.rego
 guestkit sbom-diff before.spdx.json after.spdx.json --fail-on-drift
 virtctl-guestkit guestfs -n ns pvc

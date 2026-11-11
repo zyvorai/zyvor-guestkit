@@ -62,15 +62,15 @@ guestkit requires elevated privileges for:
 **Exception:** Read-only operations with cached results don't need sudo:
 ```bash
 # First run needs sudo
-sudo guestkit inspect vm.qcow2 --cache
+sudo guestkit inspect vm.qcow2
 
 # Subsequent runs from cache (no sudo!)
-guestkit inspect vm.qcow2 --cache
+guestkit inspect vm.qcow2
 ```
 
 ### Is guestkit production-ready?
 
-**Yes.** GuestKit v1.2.6 is production-ready with:
+**Yes.** GuestKit v1.2.10 is production-ready with:
 - Python assurance bindings (`run_doctor`, `run_migrate_repair`, optional `inject_json`) for h2kvm integration
 - Comprehensive test suite with CI/CD
 - Used in [h2kvm](https://github.com/zyvorai/h2kvm) for production VM migrations
@@ -97,11 +97,11 @@ Never modify a disk image while the VM is running. This will cause:
 
 ### How do I install guestkit?
 
-**Current CLI (v1.2.6)** — GitHub Release. `cargo install guestkit` still installs crates.io **0.3.2**, which is not this release.
+**Current CLI (v1.2.10)** — GitHub Release. `cargo install guestkit` still installs crates.io **0.3.2**, which is not this release.
 
 ```bash
-curl -fsSL -o guestkit-1.2.6-linux-amd64.tar.gz \
-  https://github.com/zyvorai/guestkit/releases/download/v1.2.6/guestkit-1.2.6-linux-amd64.tar.gz
+curl -fsSL -o guestkit-1.2.10-linux-amd64.tar.gz \
+  https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
 ```
 
 **From source:**
@@ -182,7 +182,7 @@ sudo guestkit inspect vm.qcow2
 sudo guestkit inspect vm.qcow2 --output json
 
 # With caching for speed
-sudo guestkit inspect vm.qcow2 --cache
+sudo guestkit inspect vm.qcow2
 ```
 
 ### Can I inspect Windows VMs?
@@ -261,7 +261,7 @@ Matching `.rpm`/`.deb` files are copied into the guest and a first-boot systemd 
 **Solutions:**
 1. **Use caching:**
    ```bash
-   sudo guestkit inspect vm.qcow2 --cache  # First run slow, subsequent fast
+   sudo guestkit inspect vm.qcow2  # First run slow, subsequent fast
    ```
 
 2. **Convert to RAW:**
@@ -431,10 +431,10 @@ virt-win-reg windows.qcow2 --merge virtio.reg
 
 ```bash
 # First run: ~30 seconds (full inspection)
-sudo guestkit inspect vm.qcow2 --cache
+sudo guestkit inspect vm.qcow2
 
 # Second run: <0.5 seconds (from cache)
-sudo guestkit inspect vm.qcow2 --cache
+sudo guestkit inspect vm.qcow2
 
 # Cache is invalidated if VM file changes
 ```
@@ -447,10 +447,10 @@ sudo guestkit inspect vm.qcow2 --cache
 
 ```bash
 # Inspect 8 VMs in parallel (4 workers)
-sudo guestkit inspect-batch vm*.qcow2 --parallel 4 --cache
+sudo guestkit inspect-batch vm*.qcow2 --parallel 4
 
 # With progress bar
-sudo guestkit inspect-batch vm*.qcow2 --parallel 4 --cache --progress
+sudo guestkit inspect-batch vm*.qcow2 --parallel 4
 ```
 
 **Performance:** 4x speedup with 4 workers, plus 60x from caching on subsequent runs.
@@ -562,7 +562,7 @@ free -h
 
 # 4. Slow inspect on QCOW2 — ensure NBD module and privileges
 sudo modprobe nbd max_part=16
-sudo guestkit inspect vm.qcow2 --cache
+sudo guestkit inspect vm.qcow2
 ```
 
 ### "No OS detected" error?

@@ -114,15 +114,15 @@ Turns failed migration checks into an auditable FixPlan (preview by default; `--
 ```bash
 guestkit migrate-repair win.qcow2 --target kvm
 guestkit migrate-repair win.qcow2 --target kvm --export repair.yaml
-guestkit migrate-repair win.qcow2 --target kvm --apply --yes
+guestkit migrate-repair win.qcow2 --target kvm --apply
 
 # Offline VirtIO driver inject: point at an extracted virtio-win tree
 export GUESTKIT_VIRTIO_WIN=/path/to/virtio-win
-guestkit migrate-repair win.qcow2 --target kvm --apply --yes
+guestkit migrate-repair win.qcow2 --target kvm --apply
 
 # Or pass the tree / driver dir explicitly
 guestkit migrate-repair win.qcow2 --target kvm \
-  --virtio-win /path/to/virtio-win --apply --yes
+  --virtio-win /path/to/virtio-win --apply
 ```
 
 | Flag | Description |

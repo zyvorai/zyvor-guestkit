@@ -32,7 +32,7 @@ Install system dependencies:
 sudo dnf install qemu-img cryptsetup lvm2
 
 # Ubuntu/Debian
-sudo apt-get install qemu-utils cryptsetup2 lvm2
+sudo apt-get install qemu-utils cryptsetup lvm2
 
 # macOS (Homebrew)
 brew install qemu
@@ -126,7 +126,9 @@ Error: No free loop devices
    sudo apt-get install util-linux
    ```
 
-**Note:** Loop devices are used by default for RAW/IMG/ISO files. They're built into the Linux kernel and should always be available.
+4. **"Loop device ... did not become ready in time" (before v1.2.10)** - On Ubuntu 26.04 (kernel 7.x) devices attached through `sudo` are `root:disk` mode `0660`, so the unprivileged readiness check failed. Upgrade to v1.2.10, which reads readiness from sysfs. Reading the device afterwards still needs root, membership of the `disk` group, or a udev rule; see [Device-node permissions](../prerequisites-and-build.md#device-node-permissions-ubuntu-2604-and-other-recent-kernels).
+
+**Note:** Loop devices are used by default for RAW/IMG/ISO files. They're built into the Linux kernel and should always be available. On Ubuntu 26.04 the `/dev/loopN` and `/dev/nbdN` nodes are created on demand, so do not rely on `chmod` of the nodes that exist at boot.
 
 ### NBD Mount Fails
 
@@ -171,7 +173,7 @@ sudo dnf install qemu-img
 sudo apt-get install qemu-utils
 ```
 
-**Note:** NBD is only used for QCOW2/VMDK/VDI/VHD formats. Use RAW format for simpler setup.
+**Note:** NBD is used for QCOW2/VMDK/VDI/VHD/VHDX formats (detected from the file header, not the extension). Use RAW format for simpler setup. NBD needs `qemu-nbd` (`qemu-utils` on Debian/Ubuntu) and the `nbd` kernel module; the same device-node permission rules as for loop devices apply (see [Device-node permissions](../prerequisites-and-build.md#device-node-permissions-ubuntu-2604-and-other-recent-kernels)).
 
 ### Permission Denied Errors
 

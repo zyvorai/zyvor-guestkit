@@ -5,7 +5,7 @@ Try the **commercial control plane** (Command Center, Migration Factory, Passpor
 This is **not** the Apache-2.0 offline CLI in this repo (that CLI stays free).  
 The evaluation package is a self-contained compiled binary attached to this repository — no source, no Node.js required.
 
-**Download:** [Latest Enterprise trial release](https://github.com/zyvorai/guestkit/releases?q=enterprise-trial) · tag `v*-enterprise-trial`
+**Download:** [Latest Enterprise trial release](https://github.com/zyvorai/zyvor-guestkit/releases?q=enterprise-trial) · tag `v*-enterprise-trial`
 
 ---
 
@@ -28,8 +28,8 @@ TAG=v1.0.0-enterprise-trial
 VER=1.0.0
 ARCHIVE=guestkit-enterprise-${VER}-trial-linux-amd64.tar.gz
 
-curl -LO "https://github.com/zyvorai/guestkit/releases/download/${TAG}/${ARCHIVE}"
-curl -LO "https://github.com/zyvorai/guestkit/releases/download/${TAG}/${ARCHIVE}.sha256"
+curl -LO "https://github.com/zyvorai/zyvor-guestkit/releases/download/${TAG}/${ARCHIVE}"
+curl -LO "https://github.com/zyvorai/zyvor-guestkit/releases/download/${TAG}/${ARCHIVE}.sha256"
 sha256sum -c "${ARCHIVE}.sha256"
 
 tar xzf "${ARCHIVE}"
