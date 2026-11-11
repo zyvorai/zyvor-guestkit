@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.10] - 2026-11-11
+
+### Fixed
+- **Disk images on current Ubuntu (26.04, kernel 7.x)** — loop and NBD devices attached through `sudo` are `root:disk 0660`, so the readiness check's unprivileged `open()` failed every time with "Loop device ... did not become ready in time". Readiness is now read from sysfs (`/sys/class/block/<dev>/size`, world-readable) first.
+- **Disk format detection** — VHDX, VDI, dynamic VHD and VMDK descriptor images are recognised.
+- **Package inspection** — apk package names and versions are split correctly.
+
+### Security
+- Cleared nine RustSec advisories by updating `rmcp` (3.1.2 → 3.9.0), `rustls-webpki`, `webpki-roots`, `zstd`, `zstd-safe` and `zstd-sys`; `evtx` 0.15.1 (RUSTSEC-2026-0431). `cargo audit` reports no vulnerabilities (only "unmaintained crate" notices).
+
+### Changed
+- All semver-compatible dependency updates in the root and per-crate lockfiles. Major-version updates are not included.
+- `zyvor-api` and `guestkit-worker` lockfiles now carry `sonic-number` 0.1.3 (the image build failed to compile `sonic-rs` 0.5.10 against 0.1.2).
+- CI: runs for superseded commits are cancelled; `actions/cache` v4; Ubuntu 26.04 device-node permissions and the `qemu-system-x86` package; bounded memory for the RPM builds.
+
 ## [1.2.9] - 2026-10-18
 
 ### Fixed
