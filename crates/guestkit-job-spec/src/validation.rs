@@ -62,6 +62,23 @@ impl JobValidator {
             });
         }
 
+        // The id becomes part of file names (work dir, result dir, spool dirs),
+        // so it must be a single safe path component.
+        if job_id.len() > 128
+            || job_id.starts_with('.')
+            || !job_id
+                .chars()
+                .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
+            || job_id.contains("..")
+        {
+            return Err(JobError::InvalidField {
+                field: "job_id".to_string(),
+                reason: "may only contain letters, digits, '-', '_' and '.', \
+                         must not start with '.' or contain '..', max 128 characters"
+                    .to_string(),
+            });
+        }
+
         Ok(())
     }
 
@@ -256,6 +273,32 @@ mod tests {
 
         let result = JobValidator::validate(&job);
         assert!(matches!(result, Err(JobError::InvalidField { .. })));
+    }
+
+    #[test]
+    fn test_validate_job_id_rejects_path_components() {
+        for bad in [
+            "../../etc/passwd",
+            "job-1234/5678",
+            "job-1234\\5678",
+            "..hidden-job",
+            ".hidden-job1",
+            "job-1234 5678",
+            "job-12345678\0x",
+        ] {
+            let mut job = create_minimal_valid_job();
+            job.job_id = bad.to_string();
+            assert!(
+                matches!(
+                    JobValidator::validate(&job),
+                    Err(JobError::InvalidField { .. })
+                ),
+                "accepted {bad:?}"
+            );
+        }
+        let mut job = create_minimal_valid_job();
+        job.job_id = "3f2b8c1e-0d7a-4c55-9a51-8f0f6f0e2b11".to_string();
+        assert!(JobValidator::validate(&job).is_ok());
     }
 
     #[test]
