@@ -47,19 +47,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build target directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let target_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let target_path = self.resolve_guest_path(directory)?;
 
         // Ensure target directory exists
         std::fs::create_dir_all(&target_path).map_err(|e| {
@@ -98,19 +87,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build source directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let source_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let source_path = self.resolve_guest_path(directory)?;
 
         // Verify source exists
         if !source_path.exists() {
@@ -161,19 +139,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build target directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let target_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let target_path = self.resolve_guest_path(directory)?;
 
         // Ensure target directory exists
         std::fs::create_dir_all(&target_path).map_err(|e| {
@@ -212,19 +179,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build source directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let source_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let source_path = self.resolve_guest_path(directory)?;
 
         // Verify source exists
         if !source_path.exists() {
@@ -283,19 +239,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build target directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let target_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let target_path = self.resolve_guest_path(directory)?;
 
         // Build tar command with options
         let mut cmd = Command::new("tar");
@@ -375,19 +320,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build source directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let source_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let source_path = self.resolve_guest_path(directory)?;
 
         // Verify source exists
         if !source_path.exists() {
@@ -468,19 +402,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build target directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let target_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let target_path = self.resolve_guest_path(directory)?;
 
         // Ensure target directory exists
         std::fs::create_dir_all(&target_path).map_err(|e| {
@@ -544,19 +467,8 @@ impl Guestfs {
         }
 
         // Get root mount point
-        let root_mountpoint = self
-            .mounted
-            .get("/dev/sda1")
-            .or_else(|| self.mounted.get("/dev/sda2"))
-            .or_else(|| self.mounted.get("/dev/vda1"))
-            .or_else(|| self.mounted.values().next())
-            .ok_or_else(|| {
-                Error::InvalidState("No filesystem mounted. Call mount_ro() first.".to_string())
-            })?;
-
-        // Build source directory path
-        let directory_clean = directory.trim_start_matches('/');
-        let source_path = std::path::PathBuf::from(root_mountpoint).join(directory_clean);
+        // Resolve inside the guest root (rejects "..", confines symlinks)
+        let source_path = self.resolve_guest_path(directory)?;
 
         // Verify source exists
         if !source_path.exists() {

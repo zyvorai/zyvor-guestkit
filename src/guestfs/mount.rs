@@ -31,6 +31,31 @@ pub(crate) fn need_sudo() -> bool {
 /// mount root and mount over it instead of getting its own.
 static MOUNT_ROOT_COUNTER: AtomicU64 = AtomicU64::new(0);
 
+/// Join a guest mountpoint (e.g. `/boot/efi`) under the host mount root,
+/// refusing `..` components: `mount("/dev/sda1", "/../../etc")` would otherwise
+/// create directories and mount over a host path outside the root.
+pub(crate) fn join_guest_mountpoint(
+    root: &std::path::Path,
+    mountpoint: &str,
+) -> Result<std::path::PathBuf> {
+    use std::path::Component;
+    let rel = std::path::Path::new(mountpoint.trim_start_matches('/'));
+    let mut out = root.to_path_buf();
+    for c in rel.components() {
+        match c {
+            Component::Normal(n) => out.push(n),
+            Component::CurDir => {}
+            _ => {
+                return Err(Error::InvalidOperation(format!(
+                    "Invalid mountpoint (must not contain '..'): {}",
+                    mountpoint
+                )))
+            }
+        }
+    }
+    Ok(out)
+}
+
 impl Guestfs {
     fn create_mount_root() -> Result<std::path::PathBuf> {
         let pid = std::process::id();
@@ -115,7 +140,7 @@ impl Guestfs {
         let actual_mountpoint = if mountpoint == "/" {
             mount_root.clone()
         } else {
-            mount_root.join(mountpoint.trim_start_matches('/'))
+            join_guest_mountpoint(mount_root, mountpoint)?
         };
 
         // Create mountpoint directory
@@ -1072,6 +1097,18 @@ impl Guestfs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn join_guest_mountpoint_rejects_traversal() {
+        let root = std::path::Path::new("/run/guestkit-1-0");
+        assert_eq!(
+            join_guest_mountpoint(root, "/boot/efi").unwrap(),
+            root.join("boot/efi")
+        );
+        assert_eq!(join_guest_mountpoint(root, "/").unwrap(), root);
+        assert!(join_guest_mountpoint(root, "/../../etc").is_err());
+        assert!(join_guest_mountpoint(root, "/boot/../../etc").is_err());
+    }
 
     #[test]
     fn test_mount_tracking() {

@@ -305,7 +305,7 @@ impl Guestfs {
                 .mount_root
                 .as_ref()
                 .ok_or_else(|| Error::InvalidState("No filesystem mounted".to_string()))?;
-            mount_root.join(mountpoint.trim_start_matches('/'))
+            crate::guestfs::mount::join_guest_mountpoint(mount_root, mountpoint)?
         };
 
         let output = Command::new("fstrim")
