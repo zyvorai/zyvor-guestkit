@@ -12,6 +12,11 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
 jobs:
   build-rpm:
     name: Build RPM on ${{ matrix.os }}
