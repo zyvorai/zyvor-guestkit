@@ -125,7 +125,8 @@ impl Guestfs {
         }
 
         let host_path = self.resolve_guest_path(path)?;
-        fs::read(&host_path).map_err(|e| Error::NotFound(format!("Failed to read {}: {}", path, e)))
+        read_regular_file(&host_path, MAX_READ_FILE_SIZE)
+            .map_err(|e| Error::NotFound(format!("Failed to read {}: {}", path, e)))
     }
 
     /// Read file as text
@@ -644,7 +645,9 @@ impl Guestfs {
 
         // Use grep command
         let output = std::process::Command::new("grep")
+            .arg("-e")
             .arg(regex)
+            .arg("--")
             .arg(&host_path)
             .output()
             .map_err(|e| Error::CommandFailed(format!("Failed to execute grep: {}", e)))?;
@@ -668,7 +671,9 @@ impl Guestfs {
         // Use grep with -E flag for extended regex
         let output = std::process::Command::new("grep")
             .arg("-E")
+            .arg("-e")
             .arg(regex)
+            .arg("--")
             .arg(&host_path)
             .output()
             .map_err(|e| Error::CommandFailed(format!("Failed to execute egrep: {}", e)))?;
@@ -691,7 +696,9 @@ impl Guestfs {
         // Use grep with -F flag for fixed string matching
         let output = std::process::Command::new("grep")
             .arg("-F")
+            .arg("-e")
             .arg(pattern)
+            .arg("--")
             .arg(&host_path)
             .output()
             .map_err(|e| Error::CommandFailed(format!("Failed to execute fgrep: {}", e)))?;
@@ -903,6 +910,48 @@ impl Guestfs {
 /// `chroot(root)` would: absolute targets restart at `root`, `..` never climbs
 /// above `root`. Components that do not exist yet (write/mkdir targets) are
 /// appended lexically. The result never traverses a symlink that exists now.
+/// Largest guest file `read_file` will load into memory.
+pub(crate) const MAX_READ_FILE_SIZE: u64 = 1024 * 1024 * 1024;
+
+/// Read a guest file into memory, refusing anything that is not a regular file
+/// or is larger than `max` bytes.
+///
+/// A malicious image can plant FIFOs or device nodes where a config file is
+/// expected: opening a FIFO blocks forever and `/dev/zero`-style nodes never
+/// reach EOF, so an unchecked `fs::read` hangs or exhausts memory.
+pub(crate) fn read_regular_file(path: &Path, max: u64) -> std::io::Result<Vec<u8>> {
+    use std::io::Read;
+    use std::os::unix::fs::OpenOptionsExt;
+
+    // O_NONBLOCK keeps open(2) from blocking on a FIFO before we can inspect it.
+    let file = fs::OpenOptions::new()
+        .read(true)
+        .custom_flags(libc::O_NONBLOCK)
+        .open(path)?;
+    let meta = file.metadata()?;
+    if !meta.is_file() {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "not a regular file",
+        ));
+    }
+    if meta.len() > max {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            format!("file is {} bytes, limit is {}", meta.len(), max),
+        ));
+    }
+    let mut buf = Vec::with_capacity(meta.len() as usize);
+    file.take(max.saturating_add(1)).read_to_end(&mut buf)?;
+    if buf.len() as u64 > max {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "file grew past the read limit",
+        ));
+    }
+    Ok(buf)
+}
+
 pub(crate) fn resolve_in_root(root: &Path, guest_path: &str) -> Result<PathBuf> {
     use std::collections::VecDeque;
     use std::ffi::OsString;
@@ -1028,6 +1077,22 @@ pub(crate) fn guest_path_exists(root: &Path, guest_path: &str) -> bool {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn read_regular_file_rejects_fifo_and_oversize() {
+        let dir = tempfile::tempdir().unwrap();
+        let f = dir.path().join("f");
+        fs::write(&f, b"hello").unwrap();
+        assert_eq!(read_regular_file(&f, 16).unwrap(), b"hello");
+        assert!(read_regular_file(&f, 4).is_err());
+        assert!(read_regular_file(dir.path(), 16).is_err());
+
+        let fifo = dir.path().join("fifo");
+        let c = std::ffi::CString::new(fifo.to_str().unwrap()).unwrap();
+        assert_eq!(unsafe { libc::mkfifo(c.as_ptr(), 0o600) }, 0);
+        // Must return promptly instead of blocking on open(2).
+        assert!(read_regular_file(&fifo, 16).is_err());
+    }
+
     use super::*;
 
     #[test]
