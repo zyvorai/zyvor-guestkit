@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.11] - 2026-11-12
+
+### Changed (behaviour)
+- Guest filesystems are mounted `nodev,nosuid`; device nodes inside a guest image are no longer usable through the mount.
+- `read_file`/`cat` read at most 1 GiB and refuse non-regular files (FIFOs, device nodes, directories).
+- The NBD allocation lock lives in `/run/lock` or `$XDG_RUNTIME_DIR` (`/run/user/<uid>`), never in `/tmp`.
+- Worker job ids must match `[A-Za-z0-9._-]` (single path component, no leading `.`, at most 128 chars).
+
 ### Fixed
+- **Guest path resolution** — guest paths are resolved chroot-style inside the guest root. Absolute guest symlinks are no longer re-evaluated against the host, a dangling absolute symlink can no longer make `write` reach a host path, and file names that merely contain `..` (for example `app..log`) are accepted.
+- **Mount and archive traversal** — `mount` rejects `..` in mount points (it could create directories and mount outside the mount root); tar/archive operations confine their directory argument to the guest root instead of joining it onto an arbitrary mount.
+- **Loop and NBD devices** — image paths are made absolute before `losetup`/`qemu-nbd` (a relative `-x.img` or `json:{..}` was parsed as an option or protocol spec); a connect failure no longer disconnects an NBD device that became busy under another owner; a loop device attached by `losetup` whose node never appears is detached instead of leaked.
+- **Worker convert** — output formats are allowlisted and an output path that would overwrite the source image is refused.
 - **`glob_expand`, `grub_update`, `selinux_relabel`** — no longer pick an arbitrary mount (`HashMap` order); they use the guest root mount like the other file operations. `glob_expand` now always resolves patterns against the guest root (never the host cwd), rejects `..`, drops hits that escape the root via symlinked directories, and returns guest paths instead of host paths.
 - **NBD allocation lock** — no longer falls back to the predictable `/tmp/guestkit-nbd.lock`. It uses `/run/lock`, then `$XDG_RUNTIME_DIR` / `/run/user/<uid>`, opened with `O_NOFOLLOW`, mode 0600, and must be a regular file owned by the caller; failure is reported as an error.
 - **`NbdDevice::disconnect`** — when the device stays busy it now keeps `connected` set (and the qemu-nbd child), so a retry or `Drop` attempts the disconnect again instead of leaking the device.
