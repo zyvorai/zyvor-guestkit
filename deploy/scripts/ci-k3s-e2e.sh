@@ -47,8 +47,8 @@ echo "GET /config"
 curl -sf "${API}/config" | python3 -m json.tool | head -40
 
 UI_PORT="${UI_PORT:-30081}"
-echo "GET UI (http://${NODE_IP}:${UI_PORT}/)"
-curl -sf -o /dev/null -w "UI HTTP %{http_code}\n" "http://${NODE_IP}:${UI_PORT}/"
+echo "GET UI (https://${NODE_IP}:${UI_PORT}/, self-signed cert)"
+curl -skf -o /dev/null -w "UI HTTP %{http_code}\n" "https://${NODE_IP}:${UI_PORT}/"
 
 echo "Helm pod readiness..."
 for dep in postgresql redis zyvor-api guestkit-worker zyvor-ui minio; do
