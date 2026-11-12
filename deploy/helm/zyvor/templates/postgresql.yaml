@@ -54,6 +54,17 @@ spec:
             {{- end }}
           ports:
             - containerPort: 5432
+          # Ready only once Postgres accepts connections, so rollouts (and the API's
+          # first connection) do not race the database's initdb.
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", {{ .Values.postgresql.user | quote }}, "-d", {{ .Values.postgresql.database | quote }}]
+            initialDelaySeconds: 3
+            periodSeconds: 3
+            failureThreshold: 40
+          resources:
+            requests:
+              memory: {{ .Values.postgresql.memoryRequest | default "128Mi" | quote }}
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
