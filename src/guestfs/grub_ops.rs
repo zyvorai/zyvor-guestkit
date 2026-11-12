@@ -194,12 +194,7 @@ impl Guestfs {
             eprintln!("guestfs: grub_update");
         }
 
-        let host_root = self
-            .mounted
-            .values()
-            .next()
-            .ok_or_else(|| Error::InvalidState("No filesystem mounted".to_string()))?
-            .clone();
+        let host_root = self.find_root_mountpoint()?.to_string();
 
         // Try update-grub or grub2-mkconfig
         let commands = vec!["update-grub", "grub2-mkconfig"];

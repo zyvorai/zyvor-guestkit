@@ -8,6 +8,17 @@
 use crate::core::{Error, Result};
 use crate::guestfs::Guestfs;
 
+/// Convert a host glob hit to a guest path, dropping hits that reach outside
+/// the guest root through symlinked directories.
+fn glob_match_to_guest(root: &std::path::Path, hit: &std::path::Path) -> Option<String> {
+    let parent = hit.parent()?;
+    if !parent.canonicalize().ok()?.starts_with(root) {
+        return None;
+    }
+    let rel = hit.strip_prefix(root).ok()?;
+    Some(format!("/{}", rel.to_str()?))
+}
+
 impl Guestfs {
     /// Expand glob pattern
     ///
@@ -18,27 +29,29 @@ impl Guestfs {
             eprintln!("guestfs: glob_expand {}", pattern);
         }
 
-        let host_pattern = if pattern.starts_with('/') {
-            let root_mountpoint = self
-                .mounted
-                .values()
-                .next()
-                .ok_or_else(|| Error::InvalidState("No filesystem mounted".to_string()))?;
-            let pattern_clean = pattern.trim_start_matches('/');
-            format!("{}/{}", root_mountpoint, pattern_clean)
-        } else {
-            pattern.to_string()
-        };
+        // Patterns are always interpreted relative to the guest root (never the
+        // host cwd), and may not climb out of it.
+        if pattern.split('/').any(|c| c == "..") {
+            return Err(Error::InvalidOperation(format!(
+                "Glob pattern must not contain '..': {}",
+                pattern
+            )));
+        }
+        let root = std::path::PathBuf::from(self.find_root_mountpoint()?)
+            .canonicalize()
+            .map_err(|e| Error::InvalidState(format!("Failed to canonicalize mount root: {e}")))?;
+        let host_pattern = format!(
+            "{}/{}",
+            glob::Pattern::escape(&root.to_string_lossy()),
+            pattern.trim_start_matches('/')
+        );
 
         let mut matches = Vec::new();
-
-        // Use glob crate for pattern matching
         match glob::glob(&host_pattern) {
             Ok(paths) => {
                 for path in paths.flatten() {
-                    // Convert back to guest path
-                    if let Some(path_str) = path.to_str() {
-                        matches.push(path_str.to_string());
+                    if let Some(g) = glob_match_to_guest(&root, &path) {
+                        matches.push(g);
                     }
                 }
             }
@@ -46,6 +59,7 @@ impl Guestfs {
                 return Err(Error::CommandFailed(format!("Glob pattern error: {}", e)));
             }
         }
+        matches.sort();
 
         Ok(matches)
     }
@@ -235,5 +249,46 @@ mod tests {
     fn test_glob_ops_api_exists() {
         let _g = Guestfs::new().unwrap();
         // API structure tests
+    }
+
+    fn fake(root: &std::path::Path) -> Guestfs {
+        use crate::guestfs::handle::GuestfsState;
+        let mut g = Guestfs::new().unwrap();
+        g.state = GuestfsState::Ready;
+        g.mount_root = Some(root.to_path_buf());
+        g.mounted
+            .insert("/dev/fake1".into(), root.to_string_lossy().into_owned());
+        g
+    }
+
+    fn detach(mut g: Guestfs) {
+        use crate::guestfs::handle::GuestfsState;
+        g.mounted.clear();
+        g.mount_root = None;
+        g.state = GuestfsState::Config;
+    }
+
+    #[test]
+    fn glob_returns_guest_paths_confined_to_root() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path().join("root");
+        let outside = dir.path().join("outside");
+        std::fs::create_dir_all(root.join("etc")).unwrap();
+        std::fs::create_dir_all(&outside).unwrap();
+        std::fs::write(root.join("etc/a.conf"), b"").unwrap();
+        std::fs::write(outside.join("secret.conf"), b"").unwrap();
+        std::os::unix::fs::symlink(&outside, root.join("etc/link")).unwrap();
+
+        let mut g = fake(&root);
+        let r = g.glob_expand("/etc/*.conf");
+        let up = g.glob_expand("/../outside/*");
+        let via_link = g.glob_expand("/etc/link/*.conf");
+        let rel = g.glob_expand("etc/*.conf");
+        detach(g);
+
+        assert_eq!(r.unwrap(), vec!["/etc/a.conf".to_string()]);
+        assert!(up.is_err());
+        assert!(via_link.unwrap().is_empty());
+        assert_eq!(rel.unwrap(), vec!["/etc/a.conf".to_string()]);
     }
 }

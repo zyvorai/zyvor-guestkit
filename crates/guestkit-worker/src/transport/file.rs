@@ -99,6 +99,7 @@ impl FileTransport {
 
     /// Move job file to done directory
     async fn move_to_done(&self, job_id: &str) -> WorkerResult<()> {
+        ensure_safe_job_id(job_id)?;
         let source = self.config.watch_dir.join(format!("{}.json", job_id));
         let dest = self.config.done_dir.join(format!("{}.json", job_id));
 
@@ -112,6 +113,7 @@ impl FileTransport {
 
     /// Move job file to failed directory
     async fn move_to_failed(&self, job_id: &str, reason: &str) -> WorkerResult<()> {
+        ensure_safe_job_id(job_id)?;
         let source = self.config.watch_dir.join(format!("{}.json", job_id));
         let dest = self.config.failed_dir.join(format!("{}.json", job_id));
 
@@ -132,6 +134,9 @@ impl FileTransport {
     async fn read_job(&self, path: &Path) -> WorkerResult<JobDocument> {
         let contents = fs::read_to_string(path).await?;
         let job: JobDocument = serde_json::from_str(&contents)?;
+        // job_id is used to build file names in the spool directories; refuse
+        // ids that are not a single safe path component before using them.
+        guestkit_job_spec::JobValidator::validate(&job)?;
         Ok(job)
     }
 }
@@ -176,11 +181,45 @@ impl JobTransport for FileTransport {
     }
 }
 
+/// Reject ids that could escape the spool directories when used as a file name.
+fn ensure_safe_job_id(job_id: &str) -> WorkerResult<()> {
+    let ok = !job_id.is_empty()
+        && !job_id.starts_with('.')
+        && job_id
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.'))
+        && !job_id.contains("..");
+    if ok {
+        Ok(())
+    } else {
+        Err(WorkerError::TransportError(format!(
+            "unsafe job id {job_id:?}"
+        )))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use tempfile::TempDir;
     use guestkit_job_spec::builder::JobBuilder;
+
+    #[tokio::test]
+    async fn test_unsafe_job_id_cannot_escape_spool() {
+        let temp_dir = TempDir::new().unwrap();
+        let config = FileTransportConfig {
+            watch_dir: temp_dir.path().join("jobs"),
+            done_dir: temp_dir.path().join("done"),
+            failed_dir: temp_dir.path().join("failed"),
+            poll_interval_secs: 1,
+        };
+        let mut transport = FileTransport::new(config).await.unwrap();
+        let victim = temp_dir.path().join("victim.json");
+        std::fs::write(&victim, b"{}").unwrap();
+        assert!(transport.ack_job("../victim").await.is_err());
+        assert!(transport.nack_job("../victim", "x").await.is_err());
+        assert!(victim.exists());
+    }
 
     #[tokio::test]
     async fn test_file_transport() {
