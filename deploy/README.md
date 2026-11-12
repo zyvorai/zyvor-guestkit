@@ -39,7 +39,7 @@ bash deploy/scripts/deploy-remote-k3s.sh
 HELM_VALUES_FILE=values-ci.yaml bash deploy/scripts/deploy-remote-k3s.sh
 
 # Pull release images from GHCR instead of local build
-PULL_REGISTRY=ghcr.io/zyvorai IMAGE_TAG=v1.2.6 bash deploy/scripts/deploy-remote-k3s.sh
+PULL_REGISTRY=ghcr.io/zyvorai IMAGE_TAG=v1.2.11 bash deploy/scripts/deploy-remote-k3s.sh
 ```
 
 Override public URLs when the node IP is not the client-facing address:
@@ -105,11 +105,15 @@ The [release workflow](../.github/workflows/release.yml) publishes:
 
 | Asset | Destination |
 |-------|-------------|
-| `guestkit-<ver>-linux-amd64(.tar.gz)` | GitHub Release |
-| `zyvor-vm-tools-linux-amd64.tar.gz`, `.deb`, optional `.iso` | GitHub Release |
+| `guestkit-<ver>-linux-amd64.tar.gz` and `guestkit-<ver>-linux-amd64-musl.tar.gz` (each with `.sha256`) | GitHub Release |
+| `zyvor-vm-tools-linux-amd64.tar.gz` (+ `.sha256`), `zyvor-vm-tools_<ver>_amd64.deb`, optional `zyvor-vm-tools.iso` (guest agent, separate from the host CLI) | GitHub Release |
 | `ghcr.io/zyvorai/guestkit-worker:v<ver>` | GHCR |
 | `ghcr.io/zyvorai/zyvor-api:v<ver>` | GHCR |
 | `ghcr.io/zyvorai/zyvor-ui:v<ver>` | GHCR |
+| `ghcr.io/zyvorai/guestkit-mcp:<ver>` | GHCR (MCP Registry image) |
+| `zyvor-guestkit` wheel | PyPI |
+
+Releases ship tar.gz only: there are no RPM packages and no COPR repository.
 
 Build images locally with `deploy/scripts/publish-images.sh`. The root `Dockerfile` is deprecated; use per-service Dockerfiles under `crates/` and `deploy/ui/`.
 

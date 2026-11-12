@@ -2,7 +2,7 @@
 
 **Product name:** Zeus VM Tools  
 **Binary:** `zyvor-guest-agent`  
-**Package:** `zyvor-vm-tools` (RPM/DEB/tar.gz/ISO)
+**Package:** `zyvor-vm-tools` (tar.gz, DEB and ISO are attached to each GitHub Release; an RPM is built only when `rpmbuild` is present on the build host and is not a release asset)
 
 Kubernetes-native guest agent, drivers bootstrap, and migration assurance for KubeVirt VMs — the VMware Tools equivalent for Zeus OS.
 
@@ -34,7 +34,8 @@ Kubernetes-native guest agent, drivers bootstrap, and migration assurance for Ku
 | Feature | Status |
 |---------|--------|
 | DEB package (`dpkg-deb`) | Shipped |
-| RPM + ISO in `build-artifacts.sh` | Shipped |
+| ISO in `build-artifacts.sh` | Shipped (attached to releases) |
+| RPM in `build-artifacts.sh` | Local builds only, when `rpmbuild` is installed; not published with releases |
 | ISO attach install (`?method=iso`) | Shipped |
 | `VMGuestAgent` CR status sync | Shipped |
 | Windows MSI | Phase 4 scaffold |
@@ -101,7 +102,7 @@ Install query params: `restart=true|false`, `method=auto|cloud-init|qga|iso`
 ./packaging/vmtools/build-artifacts.sh
 ```
 
-Produces `dist/vmtools/linux/` (tar.gz, deb, optional rpm) and `dist/vmtools/zyvor-vm-tools.iso`.
+Produces `dist/vmtools/linux/` (tar.gz, deb, and an rpm only if `rpmbuild` is installed) and `dist/vmtools/zyvor-vm-tools.iso`. A release uploads the tar.gz (+ `.sha256`), the `.deb` and the ISO; the RPM is not uploaded. The bundle API (`GET /api/v1/vmtools/bundle`) still derives a `linux_rpm_url` from the bundle base URL, but nothing in the release publishes a file there, so treat it as present only if you uploaded one yourself.
 
 Publish to MinIO:
 

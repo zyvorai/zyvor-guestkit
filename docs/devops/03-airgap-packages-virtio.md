@@ -58,6 +58,8 @@ export GUESTKIT_VIRTIO_WIN=/opt/virtio-win
 # include DriverInject in migrate-plan / day-0 pack as applicable
 ```
 
+Offline `DriverInject` (applied by `plan apply`) is compiled in only with `--features registry-write,agent`. Without both, the operation is skipped with a warning. The GitHub Release tarballs and the `guestkit-worker` image do not enable `agent` (the worker links `guestkit` with its default features plus `guest-inspect`), so build `guestkit` from source with those features when you need offline VirtIO driver injection.
+
 Without drivers staged offline, first boot on KVM often means yellow bangs and failed guest agent — fix before Passport floor if your policy requires it.
 
 ---

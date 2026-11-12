@@ -3,14 +3,17 @@
 > Part of the [GuestKit README](../README.md). Back to the [documentation map](documentation-map.md).
 
 ```bash
-# v1.2.10 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
+# v1.2.11 GitHub Release (tar.gz only, no RPM/COPR) — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz
+tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64
+./install.sh                    # host deps (qemu-utils, nbd); run ./guestkit in place or add it to PATH
+export PATH="$PWD:$PATH"
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
 guestkit passport emit vm.qcow2 --target kvm -o passport.json
 guestctl tui vm.qcow2           # Assurance · preview · export
-guestkit-qemu plan vm.qcow2 --json   # assurance → QEMU definition
+guestkit-qemu plan vm.qcow2 --json   # assurance → QEMU definition (build from source: not in the tarball)
 
 # Shrink an oversized-but-mostly-empty disk to its real footprint before import
 guestkit shrink disk.qcow2 --dry-run                     # report only

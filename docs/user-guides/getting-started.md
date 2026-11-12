@@ -13,18 +13,35 @@
 - 💾 **Smart LVM Cleanup** - Automatic volume group management
 - 🔄 **Loop Device Primary** - Built-in support for RAW/IMG/ISO
 
-Designed to work seamlessly with [h2kvm](https://github.com/zyvorai/h2kvm) and VM migration workflows.
+Designed to work seamlessly with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) and VM migration workflows.
+
+## Install a release
+
+The v1.2.11 GitHub Release ships Linux amd64 tarballs only (no RPM or COPR packages). crates.io `guestkit` is still 0.3.2, so `cargo install guestkit` does not give you this release.
+
+```bash
+V=1.2.11
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v$V/guestkit-$V-linux-amd64.tar.gz
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v$V/guestkit-$V-linux-amd64.tar.gz.sha256
+sha256sum -c guestkit-$V-linux-amd64.tar.gz.sha256
+tar xzf guestkit-$V-linux-amd64.tar.gz && cd guestkit-$V-linux-amd64
+./install.sh          # installs qemu-utils/nbd (apt or dnf) and checks the binary
+./guestkit version    # `guestctl` is a symlink to the same binary
+```
+
+`install.sh` does not copy anything onto your `PATH`: run `./guestkit` from the extracted folder or add that folder to `PATH`. A static `guestkit-$V-linux-amd64-musl.tar.gz` is also published (built without libhivex and libsystemd). The tarball contains `guestkit` and `guestctl` only; `guestkit-qemu` and `virtctl-guestkit` come from a source build, as do the optional `agent`, `ai`, `mcp` and `cloud` features (see the [CLI reference](cli-guide.md#what-the-release-binary-includes)).
 
 ## Building
 
 ```bash
-cd ~/tt/guestkit
+git clone https://github.com/zyvorai/zyvor-guestkit
+cd zyvor-guestkit
 
 # Build the project
 cargo build
 
 # Build optimized release version
-cargo build --release
+cargo build --release     # guestkit, guestctl, guestkit-qemu, virtctl-guestkit
 
 # Run tests
 cargo test
@@ -37,20 +54,19 @@ cargo test
 cargo run -- --help
 
 # Convert VMDK to qcow2
-cargo run -- convert \
-  --source /path/to/vm.vmdk \
+cargo run -- convert /path/to/vm.vmdk \
   --output /path/to/vm.qcow2 \
   --format qcow2 \
   --compress
 
 # Detect disk format
-cargo run -- detect --image /path/to/disk.img
+cargo run -- detect /path/to/disk.img
 
 # Get disk information
-cargo run -- info --image /path/to/disk.img
+cargo run -- info /path/to/disk.img
 
-# Verbose logging
-cargo run -- -v convert --source vm.vmdk --output vm.qcow2
+# Verbose logging (global flag)
+cargo run -- --verbose convert vm.vmdk --output vm.qcow2
 ```
 
 ## Using as a Library
@@ -59,7 +75,7 @@ cargo run -- -v convert --source vm.vmdk --output vm.qcow2
 
 ```toml
 [dependencies]
-guestkit = { path = "~/tt/guestkit" }
+guestkit = { path = "../zyvor-guestkit" }   # path to your checkout
 ```
 
 ### Example Code
@@ -208,7 +224,7 @@ guestkit migrate-repair disk.qcow2 --target kvm --apply
 h2kvmctl local --vmdk source.vmdk --to-output out.qcow2 --backend guestkit --libvirt-import
 ```
 
-Full guide: [hyper2kvm-integration.md](../features/hyper2kvm-integration.md) · [h2kvm GUESTKIT.md](https://github.com/zyvorai/h2kvm/blob/main/docs/architecture/GUESTKIT.md)
+Full guide: [hyper2kvm-integration.md](../features/hyper2kvm-integration.md) · [h2kvm GUESTKIT.md](https://github.com/zyvorai/zyvor-h2kvm/blob/main/docs/architecture/GUESTKIT.md)
 
 ## Development
 

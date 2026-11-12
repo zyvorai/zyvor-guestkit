@@ -45,7 +45,7 @@ guestkit agent --channel virtio
 guestkit agent --channel stdio
 ```
 
-Systemd unit template: [`templates/agent/guestkit-agent.service`](../templates/agent/guestkit-agent.service)
+Systemd unit template: [`templates/agent/guestkit-agent.service`](../../templates/agent/guestkit-agent.service)
 
 ## Host-side proxy
 

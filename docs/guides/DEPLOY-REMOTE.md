@@ -1,6 +1,6 @@
 # Remote deployment
 
-Deploy GuestKit to a Linux VM or bare-metal host over SSH, using the same workflow as [PacketWolf](../../../packetwolf/scripts/deploy-remote.sh).
+Deploy GuestKit to a Linux VM or bare-metal host over SSH, using the same workflow as PacketWolf's `scripts/deploy-remote.sh` (a sibling repository, not part of this one).
 
 > **Prefer prebuilt images?** The web stack is published to GHCR
 > (`ghcr.io/zyvorai/{zyvor-ui,zyvor-api,guestkit-worker}`) — pull and run with

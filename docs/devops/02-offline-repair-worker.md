@@ -12,10 +12,12 @@
 | `qemu-img`, `losetup`, `qemu-nbd` | Install via distro packages |
 | Root or equivalent for NBD/loop | Mount/repair often needs privileges |
 | Disk / I/O | Local SSD for working copies; don’t repair the only golden on NFS without backup |
-| Optional | `guestkit` from crates.io / package; or GHCR worker image |
+| Optional | `guestkit` from the GitHub Release tarball (not crates.io, not an RPM); or the GHCR worker image |
 
 ```bash
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz  # not crates.io 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz  # not crates.io 0.3.2
+tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64 && ./install.sh   # then run ./guestkit, or add this folder to PATH
+export PATH="$PWD:$PATH"
 guestkit --help
 guestctl tui --help
 ```

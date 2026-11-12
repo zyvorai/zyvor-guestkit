@@ -35,7 +35,7 @@ This project follows the Rust Code of Conduct. Please be respectful and construc
 
 ### Prerequisites
 
-- Rust 1.70 or later
+- A current stable Rust toolchain (edition 2021; no `rust-version` is pinned) and the libsystemd development headers
 - System dependencies:
   - qemu-img (for disk operations)
   - qemu-nbd (for NBD mounting)
@@ -436,10 +436,10 @@ Err(Error::InvalidInput(format!("Invalid device: {}", device)))
 
 ## Additional Resources
 
-- [API Reference](API_REFERENCE.md) - Complete API documentation
-- [Implementation Status](GUESTFS_IMPLEMENTATION_STATUS.md) - Current status
-- [Examples](examples/) - Example programs
-- [ documentation](https://.org/guestfs.3.html) - Upstream reference
+- Rust API reference: `cargo doc --open`
+- [Examples](../../examples/) - Example programs
+- [CLI reference](../user-guides/cli-guide.md) - Command and flag summary
+- [Architecture overview](../architecture/overview.md)
 
 ## Questions?
 

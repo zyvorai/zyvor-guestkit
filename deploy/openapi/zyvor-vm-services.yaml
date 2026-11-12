@@ -2,7 +2,12 @@ openapi: 3.0.3
 info:
   title: Zyvor VM Services API
   version: 0.1.0
-  description: Kubernetes-native VM import, inspection, migration planning, and KubeVirt provisioning.
+  description: |-
+    Kubernetes-native VM import, inspection, migration planning, and KubeVirt provisioning.
+    Most POST operations enqueue a worker job and return a job id; poll GET /jobs/{id}.
+    When authentication is enabled on the server, every route needs a Bearer token except
+    /health, /auth/*, /settings/sso/saml/metadata, /vmtools/bundle, and the guest-agent
+    registration, bootstrap, heartbeat and report endpoints.
 servers:
   - url: http://api.zyvor.local/api/v1
     description: Cluster ingress
@@ -31,7 +36,13 @@ paths:
           description: Image imported
   /vms:
     get:
-      summary: List imported VM images
+      summary: List imported VM images (shadow rows from cluster inspect/doctor are hidden unless include_shadow=true)
+      parameters:
+        - in: query
+          name: include_shadow
+          schema:
+            type: boolean
+            default: false
       responses:
         '200':
           description: VM list
@@ -320,18 +331,27 @@ paths:
         '200':
           description: GuestAgentInfo
   /kubevirt/vms/{namespace}/{name}/guest/status:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     get:
       summary: Guest control state, transport ladder probes, and capability contract
       responses:
         '200':
           description: GuestControlEnvelope
   /kubevirt/vms/{namespace}/{name}/guest/capabilities:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     get:
       summary: Negotiated guest capability contract
       responses:
         '200':
           description: GuestControlEnvelope
   /kubevirt/vms/{namespace}/{name}/guest/doctor:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     get:
       summary: Agent Doctor probe tree and recommendations
       responses:
@@ -343,12 +363,18 @@ paths:
         '200':
           description: GuestControlEnvelope with live doctor result
   /kubevirt/vms/{namespace}/{name}/guest/readiness:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     get:
       summary: Guest readiness score (0-100) for migration preflight
       responses:
         '200':
           description: GuestControlEnvelope
   /kubevirt/vms/{namespace}/{name}/guest/install-agent:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     post:
       summary: Strategy-aware agent install (cloud-init, QGA curl, QGA file bootstrap)
       requestBody:
@@ -368,6 +394,9 @@ paths:
         '200':
           description: GuestControlEnvelope
   /kubevirt/vms/{namespace}/{name}/guest/repair-plan:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     post:
       summary: Offline repair plan for halted VM (inject agent, QGA, cloud-init fixes)
       requestBody:
@@ -392,12 +421,18 @@ paths:
         '200':
           description: GuestControlEnvelope with repair job enqueue result
   /kubevirt/vms/{namespace}/{name}/guest/file/read:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     post:
       summary: Read guest file via QGA guest-file API
       responses:
         '200':
           description: GuestControlEnvelope with base64 content
   /kubevirt/vms/{namespace}/{name}/guest/file/write:
+    parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/Name'
     post:
       summary: Write guest file via QGA guest-file API (airgap installer)
       responses:
@@ -853,7 +888,804 @@ paths:
       responses:
         '200':
           description: Report accepted
+  /auth/config:
+    get:
+      summary: "Public auth configuration (which login methods are enabled)"
+      responses:
+        '200':
+          description: "PublicAuthConfig"
+  /auth/me:
+    get:
+      summary: "Current session user. Public route; the token may come from the Bearer header or a token query parameter. Without a token it returns authenticated=false; with authentication disabled it returns the local operator"
+      responses:
+        '200':
+          description: "AuthMeResponse (authenticated, user)"
+  /auth/local:
+    post:
+      summary: "Local operator login; returns a JWT. Fails when authentication is disabled or the local bypass is turned off in identity settings"
+      responses:
+        '200':
+          description: "LocalLoginResponse (authenticated, token, user)"
+  /auth/logout:
+    post:
+      summary: "Revoke the current token (its jti is recorded in Redis until it would expire). Always answers 204"
+      responses:
+        '200':
+          description: "No content"
+  /auth/oidc/login:
+    get:
+      summary: "Start OIDC login (redirects to the identity provider)"
+      responses:
+        '200':
+          description: "Redirect"
+  /auth/oidc/callback:
+    get:
+      summary: "OIDC authorization-code callback"
+      responses:
+        '200':
+          description: "Redirect with session"
+  /auth/saml/login:
+    get:
+      summary: "Start SAML login (redirects to the identity provider)"
+      responses:
+        '200':
+          description: "Redirect"
+  /auth/saml/acs:
+    post:
+      summary: "SAML assertion consumer service"
+      responses:
+        '200':
+          description: "Redirect with session"
+  /settings/identity:
+    get:
+      summary: "Identity settings (admin when auth is enabled)"
+      responses:
+        '200':
+          description: "IdentitySettingsView"
+    put:
+      summary: "Replace identity settings (admin when auth is enabled)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [allow_local_bypass, default_role, session_hours, role_claim, admin_roles, admin_emails]
+              properties:
+                allow_local_bypass:
+                  type: boolean
+                default_role:
+                  type: string
+                session_hours:
+                  type: integer
+                role_claim:
+                  type: string
+                admin_roles:
+                  type: array
+                  items:
+                    type: string
+                admin_emails:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: "IdentitySettingsView"
+  /settings/sso:
+    get:
+      summary: "OIDC and SAML settings (the OIDC client secret is never returned, only client_secret_set)"
+      responses:
+        '200':
+          description: "SsoSettingsResponse"
+    put:
+      summary: "Replace OIDC and SAML settings (admin when auth is enabled)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [oidc, saml]
+              properties:
+                oidc:
+                  type: object
+                  properties:
+                    enabled:
+                      type: boolean
+                    issuer_url:
+                      type: string
+                    client_id:
+                      type: string
+                    client_secret:
+                      type: string
+                      nullable: true
+                    scopes:
+                      type: array
+                      items:
+                        type: string
+                    button_label:
+                      type: string
+                saml:
+                  type: object
+                  description: enabled, entity_id, sso_url, metadata_url, certificate_pem, name_id_format, button_label
+      responses:
+        '200':
+          description: "SsoSettingsResponse"
+  /settings/sso/saml/metadata:
+    get:
+      summary: "SAML service-provider metadata XML (public route)"
+      responses:
+        '200':
+          description: "SAML metadata"
+  /vms/{id}:
+    delete:
+      summary: "Delete a VM image, its stored file, and its jobs and job results"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      responses:
+        '200':
+          description: "Deleted (id)"
+  /vms/cleanup-shadows:
+    post:
+      summary: "Delete shadow VM rows (zero-size, cluster doctor/inspect and cluster-shadow entries)"
+      responses:
+        '200':
+          description: "Count and ids of deleted rows"
+  /vms/compare:
+    post:
+      summary: "Diff two VM images that already have inspect results"
+      parameters:
+        - in: query
+          name: before
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: after
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "CompareResult (before, after, diff)"
+  /vms/compare/copilot:
+    post:
+      summary: "Copilot summary of a compare result"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [before_name, after_name, diff]
+              properties:
+                before_name:
+                  type: string
+                after_name:
+                  type: string
+                diff:
+                  type: object
+      responses:
+        '200':
+          description: "headline, summary, recommendation, insights"
+  /vms/import-from-url:
+    post:
+      summary: "Import a disk by URL: http(s), s3:// or gs://. Azure blob URLs are recognised but zyvor-api is built with only the cloud-s3 and cloud-gcs features, so they are rejected with a cloud import error"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+      responses:
+        '200':
+          description: "Image imported"
+  /vms/import-from-s3:
+    post:
+      summary: "Import a disk from an S3-compatible bucket"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bucket, key]
+              properties:
+                bucket:
+                  type: string
+                key:
+                  type: string
+                endpoint:
+                  type: string
+                  nullable: true
+                access_key:
+                  type: string
+                  nullable: true
+                secret_key:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: "Image imported"
+  /vms/import-from-nfs:
+    post:
+      summary: "Import a disk from an NFS path already mounted on the server (optional host selects a subdirectory of the NFS mount root)"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [path]
+              properties:
+                path:
+                  type: string
+                host:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: "Image imported"
+  /vms/{id}/jobs:
+    get:
+      summary: "Last 30 jobs for a VM image, newest first"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      responses:
+        '200':
+          description: "JobRecord list"
+  /vms/{id}/passport:
+    post:
+      summary: "Enqueue Cutover Passport job"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+        - in: query
+          name: target
+          schema:
+            type: string
+            default: kubevirt
+        - in: query
+          name: explain
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/convert:
+    post:
+      summary: "Enqueue disk convert job"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_format:
+                  type: string
+                  default: qcow2
+                compression:
+                  type: boolean
+                  default: false
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/readiness-report:
+    post:
+      summary: "Download a readiness report (application/pdf)"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      responses:
+        '200':
+          description: "PDF"
+  /vms/{id}/agent/ping:
+    post:
+      summary: "Ping a live guest agent through an agent-proxy"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                proxy_url:
+                  type: string
+                  nullable: true
+                  description: agent-proxy base URL; falls back to the server AGENT_PROXY_URL setting
+                target:
+                  type: string
+                  default: kubevirt
+      responses:
+        '200':
+          description: "AgentPingResponse (reachable, proxy_url, agent, error)"
+  /vms/{id}/agent/evidence:
+    post:
+      summary: "Enqueue live-agent evidence collection"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                proxy_url:
+                  type: string
+                  nullable: true
+                  description: agent-proxy base URL; falls back to the server AGENT_PROXY_URL setting
+                target:
+                  type: string
+                  default: kubevirt
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/agent/doctor:
+    post:
+      summary: "Enqueue live-agent doctor"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+        - in: query
+          name: target
+          schema:
+            type: string
+            default: kubevirt
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                proxy_url:
+                  type: string
+                  nullable: true
+                target:
+                  type: string
+                  default: kubevirt
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/agent/rpc:
+    post:
+      summary: "Enqueue a JSON-RPC call to the live agent"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [method]
+              properties:
+                proxy_url:
+                  type: string
+                  nullable: true
+                method:
+                  type: string
+                params:
+                  type: object
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/agent/fix:
+    post:
+      summary: "Enqueue a live fix plan on the agent"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [plan]
+              properties:
+                proxy_url:
+                  type: string
+                  nullable: true
+                plan:
+                  type: object
+      responses:
+        '200':
+          description: "Job enqueued"
+  /vms/{id}/copilot/briefing:
+    get:
+      summary: "Migration briefing from the latest Doctor job that ran with explain=true; returns 400 when none exists yet"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      responses:
+        '200':
+          description: "BriefingResponse (briefing, job_id)"
+  /vms/{id}/copilot/ask:
+    post:
+      summary: "Ask the copilot a question about a VM"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question]
+              properties:
+                question:
+                  type: string
+                job_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        '200':
+          description: "CopilotAskResponse (insight, briefing, job_id)"
+  /vms/{id}/copilot/launch-advice:
+    post:
+      summary: "Copilot advice before launching the VM"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      responses:
+        '200':
+          description: "Launch advice"
+  /vms/{id}/copilot/explain-check:
+    post:
+      summary: "Explain one boot check"
+      parameters:
+        - $ref: '#/components/parameters/VmId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [check_id]
+              properties:
+                check_id:
+                  type: string
+                message:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: "Explanation"
+  /copilot/fleet-overview:
+    post:
+      summary: "Copilot overview of a set of disks"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [disks]
+              properties:
+                disks:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      boot_score:
+                        type: number
+                        nullable: true
+                      blockers:
+                        type: integer
+                        nullable: true
+                      readiness:
+                        type: string
+                        nullable: true
+      responses:
+        '200':
+          description: "headline, summary, recommendations, priority_disk"
+  /kubevirt/vms/{namespace}/{name}/inspect:
+    post:
+      summary: "Enqueue inspect for a stopped cluster VM (resolves its root PVC)"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "Job enqueued"
+  /kubevirt/vms/{namespace}/{name}/doctor:
+    post:
+      summary: "Enqueue doctor for a stopped cluster VM"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: query
+          name: target
+          schema:
+            type: string
+            default: kubevirt
+        - in: query
+          name: explain
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Job enqueued"
+  /kubevirt/vms/{namespace}/{name}/migration-plan:
+    post:
+      summary: "Enqueue migration plan for a stopped cluster VM"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: query
+          name: target
+          schema:
+            type: string
+            default: kubevirt
+        - in: query
+          name: explain
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Job enqueued"
+  /kubevirt/vms/{namespace}/{name}/repair-plan:
+    post:
+      summary: "Enqueue repair plan for a stopped cluster VM"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "Job enqueued"
+  /kubevirt/vms/{namespace}/{name}/provision:
+    post:
+      summary: "Generate (and with apply=true, create) KubeVirt manifests for the VM"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: query
+          name: apply
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: "Provision result"
+  /kubevirt/vms/{namespace}/{name}/inspect/boot:
+    get:
+      summary: "Alias of /boot-inspect: last boot-inspect result"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "BootInspectInfo"
+    post:
+      summary: "Alias of /boot-inspect: run boot-inspect"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "BootInspectInfo"
+  /kubevirt/vms/{namespace}/{name}/guest-agent/install:
+    post:
+      summary: "Install the guest agent (cloud-init, QGA or ISO)"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: query
+          name: restart
+          schema:
+            type: boolean
+            default: true
+        - in: query
+          name: method
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "GuestAgentInstallResult"
+  /kubevirt/vms/{namespace}/{name}/guest/info:
+    get:
+      summary: "Guest OS and agent information"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/health:
+    get:
+      summary: "Guest health"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/systemd:
+    get:
+      summary: "Guest systemd summary"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/systemd/events:
+    get:
+      summary: "Recent systemd events (from the pushed report when available)"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/evidence:
+    get:
+      summary: "Guest evidence snapshot"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/network:
+    get:
+      summary: "Guest network state"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/processes:
+    get:
+      summary: "Guest process list"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/logs:
+    get:
+      summary: "Last 200 journal entries"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/journal:
+    get:
+      summary: "Journal slice"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: query
+          name: unit
+          schema:
+            type: string
+        - in: query
+          name: boot
+          schema:
+            type: string
+            default: current
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 200
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/systemd/units/{unit}:
+    get:
+      summary: "Details for one systemd unit"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+        - in: path
+          name: unit
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/actions/restart-unit:
+    post:
+      summary: "Restart a systemd unit (operator/admin when auth is enabled; may return pending_approval under GuestActionPolicy)"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [unit]
+              properties:
+                unit:
+                  type: string
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/actions/collect-support-bundle:
+    post:
+      summary: "Collect a support bundle from the guest"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/actions/pre-snapshot-freeze:
+    post:
+      summary: "Freeze guest filesystems before a snapshot"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/vms/{namespace}/{name}/guest/actions/post-snapshot-thaw:
+    post:
+      summary: "Thaw guest filesystems after a snapshot"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "GuestControlEnvelope"
+  /kubevirt/guest/poll-telemetry:
+    get:
+      summary: "Fleet-wide airgap poll telemetry"
+      responses:
+        '200':
+          description: "Poll telemetry"
+  /kubevirt/vms/{namespace}/{name}/guest/poll-telemetry:
+    get:
+      summary: "Airgap poll telemetry for one VM"
+      parameters:
+        - $ref: '#/components/parameters/Namespace'
+        - $ref: '#/components/parameters/Name'
+      responses:
+        '200':
+          description: "Poll telemetry"
 components:
+  parameters:
+    VmId:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Namespace:
+      in: path
+      name: namespace
+      required: true
+      schema:
+        type: string
+    Name:
+      in: path
+      name: name
+      required: true
+      schema:
+        type: string
   schemas:
     BootInspectRequest:
       type: object

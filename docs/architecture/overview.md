@@ -1,4 +1,4 @@
-# GuestKit architecture (v1.2.10)
+# GuestKit architecture (v1.2.11)
 
 Offline VM intelligence and migration assurance — **Rust control plane** with host block-device access for mount-heavy operations.
 
@@ -12,7 +12,7 @@ Offline VM intelligence and migration assurance — **Rust control plane** with 
 | **File access inside guests** | Via **loop devices / qemu-nbd** + host mount (`src/guestfs/`), not in-process ext4/NTFS parsers |
 | **Web UI** | ✅ Shipped — `deploy/ui/` (inventory + Assurance + Profiles + Files), GHCR `zyvor-ui` |
 
-**Host dependencies (Linux):** `losetup`, `qemu-nbd` (for QCOW2/VMDK), kernel `nbd`/`loop` modules, optional `qemu-img` for format conversion.
+**Host dependencies (Linux):** `losetup` (raw, img, iso), `qemu-nbd` (QCOW2, VMDK, VDI, VHD, VHDX), kernel `loop`/`nbd` modules, and `qemu-img` for format conversion and `guestkit img`. Attaching and mounting need root (GuestKit calls `sudo` when it is not root).
 
 ## System layers
 
@@ -72,9 +72,22 @@ Evidence is cached under `~/.cache/guestkit/` after successful `doctor` runs.
 
 ## Crates and workspace
 
-Root `Cargo.toml` workspace includes the main package and `guestkit-job-spec`. `zyvor-api` and `guestkit-worker` build as sibling crates with path dependencies (see each crate `Cargo.toml`).
+The root `Cargo.toml` workspace includes the main package, `guestkit-agent-protocol`, `guestkit-job-spec`, `zyvor-guest-agent`, `guestkit-ebpf-common` and `guestkit-ebpf-runtime`; `crates/guestkit-ebpf` (kernel-side programs) is excluded and built by `guestkit-ebpf-runtime/build.rs`. `zyvor-api` and `guestkit-worker` build as sibling crates with their own lockfiles and path dependencies (see each crate `Cargo.toml`).
 
-**Version:** 1.2.10 (package) · **License:** Apache-2.0 · **Owner:** ZyvorAI Labs Private Limited
+**Version:** 1.2.11 (package) · **License:** Apache-2.0 · **Owner:** ZyvorAI Labs Private Limited
+
+## Guest-file trust boundary (v1.2.11)
+
+Guest files are reached through a host mount of the attached device, so everything in the image is untrusted input to the host kernel and to GuestKit. The guestfs layer enforces:
+
+- **Mount:** every host `mount` of a guest filesystem adds `nodev,nosuid` (`harden_mount_opts` in `src/guestfs/mount.rs`); mount points containing `..` are rejected.
+- **Path resolution:** `resolve_in_root` (`src/guestfs/file_ops.rs`) walks the path component by component, following symlinks as `chroot(root)` would (absolute targets restart at the root, `..` stops at the root, at most 40 symlink hops). File names that merely contain `..` are valid. `glob_expand`, tar/archive and `cpio` operations use the same root and reject escapes.
+- **Reads:** `read_file` opens with `O_NONBLOCK`, requires a regular file and caps the size at 1 GiB.
+- **External tools:** image paths are absolutised before `losetup`, `qemu-nbd` and `qemu-img`; `grep`, `egrep` and `fgrep` pass the pattern after `-e` and `--`.
+- **Shared state:** the NBD allocation lock is a 0600 `O_NOFOLLOW` file in `/run/lock` or the per-user runtime directory (never `/tmp`); the binary cache directory is 0700 and per-user.
+- **Worker and API:** job ids are validated as a single safe path component; worker `convert` allowlists formats and refuses to overwrite its source; `zyvor-api` allowlists the stored image extension, removes partial uploads on failure and no longer overwrites an unrelated stored file on storage import.
+
+`guestkit execute` is outside this boundary: it `chroot`s into the guest root on the host and runs the image's own binaries as root.
 
 ## Security model (web stack)
 

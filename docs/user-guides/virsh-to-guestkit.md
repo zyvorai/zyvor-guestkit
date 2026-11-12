@@ -10,6 +10,8 @@ domains stay with `virtctl` / Machina.
 This page is the cut-over map so scripts can delete every `virsh`
 invocation.
 
+`guestkit qga`, `agent-call` and `agent-proxy` are compiled only with `--features agent` (Unix). The release tarball does not include that feature, so build with `cargo build --release --features agent` for the live-guest rows below.
+
 ## Guest / disk operations (use GuestKit)
 
 | Old virsh / libvirt habit | GuestKit |

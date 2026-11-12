@@ -93,8 +93,9 @@ Complete workflow for migrating Windows or Linux VMs from Hyper-V to KVM.
 #### Prerequisites
 
 ```bash
-# Install required tools
-sudo dnf install qemu-img guestkit
+# Install required tools: qemu-img from your distro, GuestKit from the
+# GitHub Release tarball (there is no RPM or dnf package for guestkit)
+sudo dnf install qemu-img
 
 # Export Hyper-V VM (Windows PowerShell on Hyper-V host)
 Export-VM -Name "MyVM" -Path "C:\Exports"

@@ -59,15 +59,17 @@ cargo build
 
 **Symptoms:**
 ```
-error: package requires rustc 1.70 or newer
+error: package requires rustc X.Y or newer
 ```
+
+The repository does not pin a `rust-version`; dependencies set the floor, so build with a current stable toolchain.
 
 **Solution:**
 Update Rust:
 
 ```bash
 rustup update stable
-rustc --version  # Should be 1.70+
+rustc --version  # Use the current stable release
 ```
 
 ---
@@ -288,6 +290,23 @@ Error: exists: No such file or directory
    // Bad
    g.cat("etc/passwd")?;  // Missing leading /
    ```
+
+### Errors Added by the v1.2.11 Hardening
+
+These are deliberate refusals. Each one closes a way for a hostile disk image or job to reach your host; see the [1.2.11 changelog](../development/CHANGELOG.md).
+
+| Message or symptom | Cause | What to do |
+|--------------------|-------|------------|
+| `Failed to acquire NBD allocation lock: ...` | The NBD allocation lock is only created in `/run/lock/guestkit-nbd.lock`, then `$XDG_RUNTIME_DIR` or `/run/user/<uid>`; it is never placed in `/tmp`. It is opened with `O_NOFOLLOW`, mode 0600, and must be a regular file owned by the current user. | Run through `sudo` (root can use `/run/lock`), or make sure `XDG_RUNTIME_DIR` / `/run/user/<uid>` exists for your user. Remove a stale or foreign `guestkit-nbd.lock` that is a symlink or belongs to another user. |
+| `lock file is not a regular file owned by the current user` | The lock path already exists as a symlink, directory or another user's file | Delete it (as root) and retry |
+| `Failed to read <path>: not a regular file` | `cat` / `read_file` refuse FIFOs, device nodes and directories in the guest | Use `list` for directories; device nodes are not readable from an image on purpose |
+| `Failed to read <path>: file is N bytes, limit is 1073741824` | `cat` / `read_file` read at most 1 GiB | Copy the file to the host with `extract` instead of loading it into memory |
+| `Invalid mountpoint (must not contain '..')` | A guest mount point with a `..` component is rejected | Use a mount point inside the guest root, for example `/boot/efi` |
+| Device nodes or setuid binaries in a mounted guest do not work | Every host mount of a guest filesystem adds `nodev,nosuid` (appended last, so a caller-supplied `dev` or `suid` is overridden) | Expected. To work with a device node, use the guest itself, not a host mount |
+| `unsupported image.format 'x'` / `output would overwrite the source image` (worker `convert` job) | Worker convert allows only `raw`, `qcow2`, `qcow`, `vmdk`, `vdi`, `vhd`, `vpc`, `vhdx`, `qed` and `parallels`, and an output path equal to the source is refused | Pick a listed format and a different output path |
+| Job rejected with `job_id` invalid / `unsafe job id` (worker) | Job ids must be 8 to 128 characters of letters, digits, `-`, `_` and `.`, must not start with `.` and must not contain `..`, because they become file names in the spool and result directories | Use a UUID or `job-<digits>` style id |
+| A `grep`, `egrep` or `fgrep` pattern that starts with `-` now matches that text | Since v1.2.11 the pattern is passed after `-e` and `--`, so it can no longer be read as a `grep` option (for example `-f <host file>`) | Nothing to do; this is the fix |
+| Log line `Primary cache directory unavailable ..., falling back to /tmp/guestkit-<uid>/binary` | The binary cache directory (`~/.cache/guestkit/binary`) is created owner-only (0700). If that fails, the fallback is per-user and is refused when it is a symlink or owned by someone else, and cached data does not survive a reboot | Fix the ownership or mode of `~/.cache/guestkit`, or remove a planted `/tmp/guestkit-<uid>` |
 
 ---
 
