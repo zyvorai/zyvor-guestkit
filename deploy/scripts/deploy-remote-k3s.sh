@@ -146,7 +146,22 @@ fi
 echo "Waiting for rollouts..."
 kubectl -n "${NAMESPACE}" rollout status deployment/postgresql --timeout=180s
 kubectl -n "${NAMESPACE}" rollout status deployment/redis --timeout=180s
+# Fail here, minutes into the job, if the database cannot be reached; a crash-looping
+# API would otherwise go unnoticed until the E2E step, after the VM-tools build.
+echo "Waiting for PostgreSQL to accept connections..."
+if ! kubectl -n "${NAMESPACE}" exec deployment/postgresql -- sh -c \
+  'for i in $(seq 1 60); do pg_isready -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" && exit 0; sleep 2; done; exit 1'; then
+  echo "ERROR: PostgreSQL did not become ready" >&2
+  kubectl -n "${NAMESPACE}" logs deployment/postgresql --tail=100 >&2 || true
+  exit 1
+fi
 kubectl -n "${NAMESPACE}" rollout status deployment/zyvor-api --timeout=300s
+echo "Waiting for the API pod to become ready..."
+if ! kubectl -n "${NAMESPACE}" wait --for=condition=Ready pod -l app=zyvor-api --timeout=120s; then
+  echo "ERROR: zyvor-api is not ready (database connection?)" >&2
+  kubectl -n "${NAMESPACE}" logs -l app=zyvor-api --all-containers --previous --tail=50 >&2 || true
+  exit 1
+fi
 kubectl -n "${NAMESPACE}" rollout status deployment/guestkit-worker --timeout=300s
 kubectl -n "${NAMESPACE}" rollout status deployment/zyvor-ui --timeout=180s
 # MinIO is optional (minio.enabled); when present, fail here rather than after the

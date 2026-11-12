@@ -93,6 +93,7 @@ postgresql:
   user: zyvor
   password: zyvor
   database: zyvor
+  memoryRequest: 128Mi
 
 redis:
   image: redis:7-alpine

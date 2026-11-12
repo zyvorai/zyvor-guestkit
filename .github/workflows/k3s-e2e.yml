@@ -122,6 +122,13 @@ jobs:
           timeout 90 kubectl -n zyvor run dns-probe --rm -i --restart=Never --image=docker.io/library/busybox:1.36 --command -- \
             sh -c 'nslookup postgresql.zyvor.svc.cluster.local; nc -zv -w 5 postgresql 5432' || true
           echo "::endgroup::"
+          echo "::group::postgres and API diagnostics"
+          kubectl -n zyvor exec deployment/postgresql -- pg_isready -h 127.0.0.1 -U zyvor -d zyvor || true
+          kubectl -n zyvor logs -l app=postgresql --previous --tail=100 || true
+          kubectl -n zyvor logs -l app=zyvor-api -c zyvor-api --previous --tail=100 || true
+          sudo dmesg 2>/dev/null | grep -iE "out of memory|oom|killed process" | tail -20 || true
+          free -m || true
+          echo "::endgroup::"
           echo "::group::kubectl get pods -o wide"
           kubectl -n zyvor get pods -o wide || true
           echo "::endgroup::"
