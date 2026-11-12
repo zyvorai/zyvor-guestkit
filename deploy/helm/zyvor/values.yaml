@@ -101,6 +101,8 @@ redis:
 minio:
   enabled: true
   image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+  # Optional container command override (needed for images whose entrypoint is not `minio`, e.g. Bitnami).
+  command: []
   accessKey: zyvor
   secretKey: zyvor-secret
   service:

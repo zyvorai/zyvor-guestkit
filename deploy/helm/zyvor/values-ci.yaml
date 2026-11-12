@@ -45,6 +45,11 @@ persistence:
 
 minio:
   enabled: true
+  # minio/minio is no longer pullable from Docker Hub or quay.io (ImagePullBackOff on every
+  # k3s E2E run); the Bitnami legacy mirror still serves a pinned build. Its entrypoint is a
+  # Bitnami wrapper, so run the binary directly with the chart's args.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  command: ["minio"]
   service:
     type: NodePort
     nodePort: 30092
