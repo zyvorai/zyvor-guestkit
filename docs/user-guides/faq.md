@@ -70,7 +70,7 @@ guestkit inspect vm.qcow2
 
 ### Is guestkit production-ready?
 
-**Yes.** GuestKit v1.2.10 is production-ready with:
+**Yes.** GuestKit v1.2.11 is production-ready with:
 - Python assurance bindings (`run_doctor`, `run_migrate_repair`, optional `inject_json`) for h2kvm integration
 - Comprehensive test suite with CI/CD
 - Used in [h2kvm](https://github.com/zyvorai/h2kvm) for production VM migrations
@@ -97,12 +97,16 @@ Never modify a disk image while the VM is running. This will cause:
 
 ### How do I install guestkit?
 
-**Current CLI (v1.2.10)** — GitHub Release. `cargo install guestkit` still installs crates.io **0.3.2**, which is not this release.
+**Current CLI (v1.2.11)** — GitHub Release. `cargo install guestkit` still installs crates.io **0.3.2**, which is not this release.
 
 ```bash
-curl -fsSL -o guestkit-1.2.10-linux-amd64.tar.gz \
-  https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
+curl -fsSL -o guestkit-1.2.11-linux-amd64.tar.gz \
+  https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz
+tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64
+./install.sh    # installs host dependencies and checks the binary; run ./guestkit in place or add the folder to PATH
 ```
+
+Releases ship tar.gz only. There are no RPM packages, no COPR repository and no `dnf install guestkit`; the `.spec` files in the repo are for [local builds](../development/RPM-BUILD.md). The tarball contains `guestkit` and `guestctl`; `guestkit-qemu` needs a source build.
 
 **From source:**
 ```bash
@@ -122,9 +126,12 @@ pip install zyvor-guestkit
 
 | Binary | Role |
 |--------|------|
-| `guestkit` | Scriptable CLI (inspect, doctor, migrate-plan, rescue, **`qga`**, …) |
-| `guestctl` | Carbon TUI dashboard |
-| `guestkit-qemu` | Assured QEMU plan / run / QMP ([qemu-runtime.md](../features/qemu-runtime.md)) |
+| `guestkit` | Scriptable CLI (inspect, doctor, migrate-plan, rescue, …). `qga`, `agent-proxy` and `agent-call` need a build with `--features agent` |
+| `guestctl` | The same binary under another name (a symlink in the release tarball); `guestctl tui IMAGE` opens the Carbon TUI |
+| `guestkit-qemu` | Assured QEMU plan / run / QMP ([qemu-runtime.md](../features/qemu-runtime.md)). Built by `cargo build --release`; **not** in the release tarball |
+| `virtctl-guestkit` / `kubectl-guestkit` | `virtctl guestfs` replacement for PVCs ([virtctl-guestkit.md](../features/virtctl-guestkit.md)); source build only |
+
+The release tarball contains `guestkit` and `guestctl`.
 
 ### Should I use `virsh qemu-agent-command`?
 
@@ -142,9 +149,8 @@ libvirt replacement. See [virsh-to-guestkit.md](virsh-to-guestkit.md).
 - Windows WSL2 (experimental)
 
 **Dependencies:**
-- **Required:** Rust 1.70+ (for building)
-- **Optional:** qemu-img (for format conversion)
-- **Runtime:** Linux kernel with loop device support (built-in)
+- **Building from source:** a current stable Rust toolchain (edition 2021) and the libsystemd development headers (default `journal-native` feature)
+- **Runtime:** `qemu-img`, `losetup` and `qemu-nbd` (qcow2, VMDK, VDI, VHD and VHDX images go through `qemu-nbd` and the `nbd` module; raw/img/iso use loop devices), and root or `sudo` to attach and mount a disk
 - **QEMU launch:** `qemu-system-x86_64` / `qemu-system-aarch64` on `PATH` for `guestkit-qemu run`
 
 **Hardware:**

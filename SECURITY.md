@@ -55,7 +55,7 @@ The following operations modify data and should be used carefully:
 
 GuestKit performs basic input validation but relies on underlying tools for detailed validation:
 
-1. **Path Traversal**: Guest paths are resolved but may still access unexpected locations
+1. **Path Traversal**: Since v1.2.11 guest paths are resolved chroot-style inside the guest root (see [Untrusted disk images](#untrusted-disk-images-v1211)). Absolute guest symlinks restart at the guest root, `..` never climbs above it, and `mount` rejects `..` in mount points. Callers still decide which guest paths they are willing to touch
 2. **Device Names**: Device names are passed to system commands - validate externally if from untrusted sources
 3. **Command Injection**: Arguments to guest commands should be sanitized by callers
 
@@ -77,9 +77,11 @@ g.add_drive_ro("/path/to/untrusted.img")?;
 // DON'T: Write mode on untrusted images
 g.add_drive_opts("/path/to/untrusted.img", None, false)?; // risky!
 
-// DO: Validate paths before use
+// DO: Validate paths against your own policy before use. GuestKit confines
+// guest paths to the guest root (v1.2.11+) but cannot know which files your
+// application should be allowed to read or write.
 let path = user_input.trim();
-if path.contains("..") || !path.starts_with("/") {
+if !path.starts_with("/") {
     return Err("Invalid path".into());
 }
 
@@ -169,10 +171,25 @@ Published security advisories will be available at:
 
 ## Security Features
 
+### Untrusted disk images (v1.2.11)
+
+Release 1.2.11 closed several ways a hostile image could reach the host. Details are in the [changelog](CHANGELOG.md#1211---2026-11-12) and the [CLI reference](docs/user-guides/cli-guide.md#safety-behaviour-you-should-know-about).
+
+- Guest filesystems are mounted `nodev,nosuid`, so planted device nodes cannot open host devices.
+- Guest paths resolve chroot-style inside the guest root; `..` in mount points is rejected; tar/archive directories are confined to the guest root; `cpio` extraction refuses absolute and `..` member names.
+- `read_file` / `cat` read at most 1 GiB and refuse FIFOs, device nodes and directories.
+- `grep`, `egrep` and `fgrep` pass the pattern after `-e` and `--`, so a pattern beginning with `-` is not a `grep` option.
+- Image paths are made absolute before `losetup`, `qemu-nbd` and `qemu-img` see them.
+- The NBD allocation lock lives in `/run/lock` or the per-user runtime directory (never `/tmp`), opened with `O_NOFOLLOW` and mode 0600; the binary cache directory is owner-only.
+- Worker job ids must be a single safe path component (`[A-Za-z0-9._-]`, 8 to 128 characters, no leading `.`).
+- GPT headers with overflowing fields and malformed `/proc/mdstat` lines return errors instead of panicking.
+
+Still true: `guestkit execute` runs the guest's own binaries via `chroot` on the host as root, and mounting any image needs root. Process images you do not trust inside a container or VM.
+
 ### Memory Safety
 
 - Written in pure Rust (except external tool calls)
-- No unsafe code in core library
+- `unsafe` is limited to libc/FFI calls (for example `geteuid`, `flock`, libhivex, journal and vsock bindings) rather than parsing code
 - Bounds checking on all array/slice access
 - Protection against common memory errors (use-after-free, double-free, buffer overflows)
 

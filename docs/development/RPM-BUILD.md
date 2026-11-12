@@ -1,6 +1,6 @@
 # Building GuestKit RPM Packages
 
-> **Note:** release RPMs and the COPR repository are discontinued; releases ship tar.gz only. This guide is for local builds.
+> **Note:** release RPMs and the COPR repository are discontinued (the `RPM Build` workflow was removed in PR #81, after v1.2.11); releases ship tar.gz only. This guide is for local builds, and you must not expect `dnf install guestkit` or a COPR repo to work. The `.spec` files are no longer exercised by CI. At v1.2.11 both still declare `Version: 1.0.1` while `Cargo.toml` says 1.2.11, and `Source0` is `%{name}-%{version}.tar.gz`, so set `Version:` to the version of the tarball you build (the examples below use a `guestkit-1.0.1` tarball prefix to match the spec as shipped). The Zeus VM Tools `.deb` (and an optional local RPM from `packaging/vmtools/build-artifacts.sh`) is a separate guest artifact and is unaffected.
 
 This guide explains how to build RPM packages for GuestKit.
 
@@ -87,15 +87,17 @@ rpmbuild -ba SPECS/guestkit-full.spec
 rpmbuild -ba --without python SPECS/guestkit-full.spec
 ```
 
-## 📥 Building from Release Tarball
+## 📥 Building from a Tag Source Archive
+
+This uses GitHub's source archive for the tag, not the `guestkit-<version>-linux-amd64.tar.gz` binary bundle on the release page. The commands below have not been re-run for v1.2.11.
 
 ```bash
-# Download release tarball
-wget https://github.com/zyvorai/zyvor-guestkit/archive/v1.2.10/guestkit-1.2.10.tar.gz \
-     -O ~/rpmbuild/SOURCES/guestkit-1.2.10.tar.gz
+# Download the tag's source archive
+wget https://github.com/zyvorai/zyvor-guestkit/archive/v1.2.11/guestkit-1.2.11.tar.gz \
+     -O ~/rpmbuild/SOURCES/guestkit-1.2.11.tar.gz
 
-# Copy spec file
-cp guestkit.spec ~/rpmbuild/SPECS/
+# Copy spec file and point Version: at the tarball (the shipped spec says 1.0.1)
+sed 's/^Version:.*/Version:        1.2.11/' guestkit.spec > ~/rpmbuild/SPECS/guestkit.spec
 
 # Build
 rpmbuild -ba ~/rpmbuild/SPECS/guestkit.spec

@@ -74,6 +74,8 @@ Details: [qemu-runtime.md](../features/qemu-runtime.md)
 
 ## Live QGA (`guestkit qga` / `agent-call`)
 
+`qga`, `agent-call` and `agent-proxy` need a build with `--features agent` (Unix); the release tarball does not include it, so run `cargo build --release --features agent` first.
+
 | Command | Purpose |
 |---------|---------|
 | `guestkit qga --execute guest-ping` | Raw QGA over unix socket (auto-discovers libvirt/KubeVirt paths) |
@@ -357,7 +359,8 @@ guestkit list disk.qcow2 /etc
 # Extract file from VM
 guestkit extract disk.qcow2 /etc/hostname hostname.txt
 
-# Execute command in VM (if supported)
+# Execute a command in the VM (chroot into the mounted guest root on your host,
+# as root: it runs the image's own binaries, so use it only on trusted images)
 guestkit exec disk.qcow2 cat /etc/os-release
 
 # Check filesystem
@@ -372,7 +375,7 @@ guestkit df disk.qcow2
 1. **Use SSD**: Store disk images on SSD for faster inspection
 2. **Verbose mode**: Only use when debugging (adds overhead)
 3. **Local files**: Inspect local files rather than network-mounted
-4. **Read-only**: Inspection is always read-only and safe
+4. **Read-only**: `inspect`, `doctor` and the other report commands mount the guest read-only. Guest filesystems are always mounted `nodev,nosuid`.
 
 ## 🐛 Troubleshooting
 
@@ -386,13 +389,12 @@ guestkit df disk.qcow2
 
 ## 🎓 Learn More
 
-- Full documentation: `ENHANCED_INSPECTION.md`
-- Implementation details: `ENHANCEMENTS_SUMMARY.md`
-- API reference: `cargo doc --open`
+- Command reference: [cli-guide.md](cli-guide.md)
+- Rust API reference: `cargo doc --open`
 
-## ✨ What's New
+## ✨ What `inspect` covers
 
-All these features are brand new in the enhanced inspection:
+The inspection report includes:
 - ✅ Network configuration analysis
 - ✅ User account enumeration
 - ✅ SSH configuration inspection

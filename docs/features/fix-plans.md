@@ -623,8 +623,7 @@ To extend the plan system:
 
 ## References
 
-- [Security Profiles](security-profiles.md)
-- [Profile System](../architecture/security-profiles.md)
+- [Profiles](../user-guides/profiles.md)
 - [Export Formats](export-formats.md)
 - [TUI enhancements](tui-enhancements.md)
 

@@ -5,8 +5,9 @@ Ship a **client tarball** (`guestkit` + install/test scripts) without giving use
 ## What you get
 
 ```
-guestkit-1.0.1-linux-amd64/
+guestkit-<version>-linux-amd64/
   guestkit              # CLI binary
+  guestctl -> guestkit  # symlink, same CLI
   install.sh            # one-command install
   install-client-deps.sh
   test-host.sh          # qemu / nbd / GuestKit binary checks
@@ -16,7 +17,10 @@ guestkit-1.0.1-linux-amd64/
   HOST_SETUP.txt
   PREREQUISITES.txt
   guestkit.env.example
+  START_HERE.txt, HELP.txt, README.txt, QUICKSTART.txt, LICENSE, NOTICE, legal/, docs/
 ```
+
+The tarball does not contain `guestkit-qemu` or `virtctl-guestkit`.
 
 ## Build
 

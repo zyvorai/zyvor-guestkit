@@ -614,6 +614,5 @@ echo "Markdown index: $SITE_DIR/markdown/README.md"
 
 ## See Also
 
-- [Profiles Guide](PROFILES_GUIDE.md) - Specialized inspection profiles
-- [Comparison Guide](COMPARISON_GUIDE.md) - VM comparison and diff
-- [CLI Guide](CLI_GUIDE.md) - Complete CLI reference
+- [Profiles Guide](../user-guides/profiles.md) - Specialized inspection profiles
+- [CLI Guide](../user-guides/cli-guide.md) - Command and flag summary

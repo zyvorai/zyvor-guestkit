@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - **Releases ship tar.gz only.** The `RPM Build` workflow (Mock builds, GitHub Release upload and COPR publish) is removed; the `.spec` files and `docs/development/RPM-BUILD.md` stay for anyone building locally. The Zeus VM tools `.deb` is a separate guest artifact and is unchanged.
 
+### Documentation
+- Install snippets, "current release" pins and GHCR/MCP tags updated from v1.2.10 (and older pins in `deploy/README.md`, `integration/README.md`) to v1.2.11; `scripts/check-doc-versions.py` reports docs that lag behind `Cargo.toml`.
+- Tarball install steps (`tar xzf`, `./install.sh`) are documented, and the docs now say the release tarball holds `guestkit` and a `guestctl` symlink only: `guestkit-qemu` and `virtctl-guestkit` need a source build, and the `agent` (`qga`, `agent-*`, `passport keygen`), `ai`, `mcp`, `cloud-*` and offline `DriverInject` (`registry-write` + `agent`) features are not in the release binary.
+- No RPM, COPR or `dnf install guestkit` is promised anywhere; `RPM-BUILD.md` and the Zeus VM Tools page say RPMs are local builds only.
+- CLI reference rewritten against the clap definitions: real command names and aliases (there is no `cp`, `download`, `upload`, `profile` or `command-catalog`), global flags (and that `--read-only`, `--timeout` and `--cache-dir` are not read anywhere in the source), per-command flags, accepted targets.
+- v1.2.11 behaviour documented: chroot-style guest path resolution, `nodev,nosuid` mounts, `read_file` limits, `grep` option injection fix, NBD lock location, job-id rules, worker convert allowlist, `zyvor-api` import hardening (CLI reference, troubleshooting, architecture overview, prerequisites, `SECURITY.md`).
+- OpenAPI now covers every `zyvor-api` route (55 of the 115 paths were missing), declares path parameters, and describes authentication.
+- Broken documentation links fixed; stale `getting-started.md` CLI examples (`convert --source`, `detect --image`, `-v`) corrected.
+
 ## [1.2.11] - 2026-11-12
 
 ### Changed (behaviour)
