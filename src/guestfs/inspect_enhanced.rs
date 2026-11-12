@@ -964,17 +964,9 @@ impl Guestfs {
                     else if let Some(ref mut array) = current_array {
                         if line.contains("[") && line.contains("]") {
                             // Extract [n/m] status
-                            if let Some(start) = line.rfind('[') {
-                                if let Some(end) = line.rfind(']') {
-                                    let status_part = &line[start + 1..end];
-                                    if status_part.contains('/') {
-                                        let nums: Vec<&str> = status_part.split('/').collect();
-                                        if nums.len() == 2 {
-                                            array.active_devices = nums[0].parse().unwrap_or(0);
-                                            array.total_devices = nums[1].parse().unwrap_or(0);
-                                        }
-                                    }
-                                }
+                            if let Some((active, total)) = parse_md_status(line) {
+                                array.active_devices = active;
+                                array.total_devices = total;
                             }
                         }
                     }
@@ -2149,6 +2141,25 @@ struct ParsedResolved {
     fallback_dns: Vec<String>,
 }
 
+/// Parse the `[n/m]` member counts from a `/proc/mdstat` status line.
+///
+/// The file comes from the guest, so the brackets may appear in any order
+/// (`"]x["`); slicing between them without checking would panic.
+fn parse_md_status(line: &str) -> Option<(usize, usize)> {
+    // A status line ends with two groups, e.g. `[2/2] [UU]`; the counts are in
+    // the one containing '/', not necessarily the last one.
+    let mut rest = line;
+    while let Some(start) = rest.find('[') {
+        let after = &rest[start + 1..];
+        let end = after.find(']')?;
+        if let Some((a, b)) = after[..end].split_once('/') {
+            return Some((a.parse().unwrap_or(0), b.parse().unwrap_or(0)));
+        }
+        rest = &after[end + 1..];
+    }
+    None
+}
+
 /// Split one line of `apk info -v` output into package name and version.
 ///
 /// apk prints `<name>-<version>-r<release>` (e.g. `busybox-1.36.1-r5`), and
@@ -2192,5 +2203,28 @@ mod apk_tests {
     fn handles_lines_without_release_or_dash() {
         assert_eq!(split_apk_name_version("foo-1.0"), Some(("foo", "1.0")));
         assert_eq!(split_apk_name_version("nodash"), None);
+    }
+}
+
+#[cfg(test)]
+mod mdstat_tests {
+    use super::parse_md_status;
+
+    #[test]
+    fn parses_member_counts() {
+        assert_eq!(parse_md_status("  123 blocks [2/2] [UU]"), Some((2, 2)));
+        assert_eq!(
+            parse_md_status("  123 blocks super 1.2 [3/2] [UU_]"),
+            Some((3, 2))
+        );
+    }
+
+    #[test]
+    fn reversed_or_missing_brackets_do_not_panic() {
+        assert_eq!(parse_md_status("a]b["), None);
+        assert_eq!(parse_md_status("]["), None);
+        assert_eq!(parse_md_status("x] [1/2"), None);
+        assert_eq!(parse_md_status("[/]"), Some((0, 0)));
+        assert_eq!(parse_md_status("no brackets"), None);
     }
 }
