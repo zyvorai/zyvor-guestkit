@@ -15,6 +15,21 @@ use std::fs;
 use std::process::Command;
 use std::sync::atomic::{AtomicU64, Ordering};
 
+/// Append `nodev,nosuid` to mount options for untrusted guest filesystems.
+///
+/// Without `nodev`, a device node planted in a malicious image (for example
+/// `/etc/shadow` as block device 8,0) would be opened by the *host* kernel when
+/// guest files are read, exposing host devices. Options are appended last so they
+/// override any caller-supplied `dev`/`suid`.
+pub(crate) fn harden_mount_opts(opts: &str) -> String {
+    let opts = opts.trim_matches(',');
+    if opts.is_empty() {
+        "nodev,nosuid".to_string()
+    } else {
+        format!("{opts},nodev,nosuid")
+    }
+}
+
 /// Check if we need sudo (i.e., not running as root).
 ///
 /// # Safety
@@ -224,7 +239,7 @@ impl Guestfs {
 
         let output = cmd
             .arg("-o")
-            .arg(mount_opts)
+            .arg(harden_mount_opts(mount_opts))
             .arg(&device_partition)
             .arg(&actual_mountpoint)
             .output()
@@ -257,7 +272,7 @@ impl Guestfs {
 
                 let retry_out = retry_cmd
                     .arg("-o")
-                    .arg(opts)
+                    .arg(harden_mount_opts(opts))
                     .arg(&device_partition)
                     .arg(&actual_mountpoint)
                     .output();
@@ -469,7 +484,7 @@ impl Guestfs {
             Command::new("mount")
         };
         let output = cmd
-            .args(["-o", opts])
+            .args(["-o", &harden_mount_opts(opts)])
             .arg(device)
             .arg(mountpoint)
             .output()
@@ -604,9 +619,7 @@ impl Guestfs {
             Command::new("mount")
         };
 
-        if !options.is_empty() {
-            cmd.arg("-o").arg(options);
-        }
+        cmd.arg("-o").arg(harden_mount_opts(options));
 
         let output = cmd
             .arg(&device_partition)
@@ -709,9 +722,7 @@ impl Guestfs {
             Command::new("mount")
         };
 
-        if !options.is_empty() {
-            cmd.arg("-o").arg(options);
-        }
+        cmd.arg("-o").arg(harden_mount_opts(options));
         if !vfstype.is_empty() {
             cmd.arg("-t").arg(vfstype);
         }
@@ -1096,6 +1107,13 @@ impl Guestfs {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn mount_opts_always_disable_device_nodes() {
+        assert_eq!(harden_mount_opts(""), "nodev,nosuid");
+        assert_eq!(harden_mount_opts("ro,noload"), "ro,noload,nodev,nosuid");
+        assert_eq!(harden_mount_opts("dev,rw,"), "dev,rw,nodev,nosuid");
+    }
+
     use super::*;
 
     #[test]

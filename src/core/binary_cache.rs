@@ -103,7 +103,7 @@ impl BinaryCache {
             .join("guestkit")
             .join("binary");
 
-        fs::create_dir_all(&cache_dir).context("Failed to create cache directory")?;
+        create_private_dir(&cache_dir).context("Failed to create cache directory")?;
 
         Ok(Self { cache_dir })
     }
@@ -154,10 +154,20 @@ impl BinaryCache {
         let encoded = bincode::serialize(data).context("Failed to serialize cache data")?;
 
         // Write atomically using temp file + rename
-        let temp_path = path.with_extension("tmp");
+        // The temp name is unique per call so concurrent saves of the same key
+        // cannot interleave writes into one file.
+        static SAVE_SEQ: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let temp_path = path.with_extension(format!(
+            "tmp.{}.{}",
+            std::process::id(),
+            SAVE_SEQ.fetch_add(1, std::sync::atomic::Ordering::Relaxed)
+        ));
         fs::write(&temp_path, encoded).context("Failed to write cache file")?;
 
-        fs::rename(&temp_path, &path).context("Failed to rename cache file")?;
+        if let Err(e) = fs::rename(&temp_path, &path) {
+            let _ = fs::remove_file(&temp_path);
+            return Err(anyhow::Error::new(e).context("Failed to rename cache file"));
+        }
 
         log::debug!("Saved cache to {:?} ({} bytes)", path, data.size());
 
@@ -317,17 +327,53 @@ impl BinaryCache {
     }
 }
 
+/// Create `dir` (and parents) and make sure the leaf is a real directory owned by
+/// the current user with mode 0700, so other local users cannot read or plant
+/// cache entries.
+pub(crate) fn create_private_dir(dir: &std::path::Path) -> std::io::Result<()> {
+    fs::create_dir_all(dir)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::{MetadataExt, PermissionsExt};
+        let meta = fs::symlink_metadata(dir)?;
+        if !meta.is_dir() {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                format!("{} is not a directory", dir.display()),
+            ));
+        }
+        if meta.uid() != unsafe { libc::geteuid() } {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::PermissionDenied,
+                format!("{} is owned by another user", dir.display()),
+            ));
+        }
+        if meta.permissions().mode() & 0o077 != 0 {
+            fs::set_permissions(dir, fs::Permissions::from_mode(0o700))?;
+        }
+    }
+    Ok(())
+}
+
 impl Default for BinaryCache {
     fn default() -> Self {
         Self::new().unwrap_or_else(|e| {
-            let fallback = std::env::temp_dir().join("guestkit").join("binary");
+            // Per-user name: a shared, predictable /tmp/guestkit could be pre-created
+            // by another local user to poison the cache.
+            #[cfg(unix)]
+            let user = unsafe { libc::geteuid() }.to_string();
+            #[cfg(not(unix))]
+            let user = String::from("user");
+            let fallback = std::env::temp_dir()
+                .join(format!("guestkit-{}", user))
+                .join("binary");
             log::warn!(
                 "Primary cache directory unavailable ({}), falling back to {}. \
                  Cache data in this location will be lost on reboot.",
                 e,
                 fallback.display()
             );
-            if let Err(create_err) = std::fs::create_dir_all(&fallback) {
+            if let Err(create_err) = create_private_dir(&fallback) {
                 log::error!("Fallback cache directory creation also failed: {}. Caching will be non-functional.", create_err);
             }
             Self { cache_dir: fallback }
@@ -400,6 +446,42 @@ impl CachedInspection {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(unix)]
+    #[test]
+    fn create_private_dir_is_owner_only_and_rejects_symlink() {
+        use std::os::unix::fs::PermissionsExt;
+        let t = tempfile::tempdir().unwrap();
+        let d = t.path().join("a").join("b");
+        create_private_dir(&d).unwrap();
+        assert_eq!(fs::metadata(&d).unwrap().permissions().mode() & 0o077, 0);
+
+        let link = t.path().join("link");
+        std::os::unix::fs::symlink(&d, &link).unwrap();
+        assert!(create_private_dir(&link).is_err());
+    }
+
+    #[test]
+    fn concurrent_saves_of_same_key_do_not_collide() {
+        let t = tempfile::tempdir().unwrap();
+        let cache = std::sync::Arc::new(BinaryCache::with_dir(t.path().to_path_buf()).unwrap());
+        let data = CachedInspection::new("k".to_string());
+        let hs: Vec<_> = (0..8)
+            .map(|_| {
+                let c = cache.clone();
+                let d = data.clone();
+                std::thread::spawn(move || {
+                    for _ in 0..20 {
+                        c.save("k", &d).unwrap();
+                    }
+                })
+            })
+            .collect();
+        for h in hs {
+            h.join().unwrap();
+        }
+        assert!(cache.load("k").is_ok());
+    }
+
     use super::*;
 
     #[test]
