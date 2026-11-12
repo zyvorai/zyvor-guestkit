@@ -126,6 +126,13 @@ jobs:
           kubectl -n zyvor exec deployment/postgresql -- pg_isready -h 127.0.0.1 -U zyvor -d zyvor || true
           kubectl -n zyvor logs -l app=postgresql --previous --tail=100 || true
           kubectl -n zyvor logs -l app=zyvor-api -c zyvor-api --previous --tail=100 || true
+          echo "--- postgres container internals"
+          kubectl -n zyvor exec deployment/postgresql -- sh -c 'id; ps -ef 2>&1 | head -20; echo "-- data dir"; ls -la /var/lib/postgresql/data 2>&1 | head -20; ls -la /var/lib/postgresql/data/pgdata 2>&1 | head -5; df -h /var/lib/postgresql/data; echo "-- stdout target"; ls -l /proc/1/fd/1 /proc/1/fd/2 2>&1; echo "-- postmaster log"; tail -20 /var/lib/postgresql/data/pgdata/log/* 2>/dev/null' || true
+          echo "--- postgres image and runtime view"
+          kubectl -n zyvor get pod -l app=postgresql -o jsonpath='{range .items[*]}{.status.containerStatuses[*].imageID}{"\n"}{end}' || true
+          sudo k3s crictl ps -a --name postgresql 2>&1 | head -5 || true
+          for c in $(sudo k3s crictl ps -a --name postgresql -q 2>/dev/null | head -2); do sudo k3s crictl logs --tail=50 "$c" 2>&1 || true; done
+          sudo journalctl -u k3s --no-pager -n 400 2>/dev/null | grep -iE "postgres|failed to load task|shim|oom" | tail -30 || true
           sudo dmesg 2>/dev/null | grep -iE "out of memory|oom|killed process" | tail -20 || true
           free -m || true
           echo "::endgroup::"
