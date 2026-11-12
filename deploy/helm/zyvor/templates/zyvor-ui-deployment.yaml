@@ -18,7 +18,7 @@ spec:
           image: {{ .Values.zyvorUi.image }}
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 80
+            - containerPort: 8443  # serve-https.py (image CMD) is TLS-only on 8443; nothing listens on 80
           env:
             - name: ZYVOR_API_URL
               value: http://zyvor-api:8080/api/v1
@@ -33,9 +33,11 @@ spec:
   selector:
     app: zyvor-ui
   ports:
-    - name: http
+    # The UI image only serves HTTPS (self-signed) on 8443; this used to target port 80 where
+    # nothing listens, so the NodePort refused every connection (curl exit 7 in the k3s E2E).
+    - name: https
       port: 80
-      targetPort: 80
+      targetPort: 8443
       {{- if eq .Values.zyvorUi.service.type "NodePort" }}
       nodePort: {{ .Values.zyvorUi.service.nodePort }}
       {{- end }}
