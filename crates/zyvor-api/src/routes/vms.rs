@@ -38,6 +38,44 @@ pub struct ListVmsQuery {
     pub include_shadow: bool,
 }
 
+/// Disk image extensions accepted on upload; anything else is stored as `qcow2`
+/// (the historical default) so a client-chosen extension never reaches the
+/// on-disk object key or the job payload.
+fn sanitize_image_format(filename: &str) -> String {
+    const ALLOWED: &[&str] = &[
+        "qcow2", "qcow", "raw", "img", "vmdk", "vhd", "vhdx", "vdi", "iso", "ova",
+    ];
+    let ext = PathBuf::from(filename)
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("qcow2")
+        .to_lowercase();
+    if ALLOWED.contains(&ext.as_str()) {
+        ext
+    } else {
+        "qcow2".to_string()
+    }
+}
+
+/// Removes a partially written upload unless `keep()` is called.
+struct UploadCleanup {
+    path: Option<PathBuf>,
+}
+
+impl UploadCleanup {
+    fn keep(&mut self) {
+        self.path = None;
+    }
+}
+
+impl Drop for UploadCleanup {
+    fn drop(&mut self) {
+        if let Some(p) = self.path.take() {
+            let _ = std::fs::remove_file(p);
+        }
+    }
+}
+
 pub async fn import_vm(
     State(state): State<AppState>,
     mut multipart: Multipart,
@@ -49,6 +87,7 @@ pub async fn import_vm(
     let mut wrote_file = false;
     let id = Uuid::new_v4();
     let mut disk_path = state.config.storage_path.join("pending");
+    let mut cleanup = UploadCleanup { path: None };
 
     while let Some(mut field) = multipart
         .next_field()
@@ -59,16 +98,13 @@ pub async fn import_vm(
             if let Some(name) = field.file_name() {
                 filename = name.to_string();
             }
-            let format = PathBuf::from(&filename)
-                .extension()
-                .and_then(|e| e.to_str())
-                .unwrap_or("qcow2")
-                .to_lowercase();
+            let format = sanitize_image_format(&filename);
             let object_key = format!("{id}.{format}");
             disk_path = state.config.storage_path.join(&object_key);
             let mut out = tokio::fs::File::create(&disk_path)
                 .await
                 .map_err(|e| ApiError::internal(e.to_string()))?;
+            cleanup.path = Some(disk_path.clone());
 
             while let Some(chunk) = field
                 .chunk()
@@ -92,11 +128,7 @@ pub async fn import_vm(
         return Err(ApiError::bad_request("file field is required"));
     }
 
-    let format = PathBuf::from(&filename)
-        .extension()
-        .and_then(|e| e.to_str())
-        .unwrap_or("qcow2")
-        .to_lowercase();
+    let format = sanitize_image_format(&filename);
     let object_key = format!("{id}.{format}");
 
     sqlx::query(
@@ -113,6 +145,7 @@ pub async fn import_vm(
     .execute(&state.pool)
     .await
     .map_err(|e| ApiError::internal(e.to_string()))?;
+    cleanup.keep();
 
     Ok(Json(ApiResponse::ok(VmImportResponse {
         id,
@@ -921,4 +954,34 @@ pub async fn import_from_nfs(
         size_bytes,
         path: dest.display().to_string(),
     })))
+}
+
+#[cfg(test)]
+mod import_tests {
+    use super::*;
+
+    #[test]
+    fn image_format_is_allowlisted() {
+        assert_eq!(sanitize_image_format("disk.VMDK"), "vmdk");
+        assert_eq!(sanitize_image_format("disk"), "qcow2");
+        assert_eq!(sanitize_image_format("x.evil\u{1}"), "qcow2");
+        assert_eq!(sanitize_image_format(&format!("a.{}", "z".repeat(300))), "qcow2");
+    }
+
+    #[test]
+    fn upload_cleanup_removes_partial_file_unless_kept() {
+        let dir = std::env::temp_dir().join(format!("gk-upload-{}", Uuid::new_v4()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let a = dir.join("a");
+        let b = dir.join("b");
+        std::fs::write(&a, b"x").unwrap();
+        std::fs::write(&b, b"x").unwrap();
+        drop(UploadCleanup { path: Some(a.clone()) });
+        let mut keep = UploadCleanup { path: Some(b.clone()) };
+        keep.keep();
+        drop(keep);
+        assert!(!a.exists());
+        assert!(b.exists());
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
 }
