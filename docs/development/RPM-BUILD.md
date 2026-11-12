@@ -1,5 +1,7 @@
 # Building GuestKit RPM Packages
 
+> **Note:** release RPMs and the COPR repository are discontinued; releases ship tar.gz only. This guide is for local builds.
+
 This guide explains how to build RPM packages for GuestKit.
 
 ## 📦 Available Spec Files
