@@ -6,7 +6,7 @@ This directory contains example scripts demonstrating the GuestKit Python bindin
 
 ### System Requirements
 
-- Python 3.6 or later
+- Python 3.10 or later
 - GuestKit with Python bindings built
 - QEMU tools (qemu-img, qemu-nbd)
 - Root/sudo access (required for most operations)

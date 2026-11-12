@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Python 3.10 is the minimum for `zyvor-guestkit`** (was 3.8). The bindings are built against the stable ABI from 3.10 (`abi3-py310`, `requires-python = ">=3.10"`); 3.8 and 3.9 are end of life and GitHub's current Ubuntu images no longer provide them, so the wheel install test could not run there. The install test now covers 3.10 to 3.13.
 - **Releases ship tar.gz only.** The `RPM Build` workflow (Mock builds, GitHub Release upload and COPR publish) is removed; the `.spec` files and `docs/development/RPM-BUILD.md` stay for anyone building locally. The Zeus VM tools `.deb` is a separate guest artifact and is unchanged.
 
 ### Documentation
