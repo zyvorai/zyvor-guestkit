@@ -7,7 +7,7 @@ name = "zyvor-guestkit"
 dynamic = ["version"]
 description = "Pure Rust VM disk toolkit with beautiful output, Windows registry parsing, and VM migration support - Python bindings"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 keywords = ["vm", "disk", "qcow2", "vmdk", "inspection", "guestfs"]
 authors = [
@@ -21,8 +21,6 @@ classifiers = [
     "Operating System :: POSIX :: Linux",
     "Operating System :: MacOS",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
