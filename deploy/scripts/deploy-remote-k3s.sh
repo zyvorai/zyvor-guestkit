@@ -149,6 +149,11 @@ kubectl -n "${NAMESPACE}" rollout status deployment/redis --timeout=180s
 kubectl -n "${NAMESPACE}" rollout status deployment/zyvor-api --timeout=300s
 kubectl -n "${NAMESPACE}" rollout status deployment/guestkit-worker --timeout=300s
 kubectl -n "${NAMESPACE}" rollout status deployment/zyvor-ui --timeout=180s
+# MinIO is optional (minio.enabled); when present, fail here rather than after the
+# VM-tools build that uploads into it (that build takes ~15 minutes on a hosted runner).
+if kubectl -n "${NAMESPACE}" get deployment/minio >/dev/null 2>&1; then
+  kubectl -n "${NAMESPACE}" rollout status deployment/minio --timeout=180s
+fi
 
 API_PORT="$(kubectl -n "${NAMESPACE}" get svc zyvor-api -o jsonpath='{.spec.ports[0].nodePort}')"
 UI_PORT="$(kubectl -n "${NAMESPACE}" get svc zyvor-ui -o jsonpath='{.spec.ports[0].nodePort}')"

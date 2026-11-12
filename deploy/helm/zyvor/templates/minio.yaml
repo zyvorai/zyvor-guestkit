@@ -38,6 +38,9 @@ spec:
       containers:
         - name: minio
           image: {{ .Values.minio.image }}
+          {{- with .Values.minio.command }}
+          command: {{ toJson . }}
+          {{- end }}
           args: ["server", "/data", "--console-address", ":9001"]
           env:
             - name: MINIO_ROOT_USER

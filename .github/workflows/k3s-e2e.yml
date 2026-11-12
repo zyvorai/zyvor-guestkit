@@ -9,14 +9,18 @@ on:
       - 'deploy/**'
       - 'packaging/vmtools/**'
       - '.github/workflows/k3s-e2e.yml'
-  push:
-    tags:
-      - 'v*'
+  # Release smoke test: release.yml calls this after its "Publish GHCR Release Images"
+  # job, so the v* images are guaranteed to exist. It used to trigger on the tag push
+  # itself and poll GHCR for 20 minutes, but those images are built by release.yml on a
+  # self-hosted runner that had a ~50 minute queue (v1.2.11: tag 05:13, images 06:09-06:29).
+  workflow_call:
 
 # Privileged worker (NBD) and k3s install require sudo on ubuntu-latest.
 # Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+# Literal group name: when called from release.yml, github.workflow is "Release" and
+# the same group as release.yml's own concurrency would deadlock/cancel it.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: k3s-e2e-${{ github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
 jobs:
@@ -55,28 +59,27 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Wait for GHCR release images
+      - name: Check GHCR release images
         if: steps.images.outputs.use_release_images == 'true'
+        # Normally instant (release.yml publishes before calling this workflow); the retry
+        # only covers GHCR read-after-write lag and manual dispatches on a fresh tag.
         run: |
           TAG="${{ steps.images.outputs.image_tag }}"
           for img in guestkit-worker zyvor-api zyvor-ui; do
-            echo "Waiting for ghcr.io/zyvorai/${img}:${TAG}..."
-            for i in $(seq 1 40); do
-              if curl -sf -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-                -H "Accept: application/vnd.docker.distribution.manifest.v2+json" \
-                "https://ghcr.io/v2/zyvorai/${img}/manifests/${TAG}" >/dev/null; then
-                echo "  ${img} available"
+            ref="ghcr.io/zyvorai/${img}:${TAG}"
+            for i in $(seq 1 20); do
+              if docker manifest inspect "${ref}" >/dev/null 2>&1; then
+                echo "${ref} available"
                 break
               fi
-              if [[ "${i}" -eq 40 ]]; then
-                echo "ERROR: timed out waiting for ghcr.io/zyvorai/${img}:${TAG}" >&2
+              if [[ "${i}" -eq 20 ]]; then
+                echo "ERROR: ${ref} not found after 10 minutes" >&2
                 exit 1
               fi
+              echo "Waiting for ${ref} (${i}/20)..."
               sleep 30
             done
           done
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deploy Zyvor stack
         env:
@@ -103,6 +106,14 @@ jobs:
             kubectl -n zyvor logs -l "app=${app}" --all-containers --tail=200 --prefix || true
             echo "::endgroup::"
           done
+          echo "::group::kubectl get events"
+          kubectl -n zyvor get events --sort-by=.lastTimestamp || true
+          echo "::endgroup::"
+          echo "::group::kube-system pods and DNS"
+          kubectl -n kube-system get pods -o wide || true
+          timeout 90 kubectl -n zyvor run dns-probe --rm -i --restart=Never --image=docker.io/library/busybox:1.36 --command -- \
+            sh -c 'nslookup postgresql.zyvor.svc.cluster.local; nc -zv -w 5 postgresql 5432' || true
+          echo "::endgroup::"
           echo "::group::kubectl get pods -o wide"
           kubectl -n zyvor get pods -o wide || true
           echo "::endgroup::"

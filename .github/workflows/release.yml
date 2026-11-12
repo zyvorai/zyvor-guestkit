@@ -125,6 +125,17 @@ jobs:
           chmod +x deploy/scripts/publish-images.sh
           REGISTRY=ghcr.io/zyvorai bash deploy/scripts/publish-images.sh
 
+  # Smoke test of the images just published above (k3s install, Helm deploy, E2E).
+  # Needs publish-release-images, not the whole workflow: the multi-arch MCP image
+  # and the other jobs take hours and are unrelated to this check.
+  k3s-e2e:
+    name: k3s E2E (release images)
+    needs: publish-release-images
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/k3s-e2e.yml
+
   mcp-image:
     name: Build and push guestkit-mcp image (MCP Registry)
     needs: create-release
