@@ -34,6 +34,10 @@ spec:
       labels:
         app: postgresql
     spec:
+      {{- with .Values.postgresql.securityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
         - name: postgresql
           image: {{ .Values.postgresql.image }}

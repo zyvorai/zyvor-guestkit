@@ -90,6 +90,8 @@ zyvorUi:
 
 postgresql:
   image: postgres:16-alpine
+  # Optional pod securityContext (e.g. appArmorProfile, see values-ci.yaml).
+  securityContext: {}
   user: zyvor
   password: zyvor
   database: zyvor
