@@ -410,37 +410,7 @@ impl Guestfs {
             Error::CommandFailed(format!("Failed to create target directory: {}", e))
         })?;
 
-        // Extract CPIO archive
-        // cpio -idm < archive.cpio
-        let cpio_data = std::fs::read(cpiofile).map_err(Error::Io)?;
-
-        let mut cmd = Command::new("cpio");
-        cmd.arg("-idm")
-            .arg("-D")
-            .arg(&target_path)
-            .stdin(std::process::Stdio::piped());
-
-        let mut child = cmd
-            .spawn()
-            .map_err(|e| Error::CommandFailed(format!("Failed to spawn cpio: {}", e)))?;
-
-        // Write CPIO data to cpio's stdin
-        if let Some(mut stdin) = child.stdin.take() {
-            use std::io::Write;
-            stdin.write_all(&cpio_data).map_err(Error::Io)?;
-        }
-
-        let output = child
-            .wait_with_output()
-            .map_err(|e| Error::CommandFailed(format!("Failed to wait for cpio: {}", e)))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(Error::CommandFailed(format!(
-                "CPIO extraction failed: {}",
-                stderr
-            )));
-        }
+        crate::guestfs::cpio_ops::extract_cpio_confined(cpiofile, &target_path)?;
 
         Ok(())
     }

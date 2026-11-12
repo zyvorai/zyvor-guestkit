@@ -10,6 +10,74 @@ use crate::guestfs::security_utils::PathValidator;
 use crate::guestfs::Guestfs;
 use std::process::{Command, Stdio};
 
+/// List the member names of a CPIO archive.
+///
+/// The archive is passed with `-I` instead of being piped through stdin:
+/// writing the whole archive to a child whose stdout is also piped deadlocks
+/// once the name list exceeds the pipe buffer (typical for initramfs images).
+pub(crate) fn list_cpio(archive: &std::path::Path) -> Result<Vec<String>> {
+    let output = Command::new("cpio")
+        .arg("-t")
+        .arg("-I")
+        .arg(archive)
+        .stdin(Stdio::null())
+        .output()
+        .map_err(|e| Error::CommandFailed(format!("Failed to execute cpio: {}", e)))?;
+
+    if !output.status.success() {
+        return Err(Error::CommandFailed(format!(
+            "cpio list failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+
+    Ok(String::from_utf8_lossy(&output.stdout)
+        .lines()
+        .map(|s| s.to_string())
+        .collect())
+}
+
+/// Reject archive member names that would be written outside the extraction
+/// directory (absolute names or any `..` component).
+pub(crate) fn validate_cpio_member_names(names: &[String]) -> Result<()> {
+    for name in names {
+        if name.starts_with('/') || name.split('/').any(|c| c == "..") {
+            return Err(Error::SecurityViolation(format!(
+                "CPIO archive member escapes extraction directory: {}",
+                name
+            )));
+        }
+    }
+    Ok(())
+}
+
+/// Extract `archive` into `host_dir`, refusing members that escape it.
+pub(crate) fn extract_cpio_confined(
+    archive: &std::path::Path,
+    host_dir: &std::path::Path,
+) -> Result<()> {
+    validate_cpio_member_names(&list_cpio(archive)?)?;
+
+    let output = Command::new("cpio")
+        .arg("-idm")
+        .arg("--no-absolute-filenames")
+        .arg("-D")
+        .arg(host_dir)
+        .arg("-I")
+        .arg(archive)
+        .stdin(Stdio::null())
+        .output()
+        .map_err(|e| Error::CommandFailed(format!("Failed to execute cpio: {}", e)))?;
+
+    if !output.status.success() {
+        return Err(Error::CommandFailed(format!(
+            "cpio extraction failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        )));
+    }
+    Ok(())
+}
+
 impl Guestfs {
     /// Extract CPIO archive to directory
     ///
@@ -23,33 +91,7 @@ impl Guestfs {
 
         let host_dir = self.resolve_guest_path(directory)?;
 
-        let archive_data = std::fs::read(archive).map_err(Error::Io)?;
-
-        let mut cmd = Command::new("cpio");
-        cmd.arg("-idm")
-            .arg("-D")
-            .arg(&host_dir)
-            .stdin(std::process::Stdio::piped());
-
-        let mut child = cmd
-            .spawn()
-            .map_err(|e| Error::CommandFailed(format!("Failed to execute cpio: {}", e)))?;
-
-        use std::io::Write;
-        if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(&archive_data).map_err(Error::Io)?;
-        }
-
-        let output = child
-            .wait_with_output()
-            .map_err(|e| Error::CommandFailed(format!("Failed to wait for cpio: {}", e)))?;
-
-        if !output.status.success() {
-            return Err(Error::CommandFailed(format!(
-                "cpio extraction failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            )));
-        }
+        extract_cpio_confined(std::path::Path::new(archive), &host_dir)?;
 
         Ok(())
     }
@@ -127,33 +169,7 @@ impl Guestfs {
             eprintln!("guestfs: cpio_list {}", archive);
         }
 
-        let archive_data = std::fs::read(archive).map_err(Error::Io)?;
-
-        let mut cmd = Command::new("cpio");
-        cmd.arg("-t").stdin(std::process::Stdio::piped());
-
-        let mut child = cmd
-            .spawn()
-            .map_err(|e| Error::CommandFailed(format!("Failed to execute cpio: {}", e)))?;
-
-        use std::io::Write;
-        if let Some(mut stdin) = child.stdin.take() {
-            stdin.write_all(&archive_data).map_err(Error::Io)?;
-        }
-
-        let output = child
-            .wait_with_output()
-            .map_err(|e| Error::CommandFailed(format!("Failed to wait for cpio: {}", e)))?;
-
-        if !output.status.success() {
-            return Err(Error::CommandFailed(format!(
-                "cpio list failed: {}",
-                String::from_utf8_lossy(&output.stderr)
-            )));
-        }
-
-        let output_str = String::from_utf8_lossy(&output.stdout);
-        let files: Vec<String> = output_str.lines().map(|s| s.to_string()).collect();
+        let files = list_cpio(std::path::Path::new(archive))?;
 
         Ok(files)
     }
@@ -162,6 +178,22 @@ impl Guestfs {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cpio_member_names_must_stay_inside_extraction_dir() {
+        let ok = vec![
+            ".".to_string(),
+            "etc/passwd".to_string(),
+            "a/b..c/d".to_string(),
+        ];
+        assert!(validate_cpio_member_names(&ok).is_ok());
+        for bad in ["/etc/passwd", "../x", "a/../../x", "a/.."] {
+            assert!(
+                validate_cpio_member_names(&[bad.to_string()]).is_err(),
+                "{bad} should be rejected"
+            );
+        }
+    }
 
     #[test]
     fn test_cpio_ops_api_exists() {
