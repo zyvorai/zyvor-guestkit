@@ -32,6 +32,7 @@
 
 | Release | What changed |
 |---|---|
+| **1.2.11** | Security hardening: guest paths resolve chroot-style, mount/archive/cpio traversal closed, guest filesystems mount `nodev,nosuid`, `read_file` refuses non-regular files and caps at 1 GiB, NBD lock moved to `/run/lock` or `XDG_RUNTIME_DIR`, job ids restricted to `[A-Za-z0-9._-]`, plus loop/NBD cleanup, GPT, mdstat and `grep` option-injection fixes |
 | **1.2.10** | Disk access works on Ubuntu 26.04 (loop and NBD readiness is read from sysfs, so `root:disk 0660` device nodes no longer time out); VHDX, VDI, VHD and VMDK images are detected; nine RustSec advisories cleared |
 | **Agent (1.2.6)** | Per-container eBPF network policy and BPF-LSM controls in the guest agent (`guestkit.netpolicy` / `guestkit.lsm`), off by default, audit first, enforce only under a time-bound lease |
 | **1.2.5** | Offline inject on `run_migrate_repair`: hostname, network, users, services, first-boot scripts, cloud-init, AD rejoin, Windows KMS and RDP, appended to the repair plan |
@@ -188,8 +189,8 @@ Architecture in depth: [docs/architecture/overview.md](docs/architecture/overvie
 ## Quickstart
 
 ```bash
-# v1.2.10 GitHub Release — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.10/guestkit-1.2.10-linux-amd64.tar.gz
+# v1.2.11 GitHub Release — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz
 
 guestkit doctor vm.qcow2 --target proxmox --explain
 guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml
@@ -259,7 +260,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Maturity
 
-GuestKit is at **v1.2.10** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
+GuestKit is at **v1.2.11** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
 
 | Area | Status |
 |---|---|
