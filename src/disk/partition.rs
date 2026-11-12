@@ -152,10 +152,17 @@ impl PartitionTable {
 
         // Read partition entries
         let mut partitions = Vec::new();
-        let entries_offset = partition_entries_lba * 512;
+        let entries_offset = partition_entries_lba.checked_mul(512).ok_or_else(|| {
+            Error::Detection(format!(
+                "Invalid GPT partition entries LBA: {}",
+                partition_entries_lba
+            ))
+        })?;
 
         for i in 0..num_entries.min(128) {
-            let offset = entries_offset + (i as u64 * entry_size as u64);
+            let offset = (i as u64 * entry_size as u64)
+                .checked_add(entries_offset)
+                .ok_or_else(|| Error::Detection("GPT entry offset overflow".to_string()))?;
             let mut entry = vec![0u8; entry_size as usize];
             reader.read_exact_at(offset, &mut entry)?;
 
@@ -189,7 +196,7 @@ impl PartitionTable {
             partitions.push(Partition {
                 number: (i + 1),
                 start_lba,
-                size_sectors: end_lba - start_lba + 1,
+                size_sectors: (end_lba - start_lba).saturating_add(1),
                 type_id: 0, // GPT doesn't use type_id
                 bootable: false,
                 type_guid: Some(type_guid),
@@ -232,5 +239,39 @@ mod tests {
         mbr[446 + 2 * 16 + 4] = 0xEE;
         assert!(PartitionTable::is_gpt(&mbr));
         assert!(!PartitionTable::is_gpt(&[0u8; 512]));
+    }
+
+    fn gpt_image(entries_lba: u64, start: u64, end: u64) -> tempfile::NamedTempFile {
+        use std::io::Write;
+        let mut img = vec![0u8; 512 * 4];
+        img[510] = 0x55;
+        img[511] = 0xAA;
+        img[446 + 4] = 0xEE;
+        img[512..520].copy_from_slice(b"EFI PART");
+        img[512 + 72..512 + 80].copy_from_slice(&entries_lba.to_le_bytes());
+        img[512 + 80..512 + 84].copy_from_slice(&1u32.to_le_bytes());
+        img[512 + 84..512 + 88].copy_from_slice(&128u32.to_le_bytes());
+        let e = 1024;
+        img[e] = 1; // non-zero type GUID
+        img[e + 32..e + 40].copy_from_slice(&start.to_le_bytes());
+        img[e + 40..e + 48].copy_from_slice(&end.to_le_bytes());
+        let mut f = tempfile::NamedTempFile::new().unwrap();
+        f.write_all(&img).unwrap();
+        f
+    }
+
+    #[test]
+    fn test_gpt_huge_entries_lba_is_error_not_panic() {
+        let f = gpt_image(u64::MAX, 0, 0);
+        let mut r = DiskReader::open(f.path()).unwrap();
+        assert!(PartitionTable::parse(&mut r).is_err());
+    }
+
+    #[test]
+    fn test_gpt_full_range_partition_does_not_overflow() {
+        let f = gpt_image(2, 0, u64::MAX);
+        let mut r = DiskReader::open(f.path()).unwrap();
+        let t = PartitionTable::parse(&mut r).unwrap();
+        assert_eq!(t.partitions()[0].size_sectors, u64::MAX);
     }
 }
