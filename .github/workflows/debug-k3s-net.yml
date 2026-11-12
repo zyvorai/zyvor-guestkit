@@ -5,29 +5,35 @@ on:
 jobs:
   d:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - run: bash deploy/scripts/install-k3s-ubuntu.sh
-      - name: deploy with published images
+      - name: deploy with published worker/api images, local UI image
         env:
           PULL_REGISTRY: ghcr.io/zyvorai
           IMAGE_TAG: latest
           HELM_VALUES_FILE: values-ci.yaml
-        run: bash deploy/scripts/deploy-remote-k3s.sh || true
-      - name: diagnose
+        run: |
+          export KUBECONFIG="${HOME}/.kube/config"
+          bash deploy/scripts/deploy-remote-k3s.sh || true
+          sudo podman build --format docker -t zyvor-ui:latest -f deploy/ui/Dockerfile deploy/ui
+          sudo podman save zyvor-ui:latest -o /tmp/ui.tar
+          sudo k3s ctr -n k8s.io images import /tmp/ui.tar
+          sudo k3s ctr -n k8s.io images tag localhost/zyvor-ui:latest docker.io/library/zyvor-ui:latest || true
+          NODE_IP=$(kubectl get nodes -o jsonpath='{.items[0].status.addresses[?(@.type=="InternalIP")].address}')
+          helm upgrade zyvor deploy/helm/zyvor -n zyvor --reuse-values --set zyvorUi.image=zyvor-ui:latest
+          kubectl -n zyvor rollout restart deployment/zyvor-ui
+          kubectl -n zyvor rollout status deployment/zyvor-ui --timeout=120s
+          kubectl -n zyvor rollout status deployment/zyvor-api --timeout=180s
+          kubectl -n zyvor rollout status deployment/postgresql --timeout=60s
+      - name: e2e orchestrator
+        timeout-minutes: 15
+        run: bash deploy/scripts/ci-k3s-e2e.sh
+      - name: dump
         if: always()
         run: |
           export KUBECONFIG="${HOME}/.kube/config"
-          sleep 60
-          echo "::group::pods"; kubectl -n zyvor get pods -o wide; echo "::endgroup::"
-          echo "::group::postgres ps/ls"; kubectl -n zyvor exec deploy/postgresql -- sh -c 'ps; pg_isready -U zyvor -h 127.0.0.1; ls -la /var/lib/postgresql/data | head; cat /proc/1/cmdline | tr "\0" " "' || true; echo "::endgroup::"
-          echo "::group::postgres logs"; kubectl -n zyvor logs deploy/postgresql --tail=50 || true; kubectl -n zyvor logs deploy/postgresql --previous --tail=20 || true; echo "::endgroup::"
-          echo "::group::api logs"; kubectl -n zyvor logs deploy/zyvor-api -c zyvor-api --tail=30 || true; echo "::endgroup::"
-          echo "::group::svc/endpoints"; kubectl -n zyvor get svc,endpoints -o wide; echo "::endgroup::"
-          echo "::group::net probe"
-          PGIP=$(kubectl -n zyvor get pod -l app=postgresql -o jsonpath='{.items[0].status.podIP}')
-          timeout 120 kubectl -n zyvor run probe --rm -i --restart=Never --image=docker.io/library/busybox:1.36 --command -- sh -c "echo pod-ip $PGIP; nc -zv -w 5 $PGIP 5432; echo rc=\$?; nc -zv -w 5 postgresql 5432; echo rc=\$?; nc -zv -w 5 redis 6379; echo rc=\$?" || true
-          echo "::endgroup::"
-          echo "::group::host net"; ip -br a; sysctl net.bridge.bridge-nf-call-iptables net.ipv4.ip_forward 2>&1; lsmod | grep -E 'br_netfilter|nf_tables|ip_tables|overlay' ; iptables -V; sudo iptables-save | grep -c . ; sudo iptables -S FORWARD | head; sudo nft list ruleset 2>/dev/null | head -40; systemctl is-active ufw; echo "::endgroup::"
-          echo "::group::dmesg"; sudo dmesg | tail -30; echo "::endgroup::"
+          kubectl -n zyvor get pods -o wide
+          kubectl -n zyvor logs deploy/zyvor-api -c zyvor-api --tail=60 || true
+          kubectl -n zyvor logs deploy/guestkit-worker --tail=60 || true
