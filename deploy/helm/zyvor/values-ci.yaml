@@ -43,6 +43,17 @@ persistence:
     hostPath: /var/lib/zyvor/images
   kubevirtLocalPath: /data/k3s/storage
 
+postgresql:
+  # On GitHub's ubuntu-latest (Ubuntu 26.04, kernel 7.x) the containerd AppArmor profile
+  # (cri-containerd.apparmor.d, stacked with &unconfined) denies a container's processes
+  # signalling each other: `gosu` (postgres entrypoint) spins forever on SIGRTMIN+1 and
+  # `pg_ctl stop` fails with "Permission denied" (dmesg: apparmor="DENIED" operation="signal"),
+  # so postgres never came up and zyvor-api died with "pool timed out". Run this pod
+  # unconfined in CI; a real host fix belongs in the node's AppArmor/containerd policy.
+  securityContext:
+    appArmorProfile:
+      type: Unconfined
+
 minio:
   enabled: true
   # minio/minio is no longer pullable from Docker Hub or quay.io (ImagePullBackOff on every
