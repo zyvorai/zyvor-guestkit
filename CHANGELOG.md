@@ -13,6 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`NbdDevice::disconnect`** — when the device stays busy it now keeps `connected` set (and the qemu-nbd child), so a retry or `Drop` attempts the disconnect again instead of leaking the device.
 - **Job ids** — `JobValidator` rejects job ids that are not a single safe path component (`../`, `/`, leading `.`, >128 chars); the file transport also refuses them in `ack_job`/`nack_job`. Job ids were used to build spool/result file names.
 - **`zyvor-api` storage import** — importing a file from a subdirectory of the storage root no longer overwrites an unrelated file already stored under the same name.
+- **Guest mounts** — every host `mount` of a guest filesystem now adds `nodev,nosuid`. Without `nodev`, a device node planted in a malicious image (e.g. `/etc/shadow` as block device 8,0) was opened by the host kernel when guest files were read.
+- **`read_file`/`cat`** — refuse FIFOs, device nodes and directories (opening a planted FIFO blocked forever) and files over 1 GiB instead of reading them into memory.
+- **`grep`/`egrep`/`fgrep`** — the pattern is passed with `-e` and `--`, so a pattern starting with `-` is no longer interpreted as a `grep` option (e.g. `-f <host file>`).
+- **`cpio_in`/`cpio_extract`** — refuse archives with absolute or `..` member names and pass `--no-absolute-filenames`, so an archive can no longer write outside the target directory. The archive is read with `-I` instead of being piped, which also fixes a deadlock in `cpio_extract`/`cpio_list` when the member list exceeded the pipe buffer.
+- **GPT parsing** — a hostile header (`partition_entries_lba * 512` overflow, or a partition spanning `0..u64::MAX`) returns an error / saturates instead of panicking.
+- **RAID inspection** — `/proc/mdstat` lines with brackets in reverse order (`]x[`) panicked the parser, and `[n/m]` counts were never read from the usual `[2/2] [UU]` line (the last bracket group was used).
+- **Binary cache** — the directory is created owner-only (0700), the fallback is per-user (`/tmp/guestkit-<uid>`) and rejected if it is a symlink or owned by someone else, and concurrent saves of one key no longer share a temp file.
+- **`zyvor-api` VM import** — the stored extension is allowlisted (it ended up in the object key and job payload) and a partially written upload is removed when the stream or the database insert fails.
 
 ## [1.2.10] - 2026-11-11
 
