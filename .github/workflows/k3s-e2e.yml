@@ -27,7 +27,12 @@ jobs:
   k3s-stack-e2e:
     name: k3s stack install + E2E
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    # Measured on hosted ubuntu-latest (4 vCPU): k3s install 3 min + deploy (podman builds of
+    # worker/api/ui from source on PR runs) 24-28 min + VM-tools bundle (musl guestkitd and the
+    # Windows agent, a second full cargo build) 15+ min = ~48 min before the E2E itself starts,
+    # so the old 45 minute limit killed healthy runs (run 43222372158 was cancelled mid-compile).
+    # Per-step limits below keep a genuine hang from consuming the whole budget.
+    timeout-minutes: 90
     permissions:
       contents: read
       packages: read
@@ -82,6 +87,7 @@ jobs:
           done
 
       - name: Deploy Zyvor stack
+        timeout-minutes: 45
         env:
           PULL_REGISTRY: ${{ steps.images.outputs.pull_registry }}
           IMAGE_TAG: ${{ steps.images.outputs.image_tag }}
@@ -89,12 +95,14 @@ jobs:
         run: bash deploy/scripts/deploy-remote-k3s.sh
 
       - name: Publish VM tools bundle to MinIO
+        timeout-minutes: 30
         env:
           MINIO_VIA_KUBECTL: "1"
           MINIO_NAMESPACE: zyvor
         run: bash deploy/scripts/publish-vmtools-bundle.sh
 
       - name: Run k3s E2E orchestrator
+        timeout-minutes: 20
         run: bash deploy/scripts/ci-k3s-e2e.sh
 
       - name: Dump pod logs on failure
