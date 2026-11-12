@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- **Releases ship tar.gz only.** The `RPM Build` workflow (Mock builds, GitHub Release upload and COPR publish) is removed; the `.spec` files and `docs/development/RPM-BUILD.md` stay for anyone building locally. The Zeus VM tools `.deb` is a separate guest artifact and is unchanged.
+
 ## [1.2.11] - 2026-11-12
 
 ### Changed (behaviour)
