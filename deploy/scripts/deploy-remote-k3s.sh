@@ -178,7 +178,7 @@ echo "=== Zyvor deployed ==="
 kubectl -n "${NAMESPACE}" get pods
 echo ""
 echo "API:  http://${NODE_IP}:${API_PORT}/api/v1/health"
-echo "UI:   http://${NODE_IP}:${UI_PORT}/"
+echo "UI:   https://${NODE_IP}:${UI_PORT}/   (self-signed certificate: curl -k https://${NODE_IP}:${UI_PORT}/)"
 echo ""
 echo "Smoke (empty image will fail doctor — use a real disk):"
 echo "  API=http://${NODE_IP}:${API_PORT}/api/v1"

@@ -6,6 +6,12 @@ createNamespace: false
 ingress:
   enabled: true
   className: nginx
+  # Protocol the controller uses to reach the zyvor-ui Service. The UI image serves HTTPS only
+  # (self-signed, port 8443), so this must stay HTTPS. Applied as the nginx
+  # backend-protocol annotation on the Ingress and, when className is traefik, as
+  # service.serversscheme on the zyvor-ui Service (Traefik must also accept the self-signed
+  # certificate, e.g. --serversTransport.insecureSkipVerify=true).
+  uiBackendProtocol: HTTPS
   hosts:
     ui: console.zyvor.local
     api: api.zyvor.local
@@ -103,9 +109,12 @@ redis:
 
 minio:
   enabled: true
-  image: minio/minio:RELEASE.2024-12-18T13-15-44Z
-  # Optional container command override (needed for images whose entrypoint is not `minio`, e.g. Bitnami).
-  command: []
+  # minio/minio is no longer pullable from Docker Hub or quay.io; the Bitnami legacy mirror still
+  # serves this pinned build. Its entrypoint is a Bitnami wrapper, so run the binary directly.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  # Container command override (needed for images whose entrypoint is not `minio`, e.g. Bitnami).
+  # Set to [] when using an image whose entrypoint already is `minio`.
+  command: ["minio"]
   accessKey: zyvor
   secretKey: zyvor-secret
   service:

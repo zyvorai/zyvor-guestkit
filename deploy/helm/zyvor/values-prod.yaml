@@ -28,7 +28,7 @@ networkPolicy:
 
 # Pin GHCR semver tags — never :latest in production.
 zyvorApi:
-  image: ghcr.io/zyvorai/zyvor-api:v1.2.6
+  image: ghcr.io/zyvorai/zyvor-api:v1.2.11
   replicas: 2
   storageClass: longhorn
   auth:
@@ -42,11 +42,11 @@ zyvorApi:
     serverSans: "localhost,zyvor-api,api.example.com,agent-api.example.com"
 
 zyvorUi:
-  image: ghcr.io/zyvorai/zyvor-ui:v1.2.6
+  image: ghcr.io/zyvorai/zyvor-ui:v1.2.11
   replicas: 2
 
 guestkitWorker:
-  image: ghcr.io/zyvorai/guestkit-worker:v1.2.6
+  image: ghcr.io/zyvorai/guestkit-worker:v1.2.11
   replicas: 2
 
 postgresql:
@@ -56,8 +56,10 @@ redis:
   password: "REPLACE_WITH_strong_redis_password"
 
 minio:
-  # Pinned release tag (avoid :latest)
-  image: minio/minio:RELEASE.2024-12-18T13-15-44Z
+  # Pinned build (avoid :latest). minio/minio is no longer pullable; Bitnami legacy mirror
+  # needs the command override because its entrypoint is a wrapper.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  command: ["minio"]
   accessKey: "REPLACE_WITH_minio_access_key"
   secretKey: "REPLACE_WITH_strong_minio_secret"
 
