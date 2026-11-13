@@ -28,6 +28,10 @@ kind: Service
 metadata:
   name: zyvor-ui
   namespace: {{ .Values.namespace }}
+  {{- if and .Values.ingress.enabled (eq .Values.ingress.className "traefik") (eq (.Values.ingress.uiBackendProtocol | default "") "HTTPS") }}
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+  {{- end }}
 spec:
   type: {{ .Values.zyvorUi.service.type }}
   selector:

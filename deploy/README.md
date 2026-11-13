@@ -94,7 +94,7 @@ These are deployment-time decisions the chart leaves to the operator:
   DSN is delivered via the `zyvor-secrets` Secret (not plaintext env).
 - **Persistence**: postgres and minio use `emptyDir` by default → **data is lost
   on pod restart**. Wire PVCs before production.
-- **TLS**: the Ingress is HTTP-only (`ssl-redirect: false`); terminate TLS at
+- **TLS**: the Ingress is HTTP-only to clients by default (`ssl-redirect: false`; it talks HTTPS to the UI backend); terminate TLS at
   your ingress / LB (e.g. cert-manager). Agent↔API is already mTLS on 8443.
 - **Backup**: no built-in backup/restore for the DB or image vault — add your own
   (`pg_dump` CronJob, vault snapshot).
@@ -167,9 +167,9 @@ helm upgrade --install zyvor deploy/helm/zyvor -n zyvor \
 
 ### Known issues
 
-- `values.yaml` and `values-prod.yaml` still name `minio/minio:RELEASE.2024-12-18T13-15-44Z`, which is no longer pullable. Outside CI, override `minio.image` (and `minio.command` if the image's entrypoint is not `minio`), or use the CI overlay values as a template, or disable MinIO (`minio.enabled=false`) and use the PVC path.
-- The Ingress (`templates/ingress.yaml`) sends plain HTTP to the `zyvor-ui` Service (port 80), which now forwards to the TLS-only UI on 8443, so the ingress route to the console is not expected to work until the chart is changed (for example `nginx.ingress.kubernetes.io/backend-protocol: HTTPS`). Use the NodePort over `https://` (self-signed) or `kubectl port-forward svc/zyvor-ui 8081:80` and open `https://localhost:8081`. Not verified against a live cluster.
-- `deploy-remote-k3s.sh` still prints the UI URL as `http://...`; use `https://`.
+- None of the previously listed chart issues remain: `values.yaml` and `values-prod.yaml` now use the same pinned `docker.io/bitnamilegacy/minio` image and `minio.command: ["minio"]` as CI (set `minio.command=[]` if you switch to an image whose entrypoint is `minio`); the Ingress sets `nginx.ingress.kubernetes.io/backend-protocol` from `ingress.uiBackendProtocol` (default `HTTPS`) and, for `ingress.className: traefik`, the `zyvor-ui` Service gets `traefik.ingress.kubernetes.io/service.serversscheme: https`; `deploy-remote-k3s.sh` prints an `https://` UI URL with a `curl -k` hint.
+- The UI certificate is self-signed, so Traefik needs `--serversTransport.insecureSkipVerify=true` (nginx does not verify backend certificates by default). Ingress routing is validated with `helm template` only, not against a live controller. `agent-mtls-ingress.yaml` already used `backend-protocol: HTTPS` and needed no change.
+- `values-prod.yaml` image tags are `v1.2.11` (tags verified to exist on GHCR).
 
 **Ubuntu live E2E** (manual, on a k3s host with MinIO + KubeVirt):
 

@@ -5,6 +5,9 @@ metadata:
   name: zyvor-ingress
   namespace: {{ .Values.namespace }}
   annotations:
+    {{- if .Values.ingress.uiBackendProtocol }}
+    nginx.ingress.kubernetes.io/backend-protocol: {{ .Values.ingress.uiBackendProtocol | quote }}
+    {{- end }}
     {{- if and .Values.ingress.tls .Values.ingress.tls.enabled }}
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     {{- else }}

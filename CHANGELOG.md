@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Helm chart fixes**: `values.yaml` and `values-prod.yaml` use the pinned, pullable `docker.io/bitnamilegacy/minio` image with `minio.command: ["minio"]` (same as CI); the Ingress sends HTTPS to the TLS-only `zyvor-ui` Service (new value `ingress.uiBackendProtocol`, default `HTTPS`; nginx backend-protocol annotation, Traefik `serversscheme` Service annotation); `values-prod.yaml` images are `v1.2.11`; `deploy-remote-k3s.sh` prints an `https://` UI URL.
 - **Python 3.10 is the minimum for `zyvor-guestkit`** (was 3.8; `abi3-py310`, wheel install test on 3.10 to 3.13).
 - **CI: "Minimal Versions" replaced by "Latest Dependencies"** (advisory `cargo update` + `cargo check --all-features --all-targets` on stable).
 - **k3s E2E** runs via `workflow_call` from `release.yml` after the GHCR images are published (90 minute timeout). Helm chart: UI targets 8443 over HTTPS, PostgreSQL readiness probe, new values `postgresql.memoryRequest`, `postgresql.securityContext`, `minio.command`; CI uses a pinned `bitnamilegacy` MinIO and an `Unconfined` AppArmor profile for PostgreSQL (Ubuntu 26.04 `cri-containerd` profile blocks `gosu` signalling).
