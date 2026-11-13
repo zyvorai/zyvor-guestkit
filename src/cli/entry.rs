@@ -1926,6 +1926,10 @@ enum Commands {
         /// Exit non-zero when the score is below this threshold (CI gate)
         #[arg(long, value_name = "SCORE")]
         fail_below: Option<f64>,
+
+        /// Explain the score: ordered path to ready with the score gain of each fix
+        #[arg(long)]
+        explain: bool,
     },
 
     /// Generate (and optionally apply) a migration repair plan offline
@@ -4227,12 +4231,14 @@ pub fn run() -> anyhow::Result<()> {
             target,
             output,
             fail_below,
+            explain,
         } => {
             crate::cli::commands::assurance::migrate_assess_command(
                 &image,
                 &target,
                 &output,
                 fail_below,
+                explain,
                 cli.verbose,
             )?;
         }

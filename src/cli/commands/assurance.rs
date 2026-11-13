@@ -745,12 +745,18 @@ pub fn migrate_assess_command(
     target: &str,
     output_format: &str,
     fail_below: Option<f64>,
+    explain: bool,
     verbose: bool,
 ) -> Result<()> {
     let (_evidence, assessment) = crate::assurance::run_migrate_assess(image, target, verbose)?;
+    let explanation = explain.then(|| crate::migration::explain_assessment(&assessment));
 
     if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&assessment)?);
+        let mut doc = serde_json::to_value(&assessment)?;
+        if let (Some(e), Some(obj)) = (&explanation, doc.as_object_mut()) {
+            obj.insert("explain".into(), serde_json::to_value(e)?);
+        }
+        println!("{}", serde_json::to_string_pretty(&doc)?);
     } else {
         println!(
             "Migration Score: {:.0}/100  ({:?})",
@@ -775,6 +781,10 @@ pub fn migrate_assess_command(
             for (i, action) in assessment.recommended_actions.iter().enumerate() {
                 println!("  {}. {}", i + 1, action);
             }
+        }
+        if let Some(e) = &explanation {
+            println!();
+            print!("{}", e.render_text());
         }
         // §31 combined assessment: last-known running state from the guest's
         // on-disk cache (only present when a live agent wrote one).
