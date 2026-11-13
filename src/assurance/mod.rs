@@ -9,6 +9,7 @@ mod copilot;
 mod handoff;
 mod inject;
 mod passport;
+mod passport_diff;
 mod repair_extras;
 
 pub use inject::{
@@ -27,6 +28,10 @@ pub use passport::{
     emit_passport, generate_passport_signing_key, load_trust_keys, verify_passport,
     write_passport_outputs, CutoverPassport, PassportEmitOptions, PassportVerifyOptions,
     PASSPORT_SCHEMA_VERSION,
+};
+pub use passport_diff::{
+    diff_passports, Delta, DriftVerdict, PassportDiff, PassportDiffOptions, ScoreDrift,
+    PASSPORT_DIFF_SCHEMA,
 };
 
 use crate::boot::{analyze_bootability, BootTarget, BootabilityReport};

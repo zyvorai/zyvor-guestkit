@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **`guestkit passport diff OLD NEW`** — machine-readable drift between two Cutover Passports (score deltas, readiness/hard-block changes, blockers added/resolved, fix-plan and Windows flag changes, verdict `unchanged|improved|regressed|mixed`); `-o json`, `--tolerance`, `--fail-on-regression` for CI. Library API `assurance::diff_passports`. See `docs/devops/01-passport-ci-gate.md`.
+
 ### Changed
 - **Helm chart fixes**: `values.yaml` and `values-prod.yaml` use the pinned, pullable `docker.io/bitnamilegacy/minio` image with `minio.command: ["minio"]` (same as CI); the Ingress sends HTTPS to the TLS-only `zyvor-ui` Service (new value `ingress.uiBackendProtocol`, default `HTTPS`; nginx backend-protocol annotation, Traefik `serversscheme` Service annotation); `values-prod.yaml` images are `v1.2.11`; `deploy-remote-k3s.sh` prints an `https://` UI URL.
 - **Python 3.10 is the minimum for `zyvor-guestkit`** (was 3.8; `abi3-py310`, wheel install test on 3.10 to 3.13).

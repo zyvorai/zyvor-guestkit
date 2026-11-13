@@ -979,6 +979,39 @@ pub fn passport_verify_command(
     Ok(())
 }
 
+/// Diff two Cutover Passports: `guestkit passport diff`
+pub fn passport_diff_command(
+    old: &Path,
+    new: &Path,
+    output_format: &str,
+    tolerance: f64,
+    fail_on_regression: bool,
+) -> Result<()> {
+    use crate::assurance::{diff_passports, CutoverPassport, PassportDiffOptions};
+
+    let load = |p: &Path| -> Result<CutoverPassport> {
+        let raw =
+            std::fs::read_to_string(p).with_context(|| format!("read passport {}", p.display()))?;
+        serde_json::from_str(&raw).with_context(|| format!("parse passport {}", p.display()))
+    };
+    let diff = diff_passports(
+        &load(old)?,
+        &load(new)?,
+        &PassportDiffOptions {
+            score_tolerance: tolerance,
+        },
+    );
+    if output_format == "json" {
+        println!("{}", serde_json::to_string_pretty(&diff)?);
+    } else {
+        print!("{}", diff.render_text());
+    }
+    if fail_on_regression && diff.has_regression() {
+        anyhow::bail!("passport regressed: {}", diff.regressions.join("; "));
+    }
+    Ok(())
+}
+
 /// Migration plan: `guestkit migrate-plan`
 #[cfg(feature = "agent")]
 pub fn migrate_plan_command(
