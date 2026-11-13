@@ -95,7 +95,7 @@ There is no `cp`, `download`, `upload` or top-level `profile` command. Use `copy
 | `inspect` | `-o, --output text\|json\|yaml\|csv`, `-p, --profile`, `-e, --export html\|markdown\|pdf`, `--export-output PATH`, `--no-cache`, `--cache-refresh`, `-S, --summary`, `--include-packages`, `--include-services`, `--include-network`, `--depth quick\|standard\|deep`, `--save-report FILE` |
 | `doctor` | `--target` (default `kvm`), `--explain`, `--ai` (needs the `ai` feature), `-o text\|json`, `--fail-below SCORE` (exit 1 under the score) |
 | `migrate-plan` | `--target` (required), `--explain`, `--ai`, `-o text\|json`, `--export FILE` (YAML or JSON by extension), `--inject-agent`, `--agent-binary`, `--agent-unit` |
-| `migrate-assess` | `--target`, `-o`, `--fail-below SCORE` |
+| `migrate-assess` | `--target`, `-o`, `--fail-below SCORE`, `--explain` |
 | `migrate-repair` | `--target`, `--apply` (takes a full-image backup first), `--include-destructive`, `--virtio-win DIR`, `--export FILE` |
 | `repair` | `--fix boot` or `-t, --repair-type permissions\|packages\|network\|bootloader\|filesystem\|boot` (one is required), `--dry-run`, `-f`, `-b`, `--inject-agent`, `--agent-binary`, `--agent-unit` |
 | `rescue` | `-o, --operation` one of `reset-password`, `fix-fstab`, `check-grub`, `fix-grub`, `enable-ssh`, `inject-ssh-key`, `set-hostname`, `enable-rdp`, `enable-winrm`, `set-timezone`, `install-packages`; plus `-u`, `-p`, `--key`, `--key-file`, `--hostname`, `--timezone`, `--packages a,b`, `--network`, `-f`, `-b`, `--export-plan PLAN.yaml` |
@@ -106,6 +106,8 @@ There is no `cp`, `download`, `upload` or top-level `profile` command. Use `copy
 | `shrink` | `--dry-run`, `--min-ratio` (default 3.0), `--headroom-pct` (default 20), `--json` |
 | `qga` | `--socket PATH` (auto-discovered when omitted), `--execute CMD`, `--arguments JSON`, `--raw JSON` |
 | `gate` | `--passport FILE` or `--image`, `--target`, `--fail-below` (default 80), `--sbom-old`, `--sbom-new`, `--rego FILE`, `-o` |
+
+`migrate-assess --explain` appends a "path to ready": the failed checks ordered blockers first, then by score gain, with each fix's standalone gain, the cumulative score and readiness after applying it, and projected score/readiness once all blockers (and then all checks) are fixed. It replays the scoring over the assessment's own checks (no extra image access). With `-o json` the output gains an `explain` object (`schema: "guestkit.assessment_explain/1"`); without the flag the output is unchanged.
 
 `guestkit-qemu` has three subcommands: `plan IMAGE`, `run IMAGE` (`--min-boot-score`, default 70; `--allow-unready`) and `qmp --socket PATH status|pause|resume|powerdown|quit|balloon MIB`. See [qemu-runtime.md](../features/qemu-runtime.md).
 

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **`guestkit passport diff OLD NEW`** — machine-readable drift between two Cutover Passports (score deltas, readiness/hard-block changes, blockers added/resolved, fix-plan and Windows flag changes, verdict `unchanged|improved|regressed|mixed`); `-o json`, `--tolerance`, `--fail-on-regression` for CI. Library API `assurance::diff_passports`. See `docs/devops/01-passport-ci-gate.md`.
+- **`guestkit migrate-assess --explain`** — "path to ready": ordered fixes with per-fix score gain, cumulative score/readiness and projected outcomes (blockers fixed / all fixed); JSON adds an `explain` object. Library API `migration::explain_assessment`; scoring aggregation is now shared (`aggregate_scores`, `readiness_of`) so the explanation cannot drift from the real score. See `docs/user-guides/cli-guide.md`.
 
 ### Changed
 - **Helm chart fixes**: `values.yaml` and `values-prod.yaml` use the pinned, pullable `docker.io/bitnamilegacy/minio` image with `minio.command: ["minio"]` (same as CI); the Ingress sends HTTPS to the TLS-only `zyvor-ui` Service (new value `ingress.uiBackendProtocol`, default `HTTPS`; nginx backend-protocol annotation, Traefik `serversscheme` Service annotation); `values-prod.yaml` images are `v1.2.11`; `deploy-remote-k3s.sh` prints an `https://` UI URL.

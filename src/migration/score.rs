@@ -65,8 +65,57 @@ pub fn assess_migration(
     };
     let checks = run_all_checks(ev, &ctx);
 
+    let (sub_scores, overall_opt) = aggregate_scores(&checks);
+    let overall_score = overall_opt.unwrap_or(boot_report.score);
+
+    let critical_blockers: Vec<Finding> = checks
+        .iter()
+        .filter(|c| !c.passed && c.severity == CheckSeverity::Blocker)
+        .map(|c| Finding {
+            check_id: c.id.clone(),
+            title: c.name.clone(),
+            message: c.message.clone(),
+            remediation: c
+                .remediation
+                .as_ref()
+                .map(|h| format!("{h:?}"))
+                .or(Some("manual intervention required".into())),
+        })
+        .collect();
+
+    let recommended_actions: Vec<String> = checks
+        .iter()
+        .filter(|c| !c.passed && c.remediation.is_some())
+        .map(|c| format!("[{}] {}: {}", c.id, c.name, c.message))
+        .collect();
+
+    let readiness = readiness_of(&checks);
+
+    MigrationAssessment {
+        target: target.to_string(),
+        live,
+        assessed_at: chrono::Utc::now().to_rfc3339(),
+        overall_score,
+        sub_scores,
+        readiness,
+        critical_blockers,
+        recommended_actions,
+        checks,
+        online_correlation: ev.online_cache.clone(),
+        legacy: compute_migration_score(ev, boot_report, target),
+    }
+}
+
+/// Category sub-scores and overall score over a set of check results.
+///
+/// The overall score is `None` when the checks carry no weight (the caller
+/// falls back to the boot report score). Shared by [`assess_migration`] and
+/// [`super::explain`] so both always agree.
+pub(crate) fn aggregate_scores(
+    checks: &[MigrationCheckResult],
+) -> (MigrationSubScores, Option<f64>) {
     let mut per_cat: BTreeMap<ReadinessCategory, (f64, f64)> = BTreeMap::new(); // (passed_w, total_w)
-    for check in &checks {
+    for check in checks {
         let entry = per_cat.entry(check.category).or_insert((0.0, 0.0));
         entry.1 += check.weight;
         if check.passed {
@@ -106,34 +155,21 @@ pub fn assess_migration(
     let (weighted_sum, weight_total) = per_cat
         .values()
         .fold((0.0, 0.0), |(ws, wt), (p, t)| (ws + p, wt + t));
-    let overall_score = if weight_total > 0.0 {
-        (weighted_sum / weight_total * 100.0).round()
+    let overall = if weight_total > 0.0 {
+        Some((weighted_sum / weight_total * 100.0).round())
     } else {
-        boot_report.score
+        None
     };
 
-    let critical_blockers: Vec<Finding> = checks
-        .iter()
-        .filter(|c| !c.passed && c.severity == CheckSeverity::Blocker)
-        .map(|c| Finding {
-            check_id: c.id.clone(),
-            title: c.name.clone(),
-            message: c.message.clone(),
-            remediation: c
-                .remediation
-                .as_ref()
-                .map(|h| format!("{h:?}"))
-                .or(Some("manual intervention required".into())),
-        })
-        .collect();
+    (sub_scores, overall)
+}
 
-    let recommended_actions: Vec<String> = checks
+/// Readiness level implied by a set of check results.
+pub(crate) fn readiness_of(checks: &[MigrationCheckResult]) -> ReadinessLevel {
+    if checks
         .iter()
-        .filter(|c| !c.passed && c.remediation.is_some())
-        .map(|c| format!("[{}] {}: {}", c.id, c.name, c.message))
-        .collect();
-
-    let readiness = if !critical_blockers.is_empty() {
+        .any(|c| !c.passed && c.severity == CheckSeverity::Blocker)
+    {
         ReadinessLevel::Blocked
     } else if checks
         .iter()
@@ -142,19 +178,5 @@ pub fn assess_migration(
         ReadinessLevel::ReadyWithWarnings
     } else {
         ReadinessLevel::Ready
-    };
-
-    MigrationAssessment {
-        target: target.to_string(),
-        live,
-        assessed_at: chrono::Utc::now().to_rfc3339(),
-        overall_score,
-        sub_scores,
-        readiness,
-        critical_blockers,
-        recommended_actions,
-        checks,
-        online_correlation: ev.online_cache.clone(),
-        legacy: compute_migration_score(ev, boot_report, target),
     }
 }
