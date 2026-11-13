@@ -2467,6 +2467,23 @@ enum PassportAction {
         max_age_hours: Option<u64>,
     },
 
+    /// Diff two passports (drift): score deltas, blockers added/resolved, fix-plan changes
+    Diff {
+        /// Older (baseline) passport JSON
+        old: PathBuf,
+        /// Newer passport JSON
+        new: PathBuf,
+        /// Output format (text, json)
+        #[arg(short, long, value_name = "FORMAT", default_value = "text")]
+        output: String,
+        /// Score drops up to this many points are not regressions
+        #[arg(long, value_name = "POINTS", default_value_t = 0.0)]
+        tolerance: f64,
+        /// Exit non-zero when the new passport regressed
+        #[arg(long)]
+        fail_on_regression: bool,
+    },
+
     /// Verify a passport and write the h2kvmctl job document
     Handoff {
         /// Passport JSON path
@@ -4284,6 +4301,21 @@ pub fn run() -> anyhow::Result<()> {
                     public_key.as_deref(),
                     trust_keys.as_deref(),
                     max_age_hours,
+                )?;
+            }
+            PassportAction::Diff {
+                old,
+                new,
+                output,
+                tolerance,
+                fail_on_regression,
+            } => {
+                crate::cli::commands::assurance::passport_diff_command(
+                    &old,
+                    &new,
+                    &output,
+                    tolerance,
+                    fail_on_regression,
                 )?;
             }
             PassportAction::Handoff {

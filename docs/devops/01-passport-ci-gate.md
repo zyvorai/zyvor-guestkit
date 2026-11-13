@@ -153,6 +153,20 @@ See also: [Passport → hyper2kvm blog](https://zyvor.dev/blog/guestkit-hyper2kv
 
 ---
 
+## 5a. Drift between two passports (`passport diff`)
+
+Re-emit a passport after repairs (or on a schedule) and compare it with the stored baseline. No image access is needed, only the two JSON files:
+
+```bash
+guestkit passport diff baseline.json current.json                       # text
+guestkit passport diff baseline.json current.json -o json               # machine-readable
+guestkit passport diff baseline.json current.json --tolerance 2 --fail-on-regression
+```
+
+The report lists boot/migration score deltas, readiness and hard-block changes, blockers added or resolved (by check id), recommended actions and fix-plan operation ids added or removed, changed Windows readiness flags, and the policy verdict. `verdict` is `unchanged`, `improved`, `regressed` or `mixed`. Regressions are: a score drop larger than `--tolerance` points, worse readiness, becoming hard-blocked, any new blocker, or a policy verdict going from pass to fail. `--fail-on-regression` exits non-zero when at least one regression exists (so also for `mixed`). The JSON carries `schema: "guestkit.passport_diff/1"`.
+
+---
+
 ## 6. Ownership
 
 | Item | Owner |
