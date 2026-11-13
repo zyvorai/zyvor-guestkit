@@ -8,10 +8,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **CI: the "Minimal Versions" job is replaced by "Latest Dependencies"** (`ci.yml`, advisory). The old job (`cargo +nightly update -Z minimal-versions`) was red on every sampled run because third-party crates understate their own requirements; the new one runs `cargo update` and `cargo check --all-features --all-targets` on stable.
+- **k3s E2E workflow** (`k3s-e2e.yml`): the release smoke test now runs via `workflow_call` from `release.yml` after the GHCR images are published (no tag trigger of its own); job timeout is 90 minutes with per-step limits; the deploy waits for PostgreSQL (`pg_isready`) and the API pod before the VM-tools build.
+- **Helm chart**: `zyvor-ui` container and Service target port 8443 (the UI image is HTTPS-only; the image now installs `openssl`); PostgreSQL gets a `pg_isready` readiness probe and a memory request; new values `postgresql.memoryRequest` (default `128Mi`), `postgresql.securityContext` and `minio.command`. `values-ci.yaml` uses the pinned `docker.io/bitnamilegacy/minio` image and runs PostgreSQL with an `Unconfined` AppArmor profile, because the `cri-containerd` AppArmor profile on Ubuntu 26.04 nodes blocks `gosu` signalling and PostgreSQL never starts.
 - **Python 3.10 is the minimum for `zyvor-guestkit`** (was 3.8). The bindings are built against the stable ABI from 3.10 (`abi3-py310`, `requires-python = ">=3.10"`); 3.8 and 3.9 are end of life and GitHub's current Ubuntu images no longer provide them, so the wheel install test could not run there. The install test now covers 3.10 to 3.13.
 - **Releases ship tar.gz only.** The `RPM Build` workflow (Mock builds, GitHub Release upload and COPR publish) is removed; the `.spec` files and `docs/development/RPM-BUILD.md` stay for anyone building locally. The Zeus VM tools `.deb` is a separate guest artifact and is unchanged.
 
 ### Documentation
+- Documented the k3s E2E (triggers, how to run it, `values-ci.yaml` overrides, the Ubuntu 26.04 AppArmor caveat) in `deploy/README.md`, a Continuous integration section in `CONTRIBUTING.md` (Latest Dependencies, wheel test matrix 3.10 to 3.13) and `publishing.md`.
+- Known issues recorded: `values.yaml`/`values-prod.yaml` still name the unpullable `minio/minio` image, and the Ingress speaks plain HTTP to the TLS-only UI Service.
+- `guestkit.spec` and `guestkit-full.spec` said `Version: 1.0.1`; now `1.2.11` to match `Cargo.toml`, and `RPM-BUILD.md` examples follow.
 - Install snippets, "current release" pins and GHCR/MCP tags updated from v1.2.10 (and older pins in `deploy/README.md`, `integration/README.md`) to v1.2.11; `scripts/check-doc-versions.py` reports docs that lag behind `Cargo.toml`.
 - Tarball install steps (`tar xzf`, `./install.sh`) are documented, and the docs now say the release tarball holds `guestkit` and a `guestctl` symlink only: `guestkit-qemu` and `virtctl-guestkit` need a source build, and the `agent` (`qga`, `agent-*`, `passport keygen`), `ai`, `mcp`, `cloud-*` and offline `DriverInject` (`registry-write` + `agent`) features are not in the release binary.
 - No RPM, COPR or `dnf install guestkit` is promised anywhere; `RPM-BUILD.md` and the Zeus VM Tools page say RPMs are local builds only.

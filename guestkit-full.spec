@@ -1,7 +1,7 @@
 %global debug_package %{nil}
 
 Name:           guestkit
-Version:        1.0.1
+Version:        1.2.11
 Release:        1%{?dist}
 Summary:        Pure-Rust VM disk inspection and manipulation toolkit
 
@@ -166,6 +166,9 @@ install -Dm644 LICENSE %{buildroot}%{_licensedir}/%{name}/LICENSE
 %{_docdir}/%{name}/examples/
 
 %changelog
+* Fri Nov 13 2026 ZyvorAI Labs Private Limited <ssahani@zyvor.dev> - 1.2.11-1
+- Version brought in line with Cargo.toml (was stale at 1.0.1); no packaging change
+
 * Sat Aug 15 2026 ZyvorAI Labs Private Limited <ssahani@zyvor.dev> - 1.0.1-1
 - Fix guestkit-worker's Docker release build: its pinned `guestkit = "0.3.3"`
   path dependency rejected the workspace's own 1.0.0, breaking GHCR image

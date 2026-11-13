@@ -309,6 +309,19 @@ Fixes #45
 5. **Create pull request**: With clear description
 6. **Address review comments**: Make requested changes
 
+### Continuous integration
+
+Workflows live in `.github/workflows/`. The ones you will meet on a pull request:
+
+| Job (workflow) | What it checks | Blocking? |
+|----------------|----------------|-----------|
+| Test, Documentation, Helm Chart, Python Bindings, Security Audit (`ci.yml`) | build, tests, `cargo doc`, chart lint/template, wheel build, RustSec | yes |
+| **Latest Dependencies** (`ci.yml`) | `cargo update` then `cargo check --all-features --all-targets` on stable: today's newest semver-compatible dependencies still build | no (`continue-on-error`; an upstream release can break it on any day) |
+| k3s stack install + E2E (`k3s-e2e.yml`) | k3s + Helm install and E2E; runs on PRs touching `crates/`, `deploy/` or `packaging/vmtools/`, and from `release.yml` after the GHCR images are published (no tag trigger of its own); 90 minute timeout | see [deploy/README.md](../../deploy/README.md#ci-k3s-e2e) |
+| Build and Publish Python Wheels (`build-wheels.yml`) | wheels, and an install test on Python 3.10 to 3.13 | yes |
+
+There is no "Minimal Versions" job any more (`cargo update -Z minimal-versions` was red on every run because third-party crates understate their own requirements, and says nothing about this repository); it was replaced by Latest Dependencies in PR #83. The supported Python for the bindings is 3.10 or later (`abi3-py310`). There is no RPM workflow; releases ship tar.gz only.
+
 ### Pull Request Template
 
 ```markdown
