@@ -56,7 +56,7 @@ Helm overlays:
 | File | Use |
 |------|-----|
 | `values-k3s.yaml` | Remote k3s (URLs via env/`--set`) |
-| `values-ci.yaml` | GitHub Actions `k3s-e2e.yml` |
+| `values-ci.yaml` | GitHub Actions `k3s-e2e.yml` (pinned Bitnami-legacy MinIO, unconfined PostgreSQL AppArmor; see [CI k3s E2E](#ci-k3s-e2e)) |
 
 ## Fresh-cluster install notes
 
@@ -121,12 +121,55 @@ Manual agent-only rebuild: [agent-release.yml](../.github/workflows/agent-releas
 
 ## CI k3s E2E
 
-[`.github/workflows/k3s-e2e.yml`](../.github/workflows/k3s-e2e.yml) on `ubuntu-latest`:
+[`.github/workflows/k3s-e2e.yml`](../.github/workflows/k3s-e2e.yml) on `ubuntu-latest`, 90 minute job timeout (with per-step limits: deploy 45, VM tools bundle 30, E2E orchestrator 20 minutes). Triggers:
 
-1. `install-k3s-ubuntu.sh` — k3s, helm, qemu-utils
-2. `deploy-remote-k3s.sh` — PRs build images locally; `v*` tags pull GHCR release images
-3. `publish-vmtools-bundle.sh` — agent binaries into in-cluster MinIO
-4. `ci-k3s-e2e.sh` — API health, `e2e-smoke.sh` (cirros), VM tools bundle/API checks
+- **Pull requests** to `main` touching `crates/**`, `deploy/**`, `packaging/vmtools/**` or the workflow itself: images are built locally with podman.
+- **`workflow_call` from [release.yml](../.github/workflows/release.yml)**: the `k3s-e2e` job runs after `publish-release-images`, so the `v*` GHCR images are guaranteed to exist and are pulled (`ghcr.io/zyvorai`, tag = release tag). The workflow has no tag trigger of its own.
+- **`workflow_dispatch`** (manual).
+
+Steps:
+
+1. `install-k3s-ubuntu.sh` - k3s, helm, qemu-utils
+2. `deploy-remote-k3s.sh` with `HELM_VALUES_FILE=values-ci.yaml` - waits for the rollouts, then for `pg_isready` inside the PostgreSQL pod and the API pod's `Ready` condition (so a database problem fails the job minutes in, not after the VM-tools build)
+3. `publish-vmtools-bundle.sh` - agent binaries into in-cluster MinIO
+4. `ci-k3s-e2e.sh` - API health, `e2e-smoke.sh` (cirros), VM tools bundle/API checks, and `curl -k https://<node>:30081/` against the UI (self-signed certificate)
+
+On failure the job dumps pod logs, events, DNS and PostgreSQL diagnostics.
+
+Run it yourself:
+
+```bash
+gh workflow run k3s-e2e.yml            # on a branch / main
+gh run watch                           # follow it
+# or against a host that already has k3s:
+HELM_VALUES_FILE=values-ci.yaml bash deploy/scripts/deploy-remote-k3s.sh
+bash deploy/scripts/ci-k3s-e2e.sh
+```
+
+### What `values-ci.yaml` changes
+
+| Value | CI setting | Why |
+|-------|-----------|-----|
+| `minio.image` | `docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5` | `minio/minio` can no longer be pulled from Docker Hub or quay.io |
+| `minio.command` | `["minio"]` | the Bitnami entrypoint is a wrapper; run the binary with the chart's `args` |
+| `postgresql.securityContext.appArmorProfile.type` | `Unconfined` | see the AppArmor caveat below |
+
+Other chart values added with these fixes (defaults in `values.yaml`): `postgresql.memoryRequest` (default `128Mi`, the pod's memory request), `postgresql.securityContext` (optional pod `securityContext`, default `{}`) and `minio.command` (optional command override, default `[]`). The PostgreSQL pod now has a `pg_isready` readiness probe, so rollouts and the API's first connection no longer race `initdb`. The `zyvor-ui` container and Service target port **8443**: the UI image serves HTTPS only (self-signed certificate generated at start-up with `openssl`, which the image now installs) and nothing listens on 80.
+
+### Ubuntu 26.04 nodes: AppArmor caveat
+
+On Ubuntu 26.04 (kernel 7.x, including GitHub's `ubuntu-latest`) the containerd `cri-containerd.apparmor.d` profile denies a container's processes signalling each other. The official `postgres` image starts through `gosu`, which then spins forever and `pg_ctl stop` fails with "Permission denied" (`dmesg`: `apparmor="DENIED" operation="signal"`). PostgreSQL never comes up and `zyvor-api` dies with "pool timed out". CI works around this by running the PostgreSQL pod with an `Unconfined` AppArmor profile; this is for CI only. On your own Ubuntu 26.04 nodes either fix the node's AppArmor/containerd policy or set the same override deliberately:
+
+```bash
+helm upgrade --install zyvor deploy/helm/zyvor -n zyvor \
+  --set postgresql.securityContext.appArmorProfile.type=Unconfined
+```
+
+### Known issues
+
+- `values.yaml` and `values-prod.yaml` still name `minio/minio:RELEASE.2024-12-18T13-15-44Z`, which is no longer pullable. Outside CI, override `minio.image` (and `minio.command` if the image's entrypoint is not `minio`), or use the CI overlay values as a template, or disable MinIO (`minio.enabled=false`) and use the PVC path.
+- The Ingress (`templates/ingress.yaml`) sends plain HTTP to the `zyvor-ui` Service (port 80), which now forwards to the TLS-only UI on 8443, so the ingress route to the console is not expected to work until the chart is changed (for example `nginx.ingress.kubernetes.io/backend-protocol: HTTPS`). Use the NodePort over `https://` (self-signed) or `kubectl port-forward svc/zyvor-ui 8081:80` and open `https://localhost:8081`. Not verified against a live cluster.
+- `deploy-remote-k3s.sh` still prints the UI URL as `http://...`; use `https://`.
 
 **Ubuntu live E2E** (manual, on a k3s host with MinIO + KubeVirt):
 
@@ -139,12 +182,6 @@ bash deploy/scripts/e2e-ubuntu-k3s.sh
 Imports Ubuntu 22.04, runs offline inspect/doctor, provisions a CDI VM with IP-only cloud-init (QGA deb + `zyvor-guest-agent` from MinIO), exercises **Guest Control Fabric** routes (`guest/status`, `guest/doctor`, airgap `guest/install-agent`), live guest intel, then offline cluster inspect/doctor on a halted VM.
 
 **Airgap install:** when QGA is up but guest network is down, `POST .../guest/install-agent` with `strategy: auto` selects QGA file bootstrap (chunked `guest-file-write`, no curl in guest). See [guest-control-fabric.md](../docs/features/guest-control-fabric.md).
-
-Trigger manually:
-
-```bash
-gh workflow run k3s-e2e.yml
-```
 
 ## API
 

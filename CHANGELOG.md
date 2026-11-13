@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- **Python 3.10 is the minimum for `zyvor-guestkit`** (was 3.8; `abi3-py310`, wheel install test on 3.10 to 3.13).
+- **CI: "Minimal Versions" replaced by "Latest Dependencies"** (advisory `cargo update` + `cargo check --all-features --all-targets` on stable).
+- **k3s E2E** runs via `workflow_call` from `release.yml` after the GHCR images are published (90 minute timeout). Helm chart: UI targets 8443 over HTTPS, PostgreSQL readiness probe, new values `postgresql.memoryRequest`, `postgresql.securityContext`, `minio.command`; CI uses a pinned `bitnamilegacy` MinIO and an `Unconfined` AppArmor profile for PostgreSQL (Ubuntu 26.04 `cri-containerd` profile blocks `gosu` signalling).
 - **Releases ship tar.gz only.** The `RPM Build` workflow (Mock builds, GitHub Release upload and COPR publish) is removed; the `.spec` files and `docs/development/RPM-BUILD.md` stay for anyone building locally. The Zeus VM tools `.deb` is a separate guest artifact and is unchanged.
 
 ### Documentation
@@ -172,4 +175,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 - Documented the split: GuestKit certifies disks, Ephemera (now FluxVM) runs and manages VMs — including pointing the suite handoff and virsh guide at FluxVM.
-

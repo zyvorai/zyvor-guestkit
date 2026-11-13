@@ -10,7 +10,7 @@ The Python distribution is **`zyvor-guestkit`**, owned by the [zyvor](https://py
 pip install zyvor-guestkit
 ```
 
-CI workflow: **Build and Publish Python Wheels** — requires GitHub secret `PYPI_API_TOKEN`.
+CI workflow: **Build and Publish Python Wheels** — requires GitHub secret `PYPI_API_TOKEN`. The wheels are `abi3-py310` (Python 3.10 or later; 3.8 and 3.9 were dropped in PR #84) and the install test runs on 3.10, 3.11, 3.12 and 3.13.
 
 Manual publish after building wheels locally:
 
@@ -40,7 +40,7 @@ Tag push `v*` runs the [Release workflow](../../.github/workflows/release.yml), 
 - creates the GitHub Release; the notes are the `## [<version>]` section of `docs/development/CHANGELOG.md` (the run fails when that section is missing, so keep it in step with the root `CHANGELOG.md`);
 - uploads `guestkit-<version>-linux-amd64.tar.gz` (glibc) and `guestkit-<version>-linux-amd64-musl.tar.gz` (static), each with a `.sha256` file. The tarball holds `guestkit`, a `guestctl` symlink, installer and test scripts and legal files; it does not hold `guestkit-qemu` or `virtctl-guestkit`;
 - uploads the Zeus VM Tools guest artifacts: `zyvor-vm-tools-linux-amd64.tar.gz` (+ `.sha256`), `zyvor-vm-tools_<version>_amd64.deb` and `zyvor-vm-tools.iso`. These are separate guest-side packages, not the host CLI;
-- publishes the `guestkit-worker`, `zyvor-api` and `zyvor-ui` images to `ghcr.io/zyvorai` (`:v<version>`, `:latest`);
+- publishes the `guestkit-worker`, `zyvor-api` and `zyvor-ui` images to `ghcr.io/zyvorai` (`:v<version>`, `:latest`), then calls the [k3s E2E workflow](../../deploy/README.md#ci-k3s-e2e) (`k3s-e2e.yml` via `workflow_call`, job `k3s-e2e`) as a release smoke test of those images;
 - builds and signs `ghcr.io/zyvorai/guestkit-mcp:<version>` and publishes `server.json` to the MCP Registry;
 - publishes the Python wheel to PyPI as `zyvor-guestkit`;
 - moves the `v1` tag used by the `zyvorai/guestkit` GitHub Action.
