@@ -4,6 +4,7 @@
 //! Core utilities and types for guestkit
 
 pub mod binary_cache;
+pub mod cache_root;
 pub mod diagnostics;
 pub mod error;
 pub mod mem_optimize;

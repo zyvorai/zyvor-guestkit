@@ -138,11 +138,12 @@ pub fn lookup_cves_osv(
 }
 
 fn osv_cache_dir() -> Result<std::path::PathBuf> {
-    let home = std::env::var("HOME")
-        .or_else(|_| std::env::var("USERPROFILE"))
-        .map(std::path::PathBuf::from)
-        .unwrap_or_else(|_| std::path::PathBuf::from("/tmp"));
-    let dir = home.join(".cache").join("guestkit").join("cve");
+    let dir = match crate::core::cache_root::guestkit_cache_root() {
+        Some(root) => root.join("cve"),
+        None => std::path::PathBuf::from("/tmp")
+            .join("guestkit")
+            .join("cve"),
+    };
     std::fs::create_dir_all(&dir)?;
     Ok(dir)
 }

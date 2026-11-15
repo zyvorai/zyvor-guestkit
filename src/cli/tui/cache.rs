@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 pub const CACHE_VERSION: u32 = 1;
 
-/// Cache directory: `~/.cache/guestkit/<hash>/`
+/// Cache directory: `~/.cache/guestkit/<hash>/` (or `<--cache-dir>/<hash>/`)
 pub fn cache_dir_for_image(image: &Path) -> Result<Option<PathBuf>> {
     let meta = match fs::metadata(image) {
         Ok(m) => m,
@@ -28,8 +28,8 @@ pub fn cache_dir_for_image(image: &Path) -> Result<Option<PathBuf>> {
     mtime.hash(&mut hasher);
     let hash = format!("{:016x}", hasher.finish());
 
-    let base = dirs::cache_dir().context("cache dir")?;
-    Ok(Some(base.join("guestkit").join(hash)))
+    let root = crate::core::cache_root::guestkit_cache_root().context("cache dir")?;
+    Ok(Some(root.join(hash)))
 }
 
 fn file_mtime_secs(meta: &fs::Metadata) -> u64 {

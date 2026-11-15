@@ -36,6 +36,11 @@ pub fn fetch_enabled() -> bool {
 
 /// Default download directory (`$XDG_CACHE_HOME/guestkit/packages` or `~/.cache/...`).
 pub fn default_fetch_cache() -> PathBuf {
+    if let Some(root) = std::env::var_os(crate::core::cache_root::CACHE_DIR_ENV) {
+        if !root.is_empty() {
+            return PathBuf::from(root).join("packages");
+        }
+    }
     if let Ok(xdg) = std::env::var("XDG_CACHE_HOME") {
         if !xdg.is_empty() {
             return PathBuf::from(xdg).join("guestkit").join("packages");
