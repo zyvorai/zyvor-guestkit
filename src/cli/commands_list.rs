@@ -121,6 +121,7 @@ const GROUPS: &[(&str, &[&str])] = &[
         &[
             "cache-clear",
             "cache-stats",
+            "host-check",
             "completion",
             "commands",
             "version",

@@ -80,7 +80,7 @@ These are accepted by every subcommand.
 | Systemd | `systemd-journal`, `systemd-services`, `systemd-boot` |
 | Interactive | `tui` (`ui`), `shell` (`sh`), `interactive` (`repl`), `explore` (`ex`), `script` (`batch`), `ai` |
 | Analysis and planning | `analyze`, `benchmark`, `timeline`, `fingerprint`, `drift`, `validate`, `license`, `blueprint`, `migrate`, `cost`, `dependencies`, `intelligence`, `simulate`, `score`, `template` |
-| Utilities | `completion` (bash, zsh, fish, powershell, elvish), `commands`, `version`, `mcp-serve` (needs the `mcp` feature) |
+| Utilities | `host-check`, `completion` (bash, zsh, fish, powershell, elvish), `commands`, `version`, `mcp-serve` (needs the `mcp` feature) |
 
 There is no `cp`, `download`, `upload` or top-level `profile` command. Use `copy` (between two images), `extract` (guest to host) and `plan`/`rescue`/`migrate-repair` for writes. Inspection profiles are selected with `inspect --profile` (`security`, `migration`, `performance`, `compliance`, `hardening`, `windows-migration`).
 
@@ -96,6 +96,7 @@ There is no `cp`, `download`, `upload` or top-level `profile` command. Use `copy
 | `doctor` | `--target` (default `kvm`), `--explain`, `--ai` (needs the `ai` feature), `-o text\|json`, `--fail-below SCORE` (exit 1 under the score) |
 | `migrate-plan` | `--target` (required), `--explain`, `--ai`, `-o text\|json`, `--export FILE` (YAML or JSON by extension), `--inject-agent`, `--agent-binary`, `--agent-unit` |
 | `migrate-assess` | `--target`, `-o`, `--fail-below SCORE`, `--explain` |
+| `host-check` | `-o text\|json\|yaml`, `--strict` (exit 1 on warnings too) |
 | `migrate-repair` | `--target`, `--apply` (takes a full-image backup first), `--include-destructive`, `--virtio-win DIR`, `--export FILE` |
 | `repair` | `--fix boot` or `-t, --repair-type permissions\|packages\|network\|bootloader\|filesystem\|boot` (one is required), `--dry-run`, `-f`, `-b`, `--inject-agent`, `--agent-binary`, `--agent-unit` |
 | `rescue` | `-o, --operation` one of `reset-password`, `fix-fstab`, `check-grub`, `fix-grub`, `enable-ssh`, `inject-ssh-key`, `set-hostname`, `enable-rdp`, `enable-winrm`, `set-timezone`, `install-packages`; plus `-u`, `-p`, `--key`, `--key-file`, `--hostname`, `--timezone`, `--packages a,b`, `--network`, `-f`, `-b`, `--export-plan PLAN.yaml` |
@@ -122,6 +123,13 @@ The GitHub Release tarballs (`guestkit-<version>-linux-amd64.tar.gz` and the sta
 | `mcp` | `mcp-serve` (or use the `ghcr.io/zyvorai/guestkit-mcp` image) |
 | `registry-write` | Offline Windows registry hive writes: the AES SAM hash path of `rescue -o reset-password` on Windows, `agent-inject --windows`, and (together with `agent`) offline `DriverInject` of VirtIO drivers when a plan is applied (`plan apply`). Without both features a `DriverInject` operation is skipped with a warning. glibc tarball only, and only if libhivex was present at build time |
 | `cloud-s3`, `cloud-azure`, `cloud-gcs` (`cloud` for all three) | `s3://`, Azure and `gs://` disk sources, see [cloud-disk-sources.md](../guides/cloud-disk-sources.md) |
+
+`guestkit host-check` answers "can this machine run guestkit?" before you point it at an image. It is offline and read-only, and checks: `qemu-img` on `PATH` (failure if missing), `qemu-nbd`, `losetup`, `mount` and `blkid` (warnings), the `nbd` and `loop` kernel modules (`/sys/module`), whether you are root, a writable NBD lock directory (`/run/lock` or `$XDG_RUNTIME_DIR`) and a writable cache directory (`--cache-dir` / `GUESTKIT_CACHE_DIR`, else `~/.cache/guestkit`). It exits 1 on any failure (or any warning with `--strict`), so it can gate provisioning scripts and CI images:
+
+```bash
+guestkit host-check
+guestkit host-check -o json --strict
+```
 
 Rebuild with `cargo build --release --features agent,ai,mcp,cloud` (or the subset you need). The in-guest agent has its own artifact: `zyvor-vm-tools-linux-amd64.tar.gz` and the `.deb` on the same release.
 

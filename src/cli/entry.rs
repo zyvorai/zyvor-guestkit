@@ -1797,6 +1797,18 @@ enum Commands {
         all: bool,
     },
 
+    /// Check that this host can run guestkit (tools, kernel modules, privileges, cache dir)
+    #[command(name = "host-check")]
+    HostCheck {
+        /// Output format (text, json, yaml)
+        #[arg(short, long, value_name = "FORMAT", default_value = "text")]
+        output: String,
+
+        /// Exit non-zero on warnings too (CI / provisioning gates)
+        #[arg(long)]
+        strict: bool,
+    },
+
     /// List subcommands grouped by category
     #[command(name = "commands")]
     CommandCatalog,
@@ -3855,6 +3867,10 @@ pub fn run() -> anyhow::Result<()> {
             println!("Project: https://github.com/zyvorai/guestkit");
             println!("License: Apache-2.0");
             println!("Copyright: ZyvorAI Labs Private Limited");
+        }
+
+        Commands::HostCheck { output, strict } => {
+            crate::cli::host_check::host_check_command(&output, strict)?;
         }
 
         Commands::CommandCatalog => {
