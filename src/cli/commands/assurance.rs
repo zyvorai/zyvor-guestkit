@@ -25,6 +25,7 @@ pub fn doctor_command(
     fail_below: Option<u8>,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use crate::core::ProgressReporter;
 
     let progress = ProgressReporter::spinner("Analyzing bootability...");
@@ -33,8 +34,8 @@ pub fn doctor_command(
 
     let boot_report = &result.bootability;
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&result)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &result)? {
+        print!("{rendered}");
     } else {
         println!();
         println!("{}", "Bootability Assessment".bold().cyan());
@@ -200,6 +201,7 @@ pub fn fleet_analyze_command(
     jobs: usize,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use crate::core::ProgressReporter;
 
     let images = collect_fleet_disk_images(dir, recursive)?;
@@ -220,8 +222,8 @@ pub fn fleet_analyze_command(
     report.total_vms = images.len();
     report.failed_vms = failed_vms;
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&report)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &report)? {
+        print!("{rendered}");
     } else {
         println!();
         println!("{}", "Fleet Analysis".bold().cyan());
@@ -305,6 +307,7 @@ pub fn fleet_wave_plan_command(
     jobs: usize,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use crate::core::ProgressReporter;
     use crate::fleet::VmRole;
 
@@ -327,8 +330,8 @@ pub fn fleet_wave_plan_command(
 
     let plan = plan_waves(&snapshots);
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&plan)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &plan)? {
+        print!("{rendered}");
     } else {
         println!();
         println!("{}", "Migration Wave Plan".bold().cyan());
@@ -395,6 +398,7 @@ pub fn fleet_watch_command(
     fail_on_drift: bool,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use crate::ai::explain_fleet_drift;
     use crate::core::ProgressReporter;
     use crate::fleet::baseline;
@@ -466,8 +470,8 @@ pub fn fleet_watch_command(
         statuses.push(status);
     }
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&statuses)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &statuses)? {
+        print!("{rendered}");
     } else {
         println!();
         println!("{}", "Fleet Drift Watch".bold().cyan());
@@ -545,6 +549,7 @@ pub fn fleet_quarantine_command(
     fail: bool,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     let images = collect_fleet_disk_images(dir, recursive)?;
     if images.is_empty() {
         anyhow::bail!("No disk images found in {}", dir.display());
@@ -556,8 +561,8 @@ pub fn fleet_quarantine_command(
     let scored: Vec<(String, f64)> = snapshots.iter().map(|(p, _, s)| (p.clone(), *s)).collect();
     let report = quarantine_fleet(&scored, &analysis, &failed_vms, threshold);
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&report)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &report)? {
+        print!("{rendered}");
     } else {
         println!();
         println!("{}", "Fleet quarantine".bold().cyan());
@@ -748,15 +753,16 @@ pub fn migrate_assess_command(
     explain: bool,
     verbose: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     let (_evidence, assessment) = crate::assurance::run_migrate_assess(image, target, verbose)?;
     let explanation = explain.then(|| crate::migration::explain_assessment(&assessment));
 
-    if output_format == "json" {
-        let mut doc = serde_json::to_value(&assessment)?;
-        if let (Some(e), Some(obj)) = (&explanation, doc.as_object_mut()) {
-            obj.insert("explain".into(), serde_json::to_value(e)?);
-        }
-        println!("{}", serde_json::to_string_pretty(&doc)?);
+    let mut doc = serde_json::to_value(&assessment)?;
+    if let (Some(e), Some(obj)) = (&explanation, doc.as_object_mut()) {
+        obj.insert("explain".into(), serde_json::to_value(e)?);
+    }
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &doc)? {
+        print!("{rendered}");
     } else {
         println!(
             "Migration Score: {:.0}/100  ({:?})",
@@ -997,6 +1003,7 @@ pub fn passport_diff_command(
     tolerance: f64,
     fail_on_regression: bool,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use crate::assurance::{diff_passports, CutoverPassport, PassportDiffOptions};
 
     let load = |p: &Path| -> Result<CutoverPassport> {
@@ -1011,8 +1018,8 @@ pub fn passport_diff_command(
             score_tolerance: tolerance,
         },
     );
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&diff)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &diff)? {
+        print!("{rendered}");
     } else {
         print!("{}", diff.render_text());
     }
@@ -1103,6 +1110,7 @@ fn migrate_plan_command_impl(
     #[cfg(feature = "agent")] agent_paths: Option<(Option<&Path>, Option<&Path>)>,
     #[cfg(not(feature = "agent"))] _agent_paths: Option<()>,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     let options = {
         #[cfg(feature = "agent")]
         let (agent_binary, agent_unit) = agent_paths
@@ -1148,8 +1156,8 @@ fn migrate_plan_command_impl(
         );
     }
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&result)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &result)? {
+        print!("{rendered}");
         return Ok(());
     }
 
@@ -1207,6 +1215,7 @@ pub fn forensic_diff_command(
     sbom_old: Option<&Path>,
     sbom_new: Option<&Path>,
 ) -> Result<()> {
+    crate::cli::output::StructuredFormat::parse(output_format)?;
     use super::collect_inspection_data;
     use crate::cli::forensic_diff::{attach_sbom, compute_forensic_diff};
 
@@ -1225,8 +1234,8 @@ pub fn forensic_diff_command(
         attach_sbom(&mut forensic, crate::cli::sbom_diff::diff_files(a, b)?);
     }
 
-    if output_format == "json" {
-        println!("{}", serde_json::to_string_pretty(&forensic)?);
+    if let Some(rendered) = crate::cli::output::render_structured(output_format, &forensic)? {
+        print!("{rendered}");
         return Ok(());
     }
 

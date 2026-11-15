@@ -1833,7 +1833,7 @@ enum Commands {
         #[arg(long)]
         ai: bool,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -1900,7 +1900,7 @@ enum Commands {
         #[arg(long)]
         ai: bool,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -1931,7 +1931,7 @@ enum Commands {
         #[arg(long, value_name = "TARGET")]
         target: String,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -2111,7 +2111,7 @@ enum Commands {
         /// After disk image
         new: PathBuf,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -2498,7 +2498,7 @@ enum PassportAction {
         old: PathBuf,
         /// Newer passport JSON
         new: PathBuf,
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
         /// Score drops up to this many points are not regressions
@@ -2542,7 +2542,7 @@ enum FleetAction {
         /// Directory containing disk images
         dir: PathBuf,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -2560,7 +2560,7 @@ enum FleetAction {
         /// Directory containing disk images
         dir: PathBuf,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -2579,7 +2579,7 @@ enum FleetAction {
         /// Directory containing disk images
         dir: PathBuf,
 
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
@@ -2605,7 +2605,7 @@ enum FleetAction {
     Quarantine {
         /// Directory containing disk images
         dir: PathBuf,
-        /// Output format (text, json)
+        /// Output format (text, json, yaml)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
         /// Scan subdirectories

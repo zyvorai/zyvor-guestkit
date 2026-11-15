@@ -198,9 +198,73 @@ impl fmt::Display for ProgressBar {
     }
 }
 
+/// Format accepted by the report commands' `-o/--output`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum StructuredFormat {
+    /// Human-readable text (the command's own renderer).
+    Text,
+    Json,
+    Yaml,
+}
+
+impl StructuredFormat {
+    /// Parse `text`, `json` or `yaml` (case-insensitive; `yml` and `human` are aliases).
+    /// Anything else is an error, so a typo in CI cannot silently produce text.
+    pub fn parse(s: &str) -> anyhow::Result<Self> {
+        match s.to_ascii_lowercase().as_str() {
+            "text" | "human" => Ok(Self::Text),
+            "json" => Ok(Self::Json),
+            "yaml" | "yml" => Ok(Self::Yaml),
+            other => anyhow::bail!("unknown output format '{other}' (expected text, json or yaml)"),
+        }
+    }
+}
+
+/// Render `value` for `-o json|yaml` (always newline-terminated).
+/// Returns `Ok(None)` for `text`, meaning the caller prints its own text view,
+/// and an error for an unknown format.
+pub fn render_structured<T: Serialize>(format: &str, value: &T) -> anyhow::Result<Option<String>> {
+    Ok(match StructuredFormat::parse(format)? {
+        StructuredFormat::Text => None,
+        StructuredFormat::Json => Some(format!("{}\n", serde_json::to_string_pretty(value)?)),
+        StructuredFormat::Yaml => Some(serde_yaml::to_string(value)?),
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn structured_format_parsing() {
+        assert_eq!(
+            StructuredFormat::parse("text").unwrap(),
+            StructuredFormat::Text
+        );
+        assert_eq!(
+            StructuredFormat::parse("JSON").unwrap(),
+            StructuredFormat::Json
+        );
+        assert_eq!(
+            StructuredFormat::parse("yml").unwrap(),
+            StructuredFormat::Yaml
+        );
+        let err = StructuredFormat::parse("jsno").unwrap_err().to_string();
+        assert!(err.contains("unknown output format 'jsno'"));
+    }
+
+    #[test]
+    fn render_structured_json_yaml_text() {
+        let v = serde_json::json!({"score": 80, "tags": ["a", "b"]});
+        assert!(render_structured("text", &v).unwrap().is_none());
+        let j = render_structured("json", &v).unwrap().unwrap();
+        assert!(j.ends_with('\n'));
+        assert_eq!(serde_json::from_str::<serde_json::Value>(&j).unwrap(), v);
+        let y = render_structured("yaml", &v).unwrap().unwrap();
+        assert!(y.ends_with('\n'));
+        assert_eq!(serde_yaml::from_str::<serde_json::Value>(&y).unwrap(), v);
+        assert!(render_structured("table", &v).is_err());
+    }
 
     #[test]
     fn test_format_size() {
