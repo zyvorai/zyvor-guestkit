@@ -50,9 +50,8 @@ fn memory_root() -> Result<PathBuf> {
     let root = if let Ok(dir) = std::env::var("GUESTKIT_AI_MEMORY_DIR") {
         PathBuf::from(dir)
     } else {
-        dirs::cache_dir()
+        crate::core::cache_root::guestkit_cache_root()
             .context("could not determine cache directory")?
-            .join("guestkit")
             .join("ai-memory")
     };
     fs::create_dir_all(&root)?;

@@ -98,9 +98,8 @@ pub struct BinaryCache {
 impl BinaryCache {
     /// Create new binary cache manager
     pub fn new() -> Result<Self> {
-        let cache_dir = dirs::cache_dir()
+        let cache_dir = crate::core::cache_root::guestkit_cache_root()
             .context("Could not find cache directory")?
-            .join("guestkit")
             .join("binary");
 
         create_private_dir(&cache_dir).context("Failed to create cache directory")?;

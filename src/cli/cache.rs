@@ -26,6 +26,9 @@ impl InspectionCache {
 
     /// Get the cache directory path
     fn get_cache_directory() -> Result<PathBuf> {
+        if let Some(root) = crate::core::cache_root::guestkit_cache_root() {
+            return Ok(root);
+        }
         let home = std::env::var("HOME")
             .or_else(|_| std::env::var("USERPROFILE"))
             .context("Could not determine home directory")?;

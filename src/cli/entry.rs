@@ -49,7 +49,7 @@ struct Cli {
     #[arg(short = 'T', long, global = true, default_value = "0")]
     timeout: u64,
 
-    /// Custom cache directory path
+    /// Custom cache directory (inspection, binary, TUI, CVE, package, cloud, AI-memory and fleet-baseline caches)
     #[arg(long, global = true, value_name = "DIR")]
     cache_dir: Option<PathBuf>,
 

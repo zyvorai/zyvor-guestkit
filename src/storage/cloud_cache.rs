@@ -22,12 +22,8 @@ fn cache_root() -> Result<PathBuf> {
         fs::create_dir_all(&p)?;
         return Ok(p);
     }
-    let home = std::env::var("HOME")
-        .or_else(|_| std::env::var("USERPROFILE"))
-        .context("Could not determine home directory for cloud cache")?;
-    let p = PathBuf::from(home)
-        .join(".cache")
-        .join("guestkit")
+    let p = crate::core::cache_root::guestkit_cache_root()
+        .context("Could not determine home directory for cloud cache")?
         .join("cloud");
     fs::create_dir_all(&p)?;
     Ok(p)
