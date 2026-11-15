@@ -42,6 +42,8 @@ pub mod formatters;
 #[cfg(not(target_os = "windows"))]
 pub mod gate;
 #[cfg(not(target_os = "windows"))]
+pub mod host_check;
+#[cfg(not(target_os = "windows"))]
 pub mod img;
 #[cfg(not(target_os = "windows"))]
 pub mod interactive;
