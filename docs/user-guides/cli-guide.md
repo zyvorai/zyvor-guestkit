@@ -73,7 +73,7 @@ These are accepted by every subcommand.
 | Inspect | `inspect`, `inspect-batch`, `detect`, `info`, `filesystems` (`fs`), `packages` (`pkg`), `network`, `inventory`, `scan`, `diff`, `compare` |
 | Files | `list` (`ls`), `extract` (`get`), `cat`, `search` (`find`), `grep`, `hash`, `copy`, `backup`, `find-large`, `find-duplicates`, `diff-files`, `disk-usage`, `usage` (`df`), `check` (`fsck`) |
 | Disk images | `convert`, `create`, `shrink`, `img` (`info`, `check`, `snapshots`, `snapshot-create`, `snapshot-delete`, `snapshot-apply`, `resize`, `rebase`, `commit`), `snapshot`, `clone`, `optimize`, `cache-clear`, `cache-stats` |
-| Assurance | `doctor`, `migrate-plan`, `migrate-assess`, `migrate-repair`, `policy` (`check`, `rego`), `cloud-profile`, `fleet` (`analyze`, `wave-plan`, `watch`, `quarantine`), `forensic-diff`, `sbom-diff`, `gate`, `passport` (`emit`, `verify`, `keygen`, `handoff`) |
+| Assurance | `doctor`, `migrate-plan`, `migrate-assess`, `migrate-repair`, `policy` (`check`, `rego`), `cloud-profile`, `fleet` (`analyze`, `wave-plan`, `watch`, `quarantine`), `forensic-diff`, `sbom-diff`, `gate`, `passport` (`emit`, `verify`, `show`, `diff`, `keygen`, `handoff`) |
 | Repair and rescue | `repair`, `rescue`, `plan`, `harden`, `patch`, `sysprep`, `selinux-relabel`, `virtio-initramfs`, `firstboot`, `cloud-init`, `bitlocker` (`status`, `escrow`), `virtio-win` (`list`, `plan`) |
 | Security and compliance | `secrets`, `compliance`, `malware`, `health`, `audit`, `anomaly`, `recommend`, `predict`, `hunt`, `reconstruct`, `evolve`, `verify` |
 | Live guest and runtime | `qga`, `agent`, `agent-proxy`, `agent-call`, `agent-inject`, `agent-sign`, `vm`, `domain-disks`, `execute` (`exec`) |

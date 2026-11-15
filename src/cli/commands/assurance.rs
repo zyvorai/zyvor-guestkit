@@ -1022,6 +1022,24 @@ pub fn passport_diff_command(
     Ok(())
 }
 
+/// `guestkit passport show`: one-screen summary of a passport (no verification).
+pub fn passport_show_command(passport: &Path, output_format: &str) -> Result<()> {
+    use crate::assurance::{summarize_passport, CutoverPassport};
+
+    let raw = std::fs::read_to_string(passport)
+        .with_context(|| format!("read passport {}", passport.display()))?;
+    let p: CutoverPassport = serde_json::from_str(&raw)
+        .with_context(|| format!("parse passport {}", passport.display()))?;
+    let summary = summarize_passport(&p, chrono::Utc::now());
+    match output_format {
+        "text" => print!("{}", summary.render_text()),
+        "json" => println!("{}", serde_json::to_string_pretty(&summary)?),
+        "yaml" => print!("{}", serde_yaml::to_string(&summary)?),
+        other => anyhow::bail!("unknown output format '{other}' (text, json, yaml)"),
+    }
+    Ok(())
+}
+
 /// Migration plan: `guestkit migrate-plan`
 #[cfg(feature = "agent")]
 pub fn migrate_plan_command(
