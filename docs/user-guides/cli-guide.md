@@ -180,6 +180,8 @@ QCOW2, VMDK, VDI, VHD, VHDX, RAW, IMG — detected from the file header (not the
 
 Most inspect commands accept **`-o json`** or **`--json`** for scripting. See [quick-reference.md](quick-reference.md) for examples.
 
+The assurance commands `doctor`, `migrate-plan`, `migrate-assess`, `forensic-diff`, `fleet` (`analyze`, `wave-plan`, `watch`, `quarantine`) and `passport diff` take **`-o text|json|yaml`**. The YAML document has the same structure as the JSON one, so `-o yaml` is handy for diffing in Git or feeding tools that prefer YAML. An unknown format (for example `-o jsno`) is now an error, checked before the image is opened, instead of silently printing text.
+
 ## See also
 
 - [Documentation index](../INDEX.md)
