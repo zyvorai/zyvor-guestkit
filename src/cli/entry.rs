@@ -2483,6 +2483,15 @@ enum PassportAction {
         max_age_hours: Option<u64>,
     },
 
+    /// Show a one-screen summary of a passport (scores, age, expiry, signer, blockers)
+    Show {
+        /// Passport JSON path
+        passport: PathBuf,
+        /// Output format (text, json, yaml)
+        #[arg(short, long, value_name = "FORMAT", default_value = "text")]
+        output: String,
+    },
+
     /// Diff two passports (drift): score deltas, blockers added/resolved, fix-plan changes
     Diff {
         /// Older (baseline) passport JSON
@@ -4324,6 +4333,9 @@ pub fn run() -> anyhow::Result<()> {
                     trust_keys.as_deref(),
                     max_age_hours,
                 )?;
+            }
+            PassportAction::Show { passport, output } => {
+                crate::cli::commands::assurance::passport_show_command(&passport, &output)?;
             }
             PassportAction::Diff {
                 old,

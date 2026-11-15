@@ -167,6 +167,17 @@ The report lists boot/migration score deltas, readiness and hard-block changes, 
 
 ---
 
+## 5b. Reading a passport at a glance (`passport show`)
+
+```bash
+guestkit passport show passport.json            # one screen of text
+guestkit passport show passport.json -o json    # also yaml; schema "guestkit.passport_summary/1"
+```
+
+Prints image and target, generation time and age, issuer, expiry (`valid` or `EXPIRED`), boot/migration/gate scores (gate = the lower of the two, the value `verify --fail-below` checks), readiness and hard-block state, whether a signature is present (with the first 16 hex characters of the signer key), the policy verdict, fix-plan and recommended-action counts, and each critical blocker. It only reads the file: a signature is reported as present, never verified, so use `passport verify` to gate.
+
+---
+
 ## 6. Ownership
 
 | Item | Owner |

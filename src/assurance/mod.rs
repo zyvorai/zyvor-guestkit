@@ -10,6 +10,7 @@ mod handoff;
 mod inject;
 mod passport;
 mod passport_diff;
+mod passport_summary;
 mod repair_extras;
 
 pub use inject::{
@@ -33,6 +34,8 @@ pub use passport_diff::{
     diff_passports, Delta, DriftVerdict, PassportDiff, PassportDiffOptions, ScoreDrift,
     PASSPORT_DIFF_SCHEMA,
 };
+
+pub use passport_summary::{summarize_passport, PassportSummary, PASSPORT_SUMMARY_SCHEMA};
 
 use crate::boot::{analyze_bootability, BootTarget, BootabilityReport};
 use crate::cli::migrate::plan::{compute_migration_score, MigrationScoreReport};

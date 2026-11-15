@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **`guestkit host-check`** — offline host-readiness check: `qemu-img` and helper tools on `PATH`, `nbd`/`loop` kernel modules, privileges, NBD lock directory and cache directory writability; `-o text|json|yaml`, `--strict` exits non-zero on warnings for provisioning/CI gates. See `docs/user-guides/cli-guide.md`.
+- **`guestkit passport show PASSPORT`** — one-screen summary of a Cutover Passport (scores and gate score, age, expiry state, issuer, signature presence and signer key, policy verdict, blockers); `-o text|json|yaml`. Offline, does not verify (use `passport verify`). Library API `assurance::summarize_passport`. See `docs/devops/01-passport-ci-gate.md`.
 - **`guestkit passport diff OLD NEW`** — machine-readable drift between two Cutover Passports (score deltas, readiness/hard-block changes, blockers added/resolved, fix-plan and Windows flag changes, verdict `unchanged|improved|regressed|mixed`); `-o json`, `--tolerance`, `--fail-on-regression` for CI. Library API `assurance::diff_passports`. See `docs/devops/01-passport-ci-gate.md`.
 - **`guestkit migrate-assess --explain`** — "path to ready": ordered fixes with per-fix score gain, cumulative score/readiness and projected outcomes (blockers fixed / all fixed); JSON adds an `explain` object. Library API `migration::explain_assessment`; scoring aggregation is now shared (`aggregate_scores`, `readiness_of`) so the explanation cannot drift from the real score. See `docs/user-guides/cli-guide.md`.
 
