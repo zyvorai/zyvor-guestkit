@@ -832,6 +832,9 @@ enum Commands {
         /// Export report to file
         #[arg(short = 'o', long)]
         export: Option<PathBuf>,
+
+        #[command(flatten)]
+        v2: crate::cli::secrets_v2::SecretsV2Args,
     },
 
     /// Automated rescue and recovery operations
@@ -1108,6 +1111,15 @@ enum Commands {
         /// Use demo CVE/outdated-package data (training only — not a live vuln feed)
         #[arg(long)]
         simulate: bool,
+    },
+
+    /// Vulnerability report: VEX suppression, EPSS/KEV enrichment, OpenVEX/CSAF output, CI gate
+    Cve(crate::cli::cve_cmd::CveArgs),
+
+    /// Signed in-toto/DSSE attestations of an image's SBOM
+    Attest {
+        #[command(subcommand)]
+        command: crate::cli::attest_cmd::AttestCommand,
     },
 
     /// Generate Software Bill of Materials (SBOM)
@@ -3311,6 +3323,7 @@ pub fn run() -> anyhow::Result<()> {
             exclude,
             show_content,
             export,
+            v2,
         } => {
             secrets_command(
                 &image,
@@ -3319,6 +3332,7 @@ pub fn run() -> anyhow::Result<()> {
                 exclude,
                 show_content,
                 export,
+                &v2,
                 cli.verbose,
             )?;
         }
@@ -3496,6 +3510,17 @@ pub fn run() -> anyhow::Result<()> {
                 simulate,
                 cli.verbose,
             )?;
+        }
+
+        Commands::Cve(args) => {
+            let code = crate::cli::cve_cmd::run(args)?;
+            if code != 0 {
+                std::process::exit(code);
+            }
+        }
+
+        Commands::Attest { command } => {
+            crate::cli::attest_cmd::run(command)?;
         }
 
         Commands::Inventory {

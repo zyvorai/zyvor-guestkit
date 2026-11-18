@@ -7,6 +7,7 @@ pub mod cve;
 pub mod formats;
 pub mod licenses;
 pub mod sbom;
+pub mod vuln_report;
 
 use crate::Guestfs;
 use anyhow::{Context, Result};

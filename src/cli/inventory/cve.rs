@@ -79,6 +79,12 @@ pub fn lookup_cves_osv(
         }
     }
 
+    // Air-gapped mode: serve only from the cache (see `guestkit cve --db-import`);
+    // do not call the network and do not poison the cache with an empty result.
+    if offline() {
+        return Ok(Vec::new());
+    }
+
     let query = serde_json::json!({
         "package": {
             "name": package_name,
@@ -137,7 +143,15 @@ pub fn lookup_cves_osv(
     Ok(vulnerabilities)
 }
 
-fn osv_cache_dir() -> Result<std::path::PathBuf> {
+/// True when `GUESTKIT_OFFLINE` is set to a non-empty value other than `0`.
+pub fn offline() -> bool {
+    std::env::var("GUESTKIT_OFFLINE")
+        .map(|v| !v.is_empty() && v != "0")
+        .unwrap_or(false)
+}
+
+/// Directory holding cached OSV lookups (`<cache-root>/cve`).
+pub fn osv_cache_dir() -> Result<std::path::PathBuf> {
     let dir = match crate::core::cache_root::guestkit_cache_root() {
         Some(root) => root.join("cve"),
         None => std::path::PathBuf::from("/tmp")
@@ -148,7 +162,7 @@ fn osv_cache_dir() -> Result<std::path::PathBuf> {
     Ok(dir)
 }
 
-fn sanitize_cache_key(key: &str) -> String {
+pub fn sanitize_cache_key(key: &str) -> String {
     key.chars()
         .map(|c| if c.is_ascii_alphanumeric() { c } else { '_' })
         .collect()
