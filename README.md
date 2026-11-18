@@ -2,6 +2,8 @@
 
 # GuestKit
 
+[Client overview (PDF)](docs/GuestKit-Client-Overview.pdf)
+
 [![CI](https://img.shields.io/github/actions/workflow/status/zyvorai/zyvor-guestkit/ci.yml?branch=main&style=flat-square&labelColor=1d1d1f&label=CI)](https://github.com/zyvorai/zyvor-guestkit/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://crates.io/crates/guestkit)
 [![PyPI](https://img.shields.io/pypi/v/zyvor-guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://pypi.org/project/zyvor-guestkit/)
