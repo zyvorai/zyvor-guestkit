@@ -53,6 +53,16 @@ jobs:
           path: dist
           retention-days: 7
 
+      # maturin-action builds inside a Docker container as root, so dist/ and target/ end up root-owned in the
+      # runner's reused workspace. The next job's actions/checkout then fails to delete them
+      # (EACCES unlink .../dist/zyvor_guestkit-*.whl), which broke unrelated jobs such as Format Check on the
+      # self-hosted runners. Hand the files back to the runner user; never fail the job over this.
+      - name: Return workspace ownership to the runner user
+        if: always()
+        run: |
+          docker run --rm -v "$PWD":/w alpine sh -c \
+            'for d in dist target; do [ -e "/w/$d" ] && chown -R '"$(id -u):$(id -g)"' "/w/$d"; done; true' || true
+
   sdist:
     name: Build source distribution
     runs-on: ubuntu-latest
