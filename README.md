@@ -34,6 +34,7 @@
 
 | Release | What changed |
 |---|---|
+| **1.3.0** | Supply chain and assurance: `guestkit cve` (OpenVEX/CSAF, EPSS/KEV, offline DB), `attest create|verify` (in-toto/DSSE), secrets scanner v2, `host-check`, `passport show` and `passport diff`, `migrate-assess --explain`, `-o yaml`, and a working `--cache-dir`; Python 3.10 minimum; releases ship tar.gz only |
 | **1.2.11** | Security hardening: guest paths resolve chroot-style, mount/archive/cpio traversal closed, guest filesystems mount `nodev,nosuid`, `read_file` refuses non-regular files and caps at 1 GiB, NBD lock moved to `/run/lock` or `XDG_RUNTIME_DIR`, job ids restricted to `[A-Za-z0-9._-]`, plus loop/NBD cleanup, GPT, mdstat and `grep` option-injection fixes |
 | **1.2.10** | Disk access works on Ubuntu 26.04 (loop and NBD readiness is read from sysfs, so `root:disk 0660` device nodes no longer time out); VHDX, VDI, VHD and VMDK images are detected; nine RustSec advisories cleared |
 | **Agent (1.2.6)** | Per-container eBPF network policy and BPF-LSM controls in the guest agent (`guestkit.netpolicy` / `guestkit.lsm`), off by default, audit first, enforce only under a time-bound lease |
@@ -191,9 +192,9 @@ Architecture in depth: [docs/architecture/overview.md](docs/architecture/overvie
 ## Quickstart
 
 ```bash
-# v1.2.11 GitHub Release (tar.gz only, no RPM/COPR) — crates.io `guestkit` is still 0.3.2
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz
-tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64
+# v1.3.0 GitHub Release (tar.gz only, no RPM/COPR) — crates.io `guestkit` is still 0.3.2
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.3.0/guestkit-1.3.0-linux-amd64.tar.gz
+tar xzf guestkit-1.3.0-linux-amd64.tar.gz && cd guestkit-1.3.0-linux-amd64
 ./install.sh                    # host deps (qemu-utils, nbd); run ./guestkit in place or add it to PATH
 export PATH="$PWD:$PATH"
 
@@ -265,7 +266,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Maturity
 
-GuestKit is at **v1.2.11** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
+GuestKit is at **v1.3.0** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `guestkit` is still 0.3.2). The architecture overview states the engine's scope plainly:
 
 | Area | Status |
 |---|---|

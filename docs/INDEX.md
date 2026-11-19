@@ -32,7 +32,7 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 | [Industry use cases](INDUSTRY_USE_CASES.md) | Real-world scenarios, PM/TA view, Zyvor product stack |
 | [Fix plans](features/fix-plans.md) | Offline patch workflow |
 | [Export formats](features/export-formats.md) | JSON, YAML, HTML, PDF |
-| [Python bindings](user-guides/python-bindings.md) | `pip install zyvor-guestkit` (v1.2.11). Import stays `guestkit`. Includes `inject_json` and live-fix helpers. |
+| [Python bindings](user-guides/python-bindings.md) | `pip install zyvor-guestkit` (v1.3.0). Import stays `guestkit`. Includes `inject_json` and live-fix helpers. |
 | [h2kvm integration](features/hyper2kvm-integration.md) | Convert/deploy pipeline with h2kvm |
 | [Handoff / quarantine](user-guides/handoff-quarantine.md) | Passport → h2kvmctl job, fleet quarantine, virtctl plugin |
 | [VM migration](user-guides/vm-migration.md) | End-to-end migration handoff |
@@ -55,7 +55,7 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 | [**DevOps runbooks**](devops/README.md) | Passport CI gate, repair worker, air-gap packages, fleet, cutover weekend, triage |
 | [Run from GHCR](guides/DOCKER.md#published-images-ghcr) | Pull `ghcr.io/zyvorai/*` images, `docker compose up`, or Helm |
 | [Docker](guides/DOCKER.md) | Container usage (web stack + CLI) |
-| [REST API (OpenAPI)](../deploy/openapi/zyvor-vm-services.yaml) | `zyvor-api` `/api/v1` routes, matched to the router for v1.2.11 |
+| [REST API (OpenAPI)](../deploy/openapi/zyvor-vm-services.yaml) | `zyvor-api` `/api/v1` routes, matched to the router for v1.3.0 |
 | [MCP server](guides/MCP.md) | `guestkit mcp-serve`, MCP Registry / OCI image |
 | [Cloud disk sources](guides/cloud-disk-sources.md) | S3 / GCS / Azure URI pulls + cache + CI recipe |
 | [Remote deploy](guides/DEPLOY-REMOTE.md) | SSH deploy to Linux hosts + web console access |

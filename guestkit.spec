@@ -1,5 +1,5 @@
 Name:           guestkit
-Version:        1.2.11
+Version:        1.3.0
 Release:        1%{?dist}
 Summary:        Pure-Rust VM disk inspection and manipulation toolkit
 

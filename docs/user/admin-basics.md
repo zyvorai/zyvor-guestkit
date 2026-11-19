@@ -20,10 +20,10 @@ Eval web (optional): `http://<host>:8088` — change default admin password imme
 ## Install sketch
 
 ```bash
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.3.0/guestkit-1.3.0-linux-amd64.tar.gz
 # crates.io `guestkit` is still 0.3.2 — do not cargo install it for this release
 # releases ship tar.gz only (no RPM or COPR)
-tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64 && ./install.sh   # then run ./guestkit, or add this folder to PATH
+tar xzf guestkit-1.3.0-linux-amd64.tar.gz && cd guestkit-1.3.0-linux-amd64 && ./install.sh   # then run ./guestkit, or add this folder to PATH
 export PATH="$PWD:$PATH"
 qemu-img --version
 guestkit version
