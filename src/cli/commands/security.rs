@@ -147,7 +147,9 @@ pub fn scan_command(
     Ok(())
 }
 
-/// Scan for exposed secrets and credentials
+/// Scan for exposed secrets and credentials (scanner v2: entropy, TOML rules,
+/// allowlists, baselines, SARIF; see `cli::secrets_v2`).
+#[allow(clippy::too_many_arguments)]
 pub fn secrets_command(
     image: &Path,
     scan_paths: Vec<String>,
@@ -155,11 +157,18 @@ pub fn secrets_command(
     exclude: Vec<String>,
     show_content: bool,
     export: Option<PathBuf>,
+    v2: &crate::cli::secrets_v2::SecretsV2Args,
     verbose: bool,
 ) -> Result<()> {
+    use crate::cli::secrets_v2 as v2m;
     use crate::core::ProgressReporter;
-    use regex::Regex;
-    use std::collections::HashSet;
+
+    // Build the scanner first so bad rule files fail before the image is opened.
+    let scanner = v2m::Scanner::from_args(v2, &patterns, show_content)?;
+    let baseline = match &v2.baseline {
+        Some(p) => Some(v2m::load_baseline(p)?),
+        None => None,
+    };
 
     let progress = ProgressReporter::spinner("Loading disk image...");
     let mut g = init_guestfs_ro(image, verbose)?;
@@ -170,205 +179,152 @@ pub fn secrets_command(
 
     progress.set_message("Scanning for secrets...");
 
-    // Default secret patterns
-    let mut secret_patterns: Vec<(String, &str)> = vec![
-        (
-            r"(?i)(password|passwd|pwd)\s*[:=]\s*\S{8,}".to_string(),
-            "Password",
-        ),
-        (
-            r"(?i)(api[_-]?key|apikey)\s*[:=]\s*[A-Za-z0-9_\-]{20,}".to_string(),
-            "API Key",
-        ),
-        (
-            r"(?i)(secret[_-]?key|secretkey)\s*[:=]\s*[A-Za-z0-9_\-]{20,}".to_string(),
-            "Secret Key",
-        ),
-        (
-            r"(?i)(private[_-]?key|privatekey)\s*[:=]\s*[A-Za-z0-9_\-]{20,}".to_string(),
-            "Private Key",
-        ),
-        (
-            r"-----BEGIN (RSA |DSA |EC )?PRIVATE KEY-----".to_string(),
-            "SSH Private Key",
-        ),
-        (
-            r"(?i)(bearer|token)\s*[:=]\s*[A-Za-z0-9_\-\.]{20,}".to_string(),
-            "Bearer Token",
-        ),
-        (
-            r"(?i)(aws_access_key_id|aws_secret_access_key)\s*[:=]\s*[A-Za-z0-9/+=]{20,}"
-                .to_string(),
-            "AWS Credential",
-        ),
-        (
-            r"(?i)mongodb(\+srv)?://[^:]+:[^@]+@".to_string(),
-            "MongoDB Connection String",
-        ),
-        (
-            r"(?i)(mysql|postgresql|postgres)://[^:]+:[^@]+@".to_string(),
-            "Database Connection String",
-        ),
-        (
-            r"ghp_[A-Za-z0-9]{36}".to_string(),
-            "GitHub Personal Access Token",
-        ),
-        (
-            r"glpat-[A-Za-z0-9_\-]{20,}".to_string(),
-            "GitLab Personal Access Token",
-        ),
-        (r"sk_live_[A-Za-z0-9]{24,}".to_string(), "Stripe Live Key"),
-        (r"AIza[A-Za-z0-9_\-]{35}".to_string(), "Google API Key"),
-    ];
-
-    // Add custom patterns if provided
-    for pattern in patterns {
-        secret_patterns.push((pattern, "Custom Pattern"));
-    }
-
-    let exclude_set: HashSet<String> = exclude.into_iter().collect();
-    let mut findings = Vec::new();
-    let mut scanned_files = 0;
-
-    // Determine scan paths
-    let paths_to_scan = if scan_paths.is_empty() {
-        vec!["/etc", "/home", "/root", "/var/www", "/opt"]
+    let mut excludes: Vec<String> = if exclude.is_empty() {
+        v2m::DEFAULT_EXCLUDES
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
     } else {
-        scan_paths.iter().map(|s| s.as_str()).collect()
+        exclude
+    };
+    excludes.retain(|e| !e.is_empty());
+
+    let mut findings: Vec<v2m::SecretFinding> = Vec::new();
+    let mut scanned_files = 0usize;
+
+    let paths_to_scan: Vec<String> = if scan_paths.is_empty() {
+        v2m::DEFAULT_SCAN_PATHS
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
+    } else {
+        scan_paths
     };
 
-    for base_path in paths_to_scan {
+    for base_path in &paths_to_scan {
         if !g.exists(base_path).unwrap_or(false) {
             continue;
         }
-
-        if let Ok(files) = g.find(base_path) {
-            for file in files {
-                // Skip excluded paths
-                if exclude_set.iter().any(|ex| file.contains(ex)) {
-                    continue;
-                }
-
-                // Skip binary files and large files
-                if g.is_file(&file).unwrap_or(false) {
-                    if let Ok(stat) = g.stat(&file) {
-                        // Skip files larger than 10MB
-                        if stat.size > 10_485_760 {
-                            continue;
-                        }
-
-                        // Try to read file
-                        if let Ok(content) = g.read_file(&file) {
-                            if let Ok(text) = String::from_utf8(content.clone()) {
-                                scanned_files += 1;
-
-                                if scanned_files % 100 == 0 {
-                                    progress
-                                        .set_message(format!("Scanned {} files...", scanned_files));
-                                }
-
-                                // Check against all patterns
-                                for (pattern, secret_type) in &secret_patterns {
-                                    if let Ok(re) = Regex::new(pattern) {
-                                        for capture in re.captures_iter(&text) {
-                                            let matched = capture.get(0).map_or("", |m| m.as_str());
-                                            let context = if show_content {
-                                                matched.to_string()
-                                            } else {
-                                                "[REDACTED]".to_string()
-                                            };
-
-                                            findings.push((
-                                                file.clone(),
-                                                secret_type.to_string(),
-                                                context,
-                                            ));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+        let Ok(files) = g.find(base_path) else {
+            continue;
+        };
+        for file in files {
+            // `Guestfs::find` strips the host mount prefix *and* the base
+            // directory, so rebuild the guest path from the base.
+            let full = format!(
+                "{}/{}",
+                base_path.trim_end_matches('/'),
+                file.trim_start_matches('/')
+            );
+            if excludes.iter().any(|ex| full.contains(ex.as_str())) || scanner.path_skipped(&full) {
+                continue;
             }
+            if !g.is_file(&full).unwrap_or(false) {
+                continue;
+            }
+            // Skip files larger than 10MB
+            match g.stat(&full) {
+                Ok(stat) if stat.size <= 10_485_760 => {}
+                _ => continue,
+            }
+            let Ok(content) = g.read_file(&full) else {
+                continue;
+            };
+            // Skip binary (non-UTF-8) files
+            let Ok(text) = String::from_utf8(content) else {
+                continue;
+            };
+            scanned_files += 1;
+            if scanned_files % 100 == 0 {
+                progress.set_message(format!("Scanned {} files...", scanned_files));
+            }
+            findings.extend(scanner.scan_text(&full, &text));
         }
     }
 
     progress.finish_and_clear();
 
-    // Display results
-    println!("Secrets Scan Report");
-    println!("==================");
-    println!("Files scanned: {}", scanned_files);
-    println!("Secrets found: {}", findings.len());
-    println!();
+    if let Some(path) = &v2.write_baseline {
+        let n = v2m::write_baseline(path, &findings)?;
+        eprintln!("Baseline {} now holds {} fingerprints", path.display(), n);
+    }
+    let suppressed = match &baseline {
+        Some(b) => v2m::apply_baseline(&mut findings, b),
+        None => 0,
+    };
 
-    if findings.is_empty() {
-        println!("✓ No exposed secrets detected");
+    // Machine-readable formats
+    let machine = match v2.format.as_str() {
+        "json" => Some(v2m::to_json(&findings)?),
+        "sarif" => Some(serde_json::to_string_pretty(&v2m::to_sarif(
+            &findings,
+            &image.display().to_string(),
+        ))?),
+        _ => None,
+    };
+
+    if let Some(doc) = machine {
+        match &export {
+            Some(path) => {
+                std::fs::write(path, &doc)?;
+                eprintln!("Report exported to: {}", path.display());
+            }
+            None => println!("{}", doc),
+        }
     } else {
-        println!("⚠ Found {} potential secrets:", findings.len());
+        // Group by rule description
+        let mut by_type: std::collections::BTreeMap<String, Vec<&v2m::SecretFinding>> =
+            std::collections::BTreeMap::new();
+        for f in &findings {
+            by_type.entry(f.description.clone()).or_default().push(f);
+        }
+        let detail = |f: &v2m::SecretFinding| match &f.secret {
+            Some(s) => format!("{}:{} : {}", f.file, f.line, s),
+            None => format!("{}:{} [{}]", f.file, f.line, f.redacted),
+        };
+
+        println!("Secrets Scan Report");
+        println!("==================");
+        println!("Files scanned: {}", scanned_files);
+        println!("Secrets found: {}", findings.len());
+        if suppressed > 0 {
+            println!("Suppressed by baseline: {}", suppressed);
+        }
         println!();
 
-        // Group by type
-        let mut by_type: std::collections::HashMap<String, Vec<(String, String)>> =
-            std::collections::HashMap::new();
-
-        for (file, secret_type, context) in &findings {
-            by_type
-                .entry(secret_type.clone())
-                .or_default()
-                .push((file.clone(), context.clone()));
-        }
-
-        for (secret_type, items) in by_type {
-            println!("🔑 {} ({} found):", secret_type, items.len());
-            for (file, context) in items.iter().take(10) {
-                if show_content {
-                    println!("  {} : {}", file, context);
-                } else {
-                    println!("  {}", file);
-                }
-            }
-            if items.len() > 10 {
-                println!("  ... and {} more", items.len() - 10);
-            }
+        if findings.is_empty() {
+            println!("✓ No exposed secrets detected");
+        } else {
+            println!("⚠ Found {} potential secrets:", findings.len());
             println!();
-        }
-    }
-
-    // Export if requested
-    if let Some(export_path) = export {
-        use std::fs::File;
-        use std::io::Write;
-
-        let mut output = File::create(&export_path)?;
-        writeln!(output, "# Secrets Scan Report")?;
-        writeln!(output, "Image: {}", image.display())?;
-        writeln!(output, "Files scanned: {}", scanned_files)?;
-        writeln!(output)?;
-
-        let mut by_type: std::collections::HashMap<String, Vec<(String, String)>> =
-            std::collections::HashMap::new();
-        for (file, secret_type, context) in &findings {
-            by_type
-                .entry(secret_type.clone())
-                .or_default()
-                .push((file.clone(), context.clone()));
-        }
-
-        for (secret_type, items) in by_type {
-            writeln!(output, "## {}", secret_type)?;
-            for (file, context) in items {
-                if show_content {
-                    writeln!(output, "- {} : {}", file, context)?;
-                } else {
-                    writeln!(output, "- {}", file)?;
+            for (kind, items) in &by_type {
+                println!("🔑 {} ({} found):", kind, items.len());
+                for f in items.iter().take(10) {
+                    println!("  {}", detail(f));
                 }
+                if items.len() > 10 {
+                    println!("  ... and {} more", items.len() - 10);
+                }
+                println!();
             }
-            writeln!(output)?;
         }
 
-        println!("Report exported to: {}", export_path.display());
+        if let Some(export_path) = &export {
+            use std::io::Write;
+            let mut output = std::fs::File::create(export_path)?;
+            writeln!(output, "# Secrets Scan Report")?;
+            writeln!(output, "Image: {}", image.display())?;
+            writeln!(output, "Files scanned: {}", scanned_files)?;
+            writeln!(output)?;
+            for (kind, items) in &by_type {
+                writeln!(output, "## {}", kind)?;
+                for f in items {
+                    writeln!(output, "- {}", detail(f))?;
+                }
+                writeln!(output)?;
+            }
+            println!("Report exported to: {}", export_path.display());
+        }
     }
 
     if let Err(e) = g.umount_all() {
@@ -376,6 +332,13 @@ pub fn secrets_command(
     }
     if let Err(e) = g.shutdown() {
         log::warn!("Cleanup: shutdown failed: {}", e);
+    }
+    if v2.fail_on_findings && !findings.is_empty() {
+        eprintln!(
+            "secrets: {} finding(s) remain; failing (--fail-on-findings)",
+            findings.len()
+        );
+        std::process::exit(2);
     }
     Ok(())
 }

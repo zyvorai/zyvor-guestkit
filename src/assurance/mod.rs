@@ -5,6 +5,7 @@
 //!
 //! Used by CLI, worker handlers, and zyvor-api. Does not write to stdout.
 
+pub mod attest;
 mod copilot;
 mod handoff;
 mod inject;

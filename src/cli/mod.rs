@@ -8,6 +8,8 @@ pub mod agent_sign;
 #[cfg(not(target_os = "windows"))]
 pub mod ai;
 #[cfg(not(target_os = "windows"))]
+pub mod attest_cmd;
+#[cfg(not(target_os = "windows"))]
 pub mod batch;
 #[cfg(not(target_os = "windows"))]
 pub mod blueprint;
@@ -21,6 +23,8 @@ pub mod commands_list;
 pub mod cost;
 #[cfg(not(target_os = "windows"))]
 pub mod cutover_cmd;
+#[cfg(not(target_os = "windows"))]
+pub mod cve_cmd;
 #[cfg(not(target_os = "windows"))]
 pub mod dependencies;
 #[cfg(not(target_os = "windows"))]
@@ -62,6 +66,8 @@ pub mod plan;
 pub mod profiles;
 #[cfg(not(target_os = "windows"))]
 pub mod sbom_diff;
+#[cfg(not(target_os = "windows"))]
+pub mod secrets_v2;
 #[cfg(not(target_os = "windows"))]
 pub mod shell;
 #[cfg(not(target_os = "windows"))]
