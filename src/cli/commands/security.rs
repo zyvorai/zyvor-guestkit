@@ -235,7 +235,7 @@ pub fn secrets_command(
                 continue;
             };
             scanned_files += 1;
-            if scanned_files % 100 == 0 {
+            if scanned_files.is_multiple_of(100) {
                 progress.set_message(format!("Scanned {} files...", scanned_files));
             }
             findings.extend(scanner.scan_text(&full, &text));

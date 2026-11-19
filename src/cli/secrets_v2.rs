@@ -964,11 +964,10 @@ regexes = ['''^deadbeef''']
         );
         assert!(r["partialFingerprints"]["guestkit/v1"].is_string());
         assert!(
-            v["runs"][0]["tool"]["driver"]["rules"]
+            !v["runs"][0]["tool"]["driver"]["rules"]
                 .as_array()
                 .unwrap()
-                .len()
-                >= 1
+                .is_empty()
         );
     }
 
