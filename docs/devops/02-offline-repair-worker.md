@@ -15,8 +15,8 @@
 | Optional | `guestkit` from the GitHub Release tarball (not crates.io, not an RPM); or the GHCR worker image |
 
 ```bash
-curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.2.11/guestkit-1.2.11-linux-amd64.tar.gz  # not crates.io 0.3.2
-tar xzf guestkit-1.2.11-linux-amd64.tar.gz && cd guestkit-1.2.11-linux-amd64 && ./install.sh   # then run ./guestkit, or add this folder to PATH
+curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v1.3.0/guestkit-1.3.0-linux-amd64.tar.gz  # not crates.io 0.3.2
+tar xzf guestkit-1.3.0-linux-amd64.tar.gz && cd guestkit-1.3.0-linux-amd64 && ./install.sh   # then run ./guestkit, or add this folder to PATH
 export PATH="$PWD:$PATH"
 guestkit --help
 guestctl tui --help

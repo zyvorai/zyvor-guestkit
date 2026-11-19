@@ -57,7 +57,7 @@ git clone https://github.com/zyvorai/guestkit
 cd guestkit
 
 # Create source tarball
-git archive --format=tar.gz --prefix=guestkit-1.2.11/ -o ~/rpmbuild/SOURCES/guestkit-1.2.11.tar.gz HEAD
+git archive --format=tar.gz --prefix=guestkit-1.3.0/ -o ~/rpmbuild/SOURCES/guestkit-1.3.0.tar.gz HEAD
 
 # Copy spec file
 cp guestkit.spec ~/rpmbuild/SPECS/
@@ -75,7 +75,7 @@ git clone https://github.com/zyvorai/guestkit
 cd guestkit
 
 # Create source tarball
-git archive --format=tar.gz --prefix=guestkit-1.2.11/ -o ~/rpmbuild/SOURCES/guestkit-1.2.11.tar.gz HEAD
+git archive --format=tar.gz --prefix=guestkit-1.3.0/ -o ~/rpmbuild/SOURCES/guestkit-1.3.0.tar.gz HEAD
 
 # Copy spec file
 cp guestkit-full.spec ~/rpmbuild/SPECS/
@@ -89,15 +89,15 @@ rpmbuild -ba --without python SPECS/guestkit-full.spec
 
 ## 📥 Building from a Tag Source Archive
 
-This uses GitHub's source archive for the tag, not the `guestkit-<version>-linux-amd64.tar.gz` binary bundle on the release page. The commands below have not been re-run for v1.2.11.
+This uses GitHub's source archive for the tag, not the `guestkit-<version>-linux-amd64.tar.gz` binary bundle on the release page. The commands below have not been re-run for v1.3.0.
 
 ```bash
 # Download the tag's source archive
-wget https://github.com/zyvorai/zyvor-guestkit/archive/v1.2.11/guestkit-1.2.11.tar.gz \
-     -O ~/rpmbuild/SOURCES/guestkit-1.2.11.tar.gz
+wget https://github.com/zyvorai/zyvor-guestkit/archive/v1.3.0/guestkit-1.3.0.tar.gz \
+     -O ~/rpmbuild/SOURCES/guestkit-1.3.0.tar.gz
 
-# Copy spec file and point Version: at the tarball (the shipped spec says 1.2.11)
-sed 's/^Version:.*/Version:        1.2.11/' guestkit.spec > ~/rpmbuild/SPECS/guestkit.spec
+# Copy spec file and point Version: at the tarball (the shipped spec says 1.3.0)
+sed 's/^Version:.*/Version:        1.3.0/' guestkit.spec > ~/rpmbuild/SPECS/guestkit.spec
 
 # Build
 rpmbuild -ba ~/rpmbuild/SPECS/guestkit.spec
@@ -131,7 +131,7 @@ newgrp mock
 rpmbuild -bs SPECS/guestkit.spec
 
 # Build with mock
-mock -r fedora-39-x86_64 SRPMS/guestkit-1.2.11-1.fc39.src.rpm
+mock -r fedora-39-x86_64 SRPMS/guestkit-1.3.0-1.fc39.src.rpm
 ```
 
 ## 📦 Generated Packages
@@ -140,12 +140,12 @@ After successful build, packages will be in:
 
 ```
 ~/rpmbuild/RPMS/x86_64/
-├── guestkit-1.2.11-1.fc39.x86_64.rpm          # Main package
-├── guestkit-devel-1.2.11-1.fc39.x86_64.rpm    # Development files
-└── python3-guestkit-1.2.11-1.fc39.x86_64.rpm  # Python bindings (full spec only)
+├── guestkit-1.3.0-1.fc39.x86_64.rpm          # Main package
+├── guestkit-devel-1.3.0-1.fc39.x86_64.rpm    # Development files
+└── python3-guestkit-1.3.0-1.fc39.x86_64.rpm  # Python bindings (full spec only)
 
 ~/rpmbuild/SRPMS/
-└── guestkit-1.2.11-1.fc39.src.rpm             # Source RPM
+└── guestkit-1.3.0-1.fc39.src.rpm             # Source RPM
 ```
 
 ## ✅ Installing Built Packages
@@ -153,20 +153,20 @@ After successful build, packages will be in:
 ### Install Main Package
 
 ```bash
-sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ### Install with Python Bindings
 
 ```bash
-sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm \
-                 ~/rpmbuild/RPMS/x86_64/python3-guestkit-1.2.11-1.fc39.x86_64.rpm
+sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm \
+                 ~/rpmbuild/RPMS/x86_64/python3-guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ### Install Development Package
 
 ```bash
-sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-devel-1.2.11-1.fc39.x86_64.rpm
+sudo dnf install ~/rpmbuild/RPMS/x86_64/guestkit-devel-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ## 🧪 Testing the Package
@@ -226,7 +226,7 @@ If cargo fails to fetch dependencies:
 ```bash
 # Use vendored dependencies (advanced)
 cargo vendor
-tar czf ~/rpmbuild/SOURCES/guestkit-vendor-1.2.11.tar.gz vendor/
+tar czf ~/rpmbuild/SOURCES/guestkit-vendor-1.3.0.tar.gz vendor/
 ```
 
 ## 📋 RPM Query Commands
@@ -234,25 +234,25 @@ tar czf ~/rpmbuild/SOURCES/guestkit-vendor-1.2.11.tar.gz vendor/
 ### List Package Contents
 
 ```bash
-rpm -qlp ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+rpm -qlp ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ### Check Package Information
 
 ```bash
-rpm -qip ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+rpm -qip ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ### Verify Package
 
 ```bash
-rpm -Vp ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+rpm -Vp ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ### Check Dependencies
 
 ```bash
-rpm -qRp ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+rpm -qRp ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ## 🌐 Building for Different Architectures
@@ -310,7 +310,7 @@ copr-cli --help
 copr-cli create guestkit --chroot fedora-39-x86_64 --chroot fedora-40-x86_64
 
 # Submit build
-copr-cli build guestkit ~/rpmbuild/SRPMS/guestkit-1.2.11-1.fc39.src.rpm
+copr-cli build guestkit ~/rpmbuild/SRPMS/guestkit-1.3.0-1.fc39.src.rpm
 ```
 
 ## 🔍 Spec File Validation
@@ -325,7 +325,7 @@ sudo dnf install -y rpmlint
 rpmlint guestkit.spec
 
 # Check built RPM
-rpmlint ~/rpmbuild/RPMS/x86_64/guestkit-1.2.11-1.fc39.x86_64.rpm
+rpmlint ~/rpmbuild/RPMS/x86_64/guestkit-1.3.0-1.fc39.x86_64.rpm
 ```
 
 ## 📚 Additional Resources

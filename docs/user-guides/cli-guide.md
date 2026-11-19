@@ -1,4 +1,4 @@
-# CLI reference (v1.2.11)
+# CLI reference (v1.3.0)
 
 `guestkit` and `guestctl` are the same binary and share one command surface (`guestctl` is a symlink to `guestkit` in the release tarball). The separate
 **`guestkit-qemu`** binary plans and launches QEMU from the same assurance
@@ -62,13 +62,13 @@ These are accepted by every subcommand.
 | `--cache-dir DIR` | Root directory for all guestkit caches (also read from `GUESTKIT_CACHE_DIR`); default `~/.cache/guestkit` |
 | `-j`, `--jobs N` | Documented as parallel workers |
 
-**Caveat from reading the v1.2.11 source:** `--read-only` and `--timeout` only set the environment variables above, and nothing in the source reads `GUESTKIT_READONLY` or `GUESTKIT_TIMEOUT`; the global `--jobs` value is not read either. This was established by searching the code, not by running the binary. Do not rely on `--read-only` to protect an image: use read-only commands, `guestkit doctor`/`inspect`, or a copy of the disk. The per-command parallelism flags (`fleet ... -j`, `inspect-batch --parallel`) are separate per-command arguments. The inspection cache is `~/.cache/guestkit/` unless `--cache-dir` (or `GUESTKIT_CACHE_DIR`) points elsewhere.
+**Caveat from reading the v1.3.0 source:** `--read-only` and `--timeout` only set the environment variables above, and nothing in the source reads `GUESTKIT_READONLY` or `GUESTKIT_TIMEOUT`; the global `--jobs` value is not read either. This was established by searching the code, not by running the binary. Do not rely on `--read-only` to protect an image: use read-only commands, `guestkit doctor`/`inspect`, or a copy of the disk. The per-command parallelism flags (`fleet ... -j`, `inspect-batch --parallel`) are separate per-command arguments. The inspection cache is `~/.cache/guestkit/` unless `--cache-dir` (or `GUESTKIT_CACHE_DIR`) points elsewhere.
 
 `--cache-dir DIR` relocates every cache: inspection results (`DIR/*.json`), `DIR/binary`, the TUI per-image cache (`DIR/<hash>`), `DIR/cve`, `DIR/packages`, `DIR/cloud`, `DIR/ai-memory` and `DIR/fleet-baseline`. The per-subsystem overrides `GUESTKIT_CLOUD_CACHE_DIR`, `GUESTKIT_AI_MEMORY_DIR` and `GUESTKIT_FLEET_BASELINE_DIR` still take precedence for their own cache.
 
 ## Command groups
 
-`guestkit commands` prints the grouped list that ships in your binary. The table below is checked against the clap definitions in `src/cli/entry.rs` for v1.2.11; aliases are in parentheses.
+`guestkit commands` prints the grouped list that ships in your binary. The table below is checked against the clap definitions in `src/cli/entry.rs` for v1.3.0; aliases are in parentheses.
 
 | Group | Commands |
 |-------|----------|

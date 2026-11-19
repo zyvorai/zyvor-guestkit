@@ -4,6 +4,7 @@ High-level direction for GuestKit / GuestCtl. Full release notes are in [CHANGEL
 
 ## Shipped (recent)
 
+- **v1.3.0** — Supply chain and assurance: `guestkit cve` (OpenVEX/CSAF, EPSS/KEV, offline DB), `attest create|verify` (in-toto/DSSE), secrets scanner v2, `host-check`, `passport show` and `passport diff`, `migrate-assess --explain`, `-o yaml`, and a working `--cache-dir`; Python 3.10 minimum; releases ship tar.gz only.
 - **v1.2.11** — Security hardening: guest paths resolve chroot-style, `nodev,nosuid` guest mounts, `read_file` caps (1 GiB, regular files only), `grep` option-injection fix, mount/archive/cpio traversal closed, NBD lock moved out of `/tmp`, job-id validation, GPT/mdstat parser fixes, `zyvor-api` import hardening. Released as tar.gz only (the RPM workflow was dropped in #81 after the tag; spec files stay for local builds).
 - **v1.2.10** — Ubuntu 26.04 (kernel 7.x) loop/NBD readiness via sysfs, VHDX/VDI/VHD/VMDK detection, apk version split, nine RustSec advisories cleared.
 - **v1.2.7 to v1.2.9** — Release and image-build pipeline fixes (crates.io publish order, GHCR/MCP Registry jobs, `zyvor-api` Dockerfile).

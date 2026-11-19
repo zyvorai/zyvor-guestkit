@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-11-19
+
 ### Added
 - **`guestkit cve`** — vulnerability report from an image or inventory JSON: OpenVEX and CSAF 2.0 output (`-f openvex|csaf`), `--vex FILE` suppression of `not_affected` / `fixed` statements, EPSS and CISA KEV enrichment from locally cached feed files (`--epss`, `--kev`; no network), `--fail-on SEVERITY` / `--fail-on-kev` exit code 2 for CI, and an offline vulnerability DB bundle (`--db-export` / `--db-import`, SHA-256 checked) for air-gapped use; `--offline` / `GUESTKIT_OFFLINE=1` stops OSV lookups from using the network or caching empty results. See `docs/features/supply-chain-and-secrets.md`.
 - **`guestkit attest create|verify`** — in-toto Statement v1 (subject = image SHA-256, CycloneDX or SPDX predicate) in a DSSE envelope signed with the passport Ed25519 key format; verify requires an explicit trusted key and can check the image digest. Needs `--features agent`. Sigstore/cosign compatibility is a follow-up.

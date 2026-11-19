@@ -1,4 +1,4 @@
-# GuestKit architecture (v1.2.11)
+# GuestKit architecture (v1.3.0)
 
 Offline VM intelligence and migration assurance — **Rust control plane** with host block-device access for mount-heavy operations.
 
@@ -74,7 +74,7 @@ Evidence is cached under `~/.cache/guestkit/` after successful `doctor` runs.
 
 The root `Cargo.toml` workspace includes the main package, `guestkit-agent-protocol`, `guestkit-job-spec`, `zyvor-guest-agent`, `guestkit-ebpf-common` and `guestkit-ebpf-runtime`; `crates/guestkit-ebpf` (kernel-side programs) is excluded and built by `guestkit-ebpf-runtime/build.rs`. `zyvor-api` and `guestkit-worker` build as sibling crates with their own lockfiles and path dependencies (see each crate `Cargo.toml`).
 
-**Version:** 1.2.11 (package) · **License:** Apache-2.0 · **Owner:** ZyvorAI Labs Private Limited
+**Version:** 1.3.0 (package) · **License:** Apache-2.0 · **Owner:** ZyvorAI Labs Private Limited
 
 ## Guest-file trust boundary (v1.2.11)
 

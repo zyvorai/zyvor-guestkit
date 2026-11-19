@@ -28,7 +28,7 @@ This is the user-facing onboarding guide — how to access the product, your fir
 **How to access it**
 
 - **Web:** Self-hosted web console at http://localhost:8088 (nginx front-end proxies `/api/` to the zyvor-api backend). Start it with `docker compose -f deploy/docker-compose.ghcr.yml up -d`.
-- **CLI:** Host binaries: `guestkit` (scriptable CLI) and `guestctl` (the same binary under another name; `guestctl tui` opens the TUI) come in the [v1.2.11 GitHub Release](https://github.com/zyvorai/zyvor-guestkit/releases/tag/v1.2.11) tarball. `guestkit-qemu` (assured QEMU plan/run/QMP) is not in the tarball; build it with `cargo build --release`. Do not use `cargo install guestkit` — crates.io is still 0.3.2. Run `guestkit --help` or `guestkit commands` to list subcommands. Launch the TUI with `guestctl tui vm.qcow2`.
+- **CLI:** Host binaries: `guestkit` (scriptable CLI) and `guestctl` (the same binary under another name; `guestctl tui` opens the TUI) come in the [v1.3.0 GitHub Release](https://github.com/zyvorai/zyvor-guestkit/releases/tag/v1.3.0) tarball. `guestkit-qemu` (assured QEMU plan/run/QMP) is not in the tarball; build it with `cargo build --release`. Do not use `cargo install guestkit` — crates.io is still 0.3.2. Run `guestkit --help` or `guestkit commands` to list subcommands. Launch the TUI with `guestctl tui vm.qcow2`.
 - **API:** REST API served by zyvor-api behind the console's `/api/` path (e.g. `http://localhost:8088/api/`); it enqueues inspect/boot-inspect jobs onto the Redis-backed worker. Live guests are reachable host-side via `guestkit agent-proxy --listen 127.0.0.1:8765` (e.g. `curl http://127.0.0.1:8765/doctor`). Python bindings expose the engine in-process via `from guestkit import Guestfs`.
 - **Login:** Packaged/web installs seed a default administrator: username `admin`, password `Admin@321` (also the default API key where applicable). Change the password, API key and `JWT_SECRET` immediately after first login and enable SSO/SAML from Settings before any network exposure.
 - **Needs:** A Linux host with qemu-img, losetup and qemu-nbd installed; mount and in-cluster boot-inspect need root or a privileged pod. `guestkit-qemu run` also needs a QEMU system binary on `PATH`.
@@ -36,7 +36,7 @@ This is the user-facing onboarding guide — how to access the product, your fir
 **Your first workflows**
 
 - **Pre-flight environment check**
-  1. Install the tools from the [v1.2.11 GitHub Release](https://github.com/zyvorai/zyvor-guestkit/releases/tag/v1.2.11) (`guestkit` and `guestctl`; extract with `tar xzf`, then run `./install.sh`). Build `guestkit-qemu` from source if you need it.
+  1. Install the tools from the [v1.3.0 GitHub Release](https://github.com/zyvorai/zyvor-guestkit/releases/tag/v1.3.0) (`guestkit` and `guestctl`; extract with `tar xzf`, then run `./install.sh`). Build `guestkit-qemu` from source if you need it.
   1. Verify host tooling is present: `guestkit doctor --help` and confirm qemu-img/losetup/qemu-nbd are installed.
   1. Confirm the disk opens and its format is detected: `guestkit detect vm.qcow2`.
 - **Assurance-first migration (recommended)**
@@ -269,8 +269,8 @@ Full guide: [qemu-runtime.md](features/qemu-runtime.md).
 
 _Install in one command; run the full open-source stack; scale with Enterprise support._
 
-- **GitHub Release** — the v1.2.11 tarball (`guestkit-1.2.11-linux-amd64.tar.gz`, plus a static `-musl` variant and `.sha256` files) installs `guestkit` and `guestctl` (a symlink to `guestkit`); `guestkit-qemu` and `virtctl-guestkit` are built from source. Releases ship tar.gz only, with no RPM or COPR packages. crates.io `guestkit` is still 0.3.2. — _From zero to inspecting in one download._
-  - **How:** CLI: download `guestkit-1.2.11-linux-amd64.tar.gz` from the v1.2.11 release.
+- **GitHub Release** — the v1.3.0 tarball (`guestkit-1.3.0-linux-amd64.tar.gz`, plus a static `-musl` variant and `.sha256` files) installs `guestkit` and `guestctl` (a symlink to `guestkit`); `guestkit-qemu` and `virtctl-guestkit` are built from source. Releases ship tar.gz only, with no RPM or COPR packages. crates.io `guestkit` is still 0.3.2. — _From zero to inspecting in one download._
+  - **How:** CLI: download `guestkit-1.3.0-linux-amd64.tar.gz` from the v1.3.0 release.
 - **Run from GHCR** — Prebuilt public images (zyvor-ui, zyvor-api, guestkit-worker) come up via docker compose with no docker login. — _Stand up the whole console in minutes._
   - **How:** Docker: `docker compose -f deploy/docker-compose.ghcr.yml up -d` brings up zyvor-ui/zyvor-api/guestkit-worker at http://localhost:8088 with no docker login.
 - **Helm & remote deploy** — A Helm chart for clusters plus scripted remote deploy for Docker hosts. — _Ship it where your fleet already lives._
@@ -284,7 +284,7 @@ _Install in one command; run the full open-source stack; scale with Enterprise s
 
 ## Getting started
 
-1. **Install** — Download the v1.2.11 GitHub Release to get the guestkit CLI and guestctl TUI, or pull the web stack from ghcr.io/zyvorai (`:v1.2.11`).
+1. **Install** — Download the v1.3.0 GitHub Release to get the guestkit CLI and guestctl TUI, or pull the web stack from ghcr.io/zyvorai (`:v1.3.0`).
 2. **Score boot readiness** — guestkit doctor vm.qcow2 --target proxmox --explain returns a 0-100 boot assurance score with ranked blockers and root-cause chains.
 3. **Export a fix plan** — guestkit migrate-plan vm.vmdk --target proxmox --export plan.yaml writes an executable, reviewable migration fix plan.
 4. **Explore interactively** — guestctl tui vm.qcow2 opens the carbon TUI with the Assurance workspace and fix-plan preview.

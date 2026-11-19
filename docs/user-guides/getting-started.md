@@ -17,10 +17,10 @@ Designed to work seamlessly with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm)
 
 ## Install a release
 
-The v1.2.11 GitHub Release ships Linux amd64 tarballs only (no RPM or COPR packages). crates.io `guestkit` is still 0.3.2, so `cargo install guestkit` does not give you this release.
+The v1.3.0 GitHub Release ships Linux amd64 tarballs only (no RPM or COPR packages). crates.io `guestkit` is still 0.3.2, so `cargo install guestkit` does not give you this release.
 
 ```bash
-V=1.2.11
+V=1.3.0
 curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v$V/guestkit-$V-linux-amd64.tar.gz
 curl -fsSL -O https://github.com/zyvorai/zyvor-guestkit/releases/download/v$V/guestkit-$V-linux-amd64.tar.gz.sha256
 sha256sum -c guestkit-$V-linux-amd64.tar.gz.sha256
