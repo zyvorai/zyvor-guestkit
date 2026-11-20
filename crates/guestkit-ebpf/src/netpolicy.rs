@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 //! Per-container network policy on the container's cgroup (cgroup_skb).
 //! The cgroup id is the packet's socket cgroup (`bpf_skb_cgroup_id`), which
 //! is right for ingress too (softirq runs under an unrelated task). A policed

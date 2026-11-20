@@ -1,3 +1,6 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 // Builds `guestkit-ebpf` for bpfel-unknown-none and stages the object at
 // `$OUT_DIR/guestkit-ebpf.o` for `include_bytes_aligned!`.
 //

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 # Live smoke for guestkit.netpolicy.* / guestkit.lsm.* (run as root on Linux).
 # Runs guestkitd on a private socket and polices only a scratch cgroup whose
 # processes talk over a veth pair into a scratch netns; nothing else on the

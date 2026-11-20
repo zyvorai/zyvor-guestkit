@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
 """Capture the docs screenshots from the bundled OSS web UI's offline demo.
 
 Serves deploy/ui/ on a local port, drives it with Google Chrome via Playwright
