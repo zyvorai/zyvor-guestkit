@@ -99,7 +99,6 @@ const config: Config = {
           items: [
             {label: 'Getting started', to: '/docs/user-guides/getting-started'},
             {label: 'Quick reference', to: '/docs/user-guides/quick-reference'},
-            {label: 'Source-available vs Enterprise', to: '/docs/ce-vs-enterprise'},
             {label: 'Gallery', to: '/gallery'},
             {label: 'Resources (downloads)', to: '/resources'},
           ],

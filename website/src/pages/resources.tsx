@@ -63,7 +63,6 @@ const ASSETS: Asset[] = [
     links: [
       {label: 'Trial releases', to: 'https://github.com/zyvorai/guestkit/releases?q=enterprise-trial'},
       {label: 'Install guide', to: '/docs/enterprise-trial-install'},
-      {label: 'Source-available vs Enterprise', to: '/docs/ce-vs-enterprise'},
     ],
   },
   {

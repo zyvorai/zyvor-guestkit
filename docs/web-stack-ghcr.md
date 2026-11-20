@@ -1,4 +1,4 @@
-# Run the free web stack (GHCR)
+# Run the web stack (GHCR)
 
 > Part of the [GuestKit README](../README.md). Back to the [documentation map](documentation-map.md).
 

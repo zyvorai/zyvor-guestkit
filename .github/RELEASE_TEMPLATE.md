@@ -13,5 +13,3 @@ For VMware exit programs, fleet migrations, SLAs, and the full **HyperSDK Platfo
 - **Platform:** https://zyvor.dev/?utm_source=github&utm_medium=guestkit
 - **Contact:** https://zyvor.dev/contact?utm_source=github&utm_medium=guestkit
 - **Sales:** sales@zyvor.dev
-
-**Full comparison:** [docs/ce-vs-enterprise.md](docs/ce-vs-enterprise.md)

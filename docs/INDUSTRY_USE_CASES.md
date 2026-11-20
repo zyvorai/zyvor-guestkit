@@ -194,14 +194,14 @@ VMware vSphere · Nutanix AHV · AWS · Azure · Google Cloud · Hyper-V · Orac
 
 ### Source-available vs enterprise
 
-| | Source-available (this repo) | Enterprise ([zyvor.dev](https://zyvor.dev)) |
-|---|------------------------|-----------------------------------------------|
-| GuestKit CLI/TUI | ✅ | Same codebase + SLA |
-| Self-hosted web stack | ✅ GHCR / Helm | Hardened reference architectures |
-| Migration programs | DIY / community | VMware exit, air-gap, regulated fleets |
-| Support | GitHub | [sales@zyvor.dev](mailto:sales@zyvor.dev) |
+| | Enterprise ([zyvor.dev](https://zyvor.dev)) |
+|---|-----------------------------------------------|
+| GuestKit CLI/TUI | Same codebase + SLA |
+| Self-hosted web stack | Hardened reference architectures |
+| Migration programs | VMware exit, air-gap, regulated fleets |
+| Support | [sales@zyvor.dev](mailto:sales@zyvor.dev) |
 
-See [ce-vs-enterprise.md](ce-vs-enterprise.md) and [zyvor-enterprise.md](zyvor-enterprise.md).
+See [zyvor-enterprise.md](zyvor-enterprise.md).
 
 ---
 

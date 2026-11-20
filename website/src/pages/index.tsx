@@ -130,7 +130,7 @@ function EnterpriseCTA() {
             Source-available core, Enterprise for scale
           </Heading>
           <p className={styles.enterpriseCopy}>
-            GuestKit's core is free for non-production use under the Zyvor Production License v1.0; production use requires a commercial license.
+            GuestKit is source-available under the Zyvor Production License v1.0; a commercial license is required to run it.
             Zyvor Enterprise adds a 30-day trial with fleet analysis,
             policy-as-code, and production support for teams running this
             at scale.

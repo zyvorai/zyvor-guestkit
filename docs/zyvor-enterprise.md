@@ -19,18 +19,18 @@ This repository ships the source-available **GuestKit** toolkit — the offline 
 | **Sales & guided demos** | [sales@zyvor.dev](mailto:sales@zyvor.dev) · [contact form](https://zyvor.dev/contact?intent=demo) |
 | **General inquiries** | [info@zyvor.dev](mailto:info@zyvor.dev) |
 
-## Why buy GuestKit Enterprise (not only the source-available repo)
+## Why buy GuestKit Enterprise
 
-| Buyer need | Source-available GuestKit | GuestKit Enterprise |
-| --- | --- | --- |
-| Prove a disk will boot offline | ✅ `doctor` | ✅ same scores in Command Center / Image Vault |
-| Gate CI with Passports | ✅ Action + CLI | ✅ same evidence + in-product Passport Authority |
-| Run a multi-wave hypervisor exit | Scripts / Excel | ✅ Migration Factory + portfolio |
-| SSO / RBAC / audit for change boards | DIY | ✅ Keycloak reference + audit stream |
-| One console for execs and operators | Free `zyvor-ui` (lab) | ✅ Command Center + free-dock parity |
-| Vendor SLA on cutover programs | Community Issues | ✅ Zyvor SLA, workshops, air-gap packs |
+| Buyer need | GuestKit Enterprise |
+| --- | --- |
+| Prove a disk will boot offline | ✅ same scores in Command Center / Image Vault |
+| Gate CI with Passports | ✅ same evidence + in-product Passport Authority |
+| Run a multi-wave hypervisor exit | ✅ Migration Factory + portfolio |
+| SSO / RBAC / audit for change boards | ✅ Keycloak reference + audit stream |
+| One console for execs and operators | ✅ Command Center + Image Vault dock parity |
+| Vendor SLA on cutover programs | ✅ Zyvor SLA, workshops, air-gap packs |
 
-**Enterprise does not replace this repo** — it productizes program ops while calling `guestkit doctor` underneath. Full compare: [ce-vs-enterprise.md](ce-vs-enterprise.md).
+**Enterprise builds on this repo** — it productizes program ops while calling `guestkit doctor` underneath.
 
 ## HyperSDK Platform product suite
 
@@ -70,6 +70,6 @@ Contact **sales@zyvor.dev** or [zyvor.dev/contact](https://zyvor.dev/contact?int
 - Integrated platform features (dashboard, multi-tenant ops, full provider matrix)  
 - Demos, architecture reviews, or migration planning workshops  
 
-**Start here:** [zyvor.dev/guestkit](https://zyvor.dev/guestkit) · compare editions: [ce-vs-enterprise.md](ce-vs-enterprise.md)
+**Start here:** [zyvor.dev/guestkit](https://zyvor.dev/guestkit)
 
-Community bugs and contributions stay on [GitHub Issues](https://github.com/zyvorai/guestkit/issues).
+Bugs and feature requests go to [GitHub Issues](https://github.com/zyvorai/guestkit/issues).

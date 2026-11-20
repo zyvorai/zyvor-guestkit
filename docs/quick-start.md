@@ -62,4 +62,3 @@ See [python-bindings.md](user-guides/python-bindings.md) and [examples/python/as
 | Remote SSH deploy | [DEPLOY-REMOTE.md](guides/DEPLOY-REMOTE.md) |
 | Cheat sheet | [Quick reference](user-guides/quick-reference.md) |
 | Full feature map | [User feature guide](guestkit-user-feature-guide.md) |
-| Source-available vs Enterprise | [ce-vs-enterprise.md](ce-vs-enterprise.md) |
