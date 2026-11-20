@@ -1,5 +1,5 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Reproducible CI build container for Zeus VM Tools (not a runtime service image).
 FROM rust:1.85-bookworm AS builder
 

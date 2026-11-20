@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Refresh vendored IronWolf shell CSS from ../ironwolf (manual review required).
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

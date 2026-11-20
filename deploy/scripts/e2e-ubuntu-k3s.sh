@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # End-to-end: Ubuntu cloud image → GuestKit inspect/doctor → KubeVirt VM → live + offline tests.
 set -euo pipefail
 

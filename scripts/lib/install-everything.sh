@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Zyvor — one-shot user install (run inside extracted tarball directory).
 # Does everything ./install.sh does, plus host tests and production setup when bundled.
 set -euo pipefail

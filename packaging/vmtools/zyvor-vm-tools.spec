@@ -3,8 +3,7 @@ Version:        0.1.0
 Release:        1%{?dist}
 Summary:        Zyvor GuestKit Agent — in-guest VM intelligence and migration assurance
 
-License:        Apache-2.0
-URL:            https://zyvor.dev/guestkit
+License:        LicenseRef-Zyvor-Production-1.0URL:            https://zyvor.dev/guestkit
 Source0:        zyvor-vm-tools-%{version}.tar.gz
 BuildRequires:  rust >= 1.70
 BuildRequires:  cargo

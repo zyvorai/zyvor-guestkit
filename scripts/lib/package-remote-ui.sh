@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # shellcheck shell=bash
 # UI helpers for package-binary-remote.sh (sourced, not executed).
 _PKG_REMOTE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -1,5 +1,5 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Deprecated for releases: use deploy/scripts/publish-images.sh and per-crate Dockerfiles.
 
 # Multi-stage build for guestkit

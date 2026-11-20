@@ -354,7 +354,7 @@ How has this been tested?
 1. **Create the module file**: `src/guestfs/newmodule.rs`
 
 ```rust
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 //! Brief module description
 //!
 //! Detailed module documentation

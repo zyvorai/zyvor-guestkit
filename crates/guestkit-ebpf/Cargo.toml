@@ -2,7 +2,7 @@
 name = "guestkit-ebpf"
 version = "0.1.0"
 edition = "2024"
-license = "Apache-2.0"
+license = "LicenseRef-Zyvor-Production-1.0"
 publish = false
 
 # Standalone workspace: this crate only builds for bpfel-unknown-none on nightly

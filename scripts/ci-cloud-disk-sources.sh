@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # CI / local recipe for cloud disk source unit tests + optional live pulls.
 # Live pulls run only when GK_TEST_{S3,AZURE,GCS}_URI are set and CLIs exist.
 set -euo pipefail

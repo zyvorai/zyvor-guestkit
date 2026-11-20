@@ -1,6 +1,6 @@
 #!/bin/sh
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Pre-snapshot hook: flush MySQL/MariaDB tables if service is active.
 set -eu
 if systemctl is-active --quiet mysql.service 2>/dev/null \

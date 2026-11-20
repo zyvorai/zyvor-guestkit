@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 
 //! MCP (Model Context Protocol) server exposing the same 6 read-only
 //! evidence tools as `ai/tools.rs`/`ai/rig_tools.rs`, so external MCP hosts

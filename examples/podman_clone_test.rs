@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 
 // Integration test: lvm_clone_podman with a real RHEL VM
 use guestkit::guestfs::lvm_clone::{lvm_clone_podman, IsolationLevel, LvmCloneConfig};

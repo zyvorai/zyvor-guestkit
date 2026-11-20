@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Generate branded PDFs from user .txt docs and add docs/pdf/ to the bundle.
 #
 # Usage: generate-user-pdfs.sh <stage-dir> <build-dir> <product-name>

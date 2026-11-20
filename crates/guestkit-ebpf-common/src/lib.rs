@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 
 //! Map layouts shared by the in-guest eBPF programs (`guestkit-ebpf`) and the
 //! agent-side loader (`guestkit-ebpf-runtime`). Every struct is `repr(C)`

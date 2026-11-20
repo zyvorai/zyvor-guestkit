@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Gate: server.json (MCP Registry metadata), Dockerfile.mcp and Cargo.toml agree.
 # Usage: scripts/check-mcp-registry.sh [tag]   (tag like v1.2.5, optional)
 set -euo pipefail

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 """Check relative links and #anchors in the top-level Markdown docs.
 
 Covers README.md, FEATURES.md, CHANGELOG.md and every Markdown file under docs/. For each

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 # Finalize user tarball: branded PDFs, welcome page, path verification.
 # Usage: finalize-user-bundle.sh <stage> <build-dir> <product> [version]
 set -euo pipefail
