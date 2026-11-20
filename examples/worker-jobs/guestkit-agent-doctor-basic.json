@@ -1,0 +1,13 @@
+{
+  "version": "1.0",
+  "job_id": "agent-doctor-example",
+  "kind": "VMOperation",
+  "operation": "guestkit.agent.doctor",
+  "payload": {
+    "type": "guestkit.agent.doctor.v1",
+    "data": {
+      "proxy_url": "http://127.0.0.1:8765",
+      "target": "kubevirt"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{{- if not .Values.persistence.vmImages.hostPath }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zyvor-image-store
+  namespace: {{ .Values.namespace }}
+spec:
+  accessModes:
+    - {{ .Values.persistence.vmImages.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.vmImages.size }}
+  {{- if .Values.persistence.vmImages.storageClass }}
+  storageClassName: {{ .Values.persistence.vmImages.storageClass }}
+  {{- end }}
+{{- end }}

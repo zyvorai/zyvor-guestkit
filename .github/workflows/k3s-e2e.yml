@@ -1,0 +1,144 @@
+name: k3s E2E
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'crates/**'
+      - 'deploy/**'
+      - 'packaging/vmtools/**'
+      - '.github/workflows/k3s-e2e.yml'
+  # Release smoke test: release.yml calls this after its "Publish GHCR Release Images"
+  # job, so the v* images are guaranteed to exist. It used to trigger on the tag push
+  # itself and poll GHCR for 20 minutes, but those images are built by release.yml on a
+  # self-hosted runner that had a ~50 minute queue (v1.2.11: tag 05:13, images 06:09-06:29).
+  workflow_call:
+
+# Privileged worker (NBD) and k3s install require sudo on ubuntu-latest.
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+# Literal group name: when called from release.yml, github.workflow is "Release" and
+# the same group as release.yml's own concurrency would deadlock/cancel it.
+concurrency:
+  group: k3s-e2e-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  k3s-stack-e2e:
+    name: k3s stack install + E2E
+    runs-on: ubuntu-latest
+    # Measured on hosted ubuntu-latest (4 vCPU): k3s install 3 min + deploy (podman builds of
+    # worker/api/ui from source on PR runs) 24-28 min + VM-tools bundle (musl guestkitd and the
+    # Windows agent, a second full cargo build) 15+ min = ~48 min before the E2E itself starts,
+    # so the old 45 minute limit killed healthy runs (run 43222372158 was cancelled mid-compile).
+    # Per-step limits below keep a genuine hang from consuming the whole budget.
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k3s and prerequisites
+        run: bash deploy/scripts/install-k3s-ubuntu.sh
+
+      - name: Resolve image source
+        id: images
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            echo "pull_registry=ghcr.io/zyvorai" >> "${GITHUB_OUTPUT}"
+            echo "image_tag=${VERSION}" >> "${GITHUB_OUTPUT}"
+            echo "use_release_images=true" >> "${GITHUB_OUTPUT}"
+          else
+            echo "pull_registry=" >> "${GITHUB_OUTPUT}"
+            echo "image_tag=latest" >> "${GITHUB_OUTPUT}"
+            echo "use_release_images=false" >> "${GITHUB_OUTPUT}"
+          fi
+
+      - name: Log in to GHCR (release smoke)
+        if: steps.images.outputs.use_release_images == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check GHCR release images
+        if: steps.images.outputs.use_release_images == 'true'
+        # Normally instant (release.yml publishes before calling this workflow); the retry
+        # only covers GHCR read-after-write lag and manual dispatches on a fresh tag.
+        run: |
+          TAG="${{ steps.images.outputs.image_tag }}"
+          for img in guestkit-worker zyvor-api zyvor-ui; do
+            ref="ghcr.io/zyvorai/${img}:${TAG}"
+            for i in $(seq 1 20); do
+              if docker manifest inspect "${ref}" >/dev/null 2>&1; then
+                echo "${ref} available"
+                break
+              fi
+              if [[ "${i}" -eq 20 ]]; then
+                echo "ERROR: ${ref} not found after 10 minutes" >&2
+                exit 1
+              fi
+              echo "Waiting for ${ref} (${i}/20)..."
+              sleep 30
+            done
+          done
+
+      - name: Deploy Zyvor stack
+        timeout-minutes: 45
+        env:
+          PULL_REGISTRY: ${{ steps.images.outputs.pull_registry }}
+          IMAGE_TAG: ${{ steps.images.outputs.image_tag }}
+          HELM_VALUES_FILE: values-ci.yaml
+        run: bash deploy/scripts/deploy-remote-k3s.sh
+
+      - name: Publish VM tools bundle to MinIO
+        timeout-minutes: 30
+        env:
+          MINIO_VIA_KUBECTL: "1"
+          MINIO_NAMESPACE: zyvor
+        run: bash deploy/scripts/publish-vmtools-bundle.sh
+
+      - name: Run k3s E2E orchestrator
+        timeout-minutes: 20
+        run: bash deploy/scripts/ci-k3s-e2e.sh
+
+      - name: Dump pod logs on failure
+        if: failure()
+        run: |
+          export KUBECONFIG="${HOME}/.kube/config"
+          for app in zyvor-api guestkit-worker zyvor-ui postgresql redis minio; do
+            echo "::group::kubectl logs -l app=${app}"
+            kubectl -n zyvor logs -l "app=${app}" --all-containers --tail=200 --prefix || true
+            echo "::endgroup::"
+          done
+          echo "::group::kubectl get events"
+          kubectl -n zyvor get events --sort-by=.lastTimestamp || true
+          echo "::endgroup::"
+          echo "::group::kube-system pods and DNS"
+          kubectl -n kube-system get pods -o wide || true
+          timeout 90 kubectl -n zyvor run dns-probe --rm -i --restart=Never --image=docker.io/library/busybox:1.36 --command -- \
+            sh -c 'nslookup postgresql.zyvor.svc.cluster.local; nc -zv -w 5 postgresql 5432' || true
+          echo "::endgroup::"
+          echo "::group::postgres and API diagnostics"
+          kubectl -n zyvor exec deployment/postgresql -- pg_isready -h 127.0.0.1 -U zyvor -d zyvor || true
+          kubectl -n zyvor logs -l app=postgresql --previous --tail=100 || true
+          kubectl -n zyvor logs -l app=zyvor-api -c zyvor-api --previous --tail=100 || true
+          echo "--- postgres container internals"
+          kubectl -n zyvor exec deployment/postgresql -- sh -c 'id; ps -ef 2>&1 | head -20; echo "-- data dir"; ls -la /var/lib/postgresql/data 2>&1 | head -20; ls -la /var/lib/postgresql/data/pgdata 2>&1 | head -5; df -h /var/lib/postgresql/data; echo "-- stdout target"; ls -l /proc/1/fd/1 /proc/1/fd/2 2>&1; echo "-- postmaster log"; tail -20 /var/lib/postgresql/data/pgdata/log/* 2>/dev/null' || true
+          echo "--- postgres image and runtime view"
+          kubectl -n zyvor get pod -l app=postgresql -o jsonpath='{range .items[*]}{.status.containerStatuses[*].imageID}{"\n"}{end}' || true
+          sudo k3s crictl ps -a --name postgresql 2>&1 | head -5 || true
+          for c in $(sudo k3s crictl ps -a --name postgresql -q 2>/dev/null | head -2); do sudo k3s crictl logs --tail=50 "$c" 2>&1 || true; done
+          sudo journalctl -u k3s --no-pager -n 400 2>/dev/null | grep -iE "postgres|failed to load task|shim|oom" | tail -30 || true
+          sudo dmesg 2>/dev/null | grep -iE "out of memory|oom|killed process" | tail -20 || true
+          free -m || true
+          echo "::endgroup::"
+          echo "::group::kubectl get pods -o wide"
+          kubectl -n zyvor get pods -o wide || true
+          echo "::endgroup::"
+          echo "::group::kubectl describe pods"
+          kubectl -n zyvor describe pods || true
+          echo "::endgroup::"

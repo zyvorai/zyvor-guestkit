@@ -1,0 +1,53 @@
+{{- if .Values.kubevirt.enabled }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: zyvor-api
+  namespace: {{ .Values.namespace }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: zyvor-api-kubevirt-{{ .Values.namespace }}
+rules:
+  - apiGroups: ["kubevirt.io"]
+    resources: ["virtualmachines", "virtualmachineinstances"]
+    verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+  - apiGroups: ["subresources.kubevirt.io"]
+    resources:
+      - virtualmachines/restart
+      - virtualmachines/start
+      - virtualmachines/stop
+      - virtualmachineinstances/freeze
+      - virtualmachineinstances/unfreeze
+      - virtualmachineinstances/softreboot
+    verbs: ["update"]
+  - apiGroups: ["cdi.kubevirt.io"]
+    resources: ["datavolumes"]
+    verbs: ["get", "list", "create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "create"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["pods", "pods/exec"]
+    verbs: ["get", "list", "create"]
+  - apiGroups: ["zeus.zyvor.dev"]
+    resources: ["vmguestagents", "vmguestagents/status", "vmtoolspolicies", "vmtoolspolicies/status", "vmtoolsbundles", "vmtoolsbundles/status"]
+    verbs: ["get", "list", "create", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: zyvor-api-kubevirt-{{ .Values.namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: zyvor-api-kubevirt-{{ .Values.namespace }}
+subjects:
+  - kind: ServiceAccount
+    name: zyvor-api
+    namespace: {{ .Values.namespace }}
+{{- end }}

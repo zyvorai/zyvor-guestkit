@@ -1,0 +1,96 @@
+# Production overrides for the Zyvor Helm chart.
+#
+#   helm upgrade --install zyvor deploy/helm/zyvor \
+#     -f deploy/helm/zyvor/values.yaml \
+#     -f deploy/helm/zyvor/values-prod.yaml \
+#     --create-namespace --namespace zyvor
+#
+# Replace placeholder secrets / hosts before installing.
+# Requires: ingress-nginx, a StorageClass (default longhorn), and optionally
+# cert-manager with ClusterIssuer `letsencrypt-prod`.
+
+ingress:
+  enabled: true
+  className: nginx
+  hosts:
+    ui: console.example.com
+    api: api.example.com
+    agentMtls: agent-api.example.com
+  tls:
+    enabled: true
+    secretName: zyvor-tls
+  certManager:
+    enabled: true
+    clusterIssuer: letsencrypt-prod
+
+networkPolicy:
+  enabled: true
+
+# Pin GHCR semver tags — never :latest in production.
+zyvorApi:
+  image: ghcr.io/zyvorai/zyvor-api:v1.2.11
+  replicas: 2
+  storageClass: longhorn
+  auth:
+    enabled: true
+    jwtSecret: "REPLACE_WITH_openssl_rand_base64_32"
+    agentBootstrapToken: "REPLACE_WITH_openssl_rand_base64_32"
+    publicBaseUrl: "https://api.example.com"
+    uiBaseUrl: "https://console.example.com"
+  agentMtls:
+    enabled: true
+    serverSans: "localhost,zyvor-api,api.example.com,agent-api.example.com"
+
+zyvorUi:
+  image: ghcr.io/zyvorai/zyvor-ui:v1.2.11
+  replicas: 2
+
+guestkitWorker:
+  image: ghcr.io/zyvorai/guestkit-worker:v1.2.11
+  replicas: 2
+
+postgresql:
+  password: "REPLACE_WITH_strong_postgres_password"
+
+redis:
+  password: "REPLACE_WITH_strong_redis_password"
+
+minio:
+  # Pinned build (avoid :latest). minio/minio is no longer pullable; Bitnami legacy mirror
+  # needs the command override because its entrypoint is a wrapper.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  command: ["minio"]
+  accessKey: "REPLACE_WITH_minio_access_key"
+  secretKey: "REPLACE_WITH_strong_minio_secret"
+
+persistence:
+  vmImages:
+    size: 500Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    hostPath: ""
+  postgresql:
+    enabled: true
+    size: 40Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+  redis:
+    enabled: true
+    size: 10Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+  minio:
+    enabled: true
+    size: 200Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+
+backup:
+  imageVault:
+    enabled: true
+    schedule: "0 2 * * *"
+    retain: 7
+    size: 500Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    image: busybox:1.36

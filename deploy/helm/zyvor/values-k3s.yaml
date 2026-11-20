@@ -1,0 +1,77 @@
+# k3s / single-node overlay (e.g. deploy-remote-k3s.sh)
+# Set URLs at deploy time via env or --set:
+#   ZEUS_PUBLIC_URL=http://<host>:30080
+#   VMTOOLS_BASE_URL=http://<host>:30092/vmtools
+#   GUESTKIT_BINARY_URL=http://<host>:30092/vmtools/linux/zyvor-guest-agent
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+guestkitWorker:
+  replicas: 1
+
+zyvorApi:
+  storageClass: local-path
+  privileged: true
+  zeusPublicUrl: ""
+  clusterName: "k3s-guestkit"
+  guestkitBinaryUrl: ""
+  agentProxyUrl: "http://127.0.0.1:8765"
+  agentProxy:
+    enabled: true
+    vsockPort: 1234
+    listen: "127.0.0.1:8765"
+  # mTLS guest-agent push needs auth.agentBootstrapToken set — the base
+  # values.yaml enables agentMtls without one, which makes zyvor-api refuse
+  # to start ("AGENT_MTLS_BIND_ADDR is set but AGENT_BOOTSTRAP_TOKEN is
+  # unset"). Disabled here for a working single-node lab/eval install;
+  # set both agentMtls.enabled and auth.agentBootstrapToken to use it.
+  agentMtls:
+    enabled: false
+  service:
+    type: NodePort
+    nodePort: 30080
+
+zyvorUi:
+  service:
+    type: NodePort
+    nodePort: 30081
+
+persistence:
+  vmImages:
+    # Shared image store across the whole cluster (works with multiple nodes):
+    # CephFS RWX so API + worker pods on ANY node see the same vault.
+    # For a single-node box you can instead set hostPath: /var/lib/zyvor/images
+    # and storageClass/accessMode become irrelevant.
+    storageClass: zyvor-cephfs-shared
+    accessMode: ReadWriteMany
+    hostPath: ""
+  kubevirtLocalPath: /data/k3s/storage
+
+minio:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 30092
+
+kubevirt:
+  enabled: true
+
+vmtools:
+  installCrds: true
+  defaultPolicy:
+    enabled: true
+    autoInstall: true
+    autoUpgrade: false
+    maxConcurrent: 2
+  bundle:
+    enabled: true
+    version: "0.1.0"
+    channel: stable
+    baseUrl: ""
+  reconcile:
+    enabled: true
+    schedule: "*/10 * * * *"
+    preferIso: false

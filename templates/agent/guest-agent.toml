@@ -1,0 +1,9 @@
+# Example guest agent push configuration
+zeus_url = "https://zeus.example.com"
+interval_secs = 60
+# bootstrap_token = "..."
+# cert_path = "/var/lib/zyvor/agent.crt"
+# key_path = "/var/lib/zyvor/agent.key"
+# ca_path = "/var/lib/zyvor/ca.crt"
+# namespace = "default"
+# vm_name = "my-vm"

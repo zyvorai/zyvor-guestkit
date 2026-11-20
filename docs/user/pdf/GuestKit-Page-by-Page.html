@@ -1,0 +1,1673 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>Page-by-Page Product Manual — GuestKit</title>
+<style>
+@page{size:A4;margin:15mm 16mm}*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#1f2937;line-height:1.58;font-size:10.5pt}
+.cover{height:262mm;margin:-15mm -16mm 0;background:linear-gradient(135deg,#1c1917,#78350f,#0d1b2a);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;page-break-after:always;position:relative}
+.cover .kicker{letter-spacing:5px;text-transform:uppercase;opacity:.72;margin-bottom:1.4em}
+.cover h1{font-size:3.2em;font-weight:800;letter-spacing:-2px}
+.cover h1 span{color:#fbbf24}
+.cover .sub{font-size:1.3em;font-weight:300;opacity:.93;margin:1em 0;max-width:24em}
+.cover .badge{display:inline-block;background:rgba(96,165,250,.2);border:1px solid #fbbf24;padding:8px 22px;border-radius:20px;margin-top:2em}
+.cover .foot{position:absolute;bottom:34px;font-size:.82em;opacity:.6}
+h2{page-break-before:always;margin:0 0 .35em;font-size:1.55em;font-weight:750;color:#12203a;border-bottom:2px solid #e5edfb;padding-bottom:.28em}
+h2:first-of-type{page-break-before:avoid}
+h3{margin:1.1em 0 .4em;font-size:1.12em;font-weight:700}
+p,li{margin:.4em 0}ul,ol{margin:.5em 0 .9em 1.4em}
+a{color:#2563eb;text-decoration:none}
+code{background:#eef2f7;padding:1px 6px;border-radius:4px;font-size:.86em;font-family:ui-monospace,Menlo,monospace}
+pre{background:#0f172a;color:#e2e8f0;padding:12px 15px;border-radius:9px;overflow-x:auto;margin:.8em 0}
+table{width:100%;border-collapse:collapse;margin:.8em 0 1.1em;font-size:9.5pt}
+th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f1f5f9}
+hr{border:none;border-top:1px solid #e5e7eb;margin:1.2em 0}
+</style></head><body>
+<section class="cover"><div class="kicker">ZyvorAI Labs · User Documentation</div>
+<h1>Guest<span>Kit</span></h1>
+<div class="sub">Page-by-Page Product Manual</div>
+<div class="badge">2026-08-29</div>
+<div class="foot">zyvor.dev · Confidential — for licensed users</div></section>
+<main><h2>Page-by-page guides</h2>
+<p>Each guide follows: Purpose → When to use it → How to get there → What you can do → Related pages.</p>
+<p>Every route is also listed in the <a href="../PAGE_INDEX.md">complete page index</a>.</p>
+<h3>Assurance</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="assurance/doctor.md">Doctor</a></td>
+<td>Doctor — Assurance surface.</td>
+</tr>
+<tr>
+<td><a href="assurance/migrate-plan.md">Migration Plan</a></td>
+<td>Migration Plan — Assurance surface.</td>
+</tr>
+<tr>
+<td><a href="assurance/migration-assurance.md">Migration Assurance</a></td>
+<td>Migration Assurance — Assurance surface.</td>
+</tr>
+<tr>
+<td><a href="assurance/policy.md">Policy Gate</a></td>
+<td>Policy Gate — Assurance surface.</td>
+</tr>
+</tbody></table>
+<h3>Export</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="export/export-formats.md">Export Formats</a></td>
+<td>Export Formats — Export surface.</td>
+</tr>
+</tbody></table>
+<h3>Fix Plans</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="fix-plans/fix-plans.md">Fix Plans</a></td>
+<td>Fix Plans — Fix Plans surface.</td>
+</tr>
+<tr>
+<td><a href="fix-plans/repair.md">Repair</a></td>
+<td>Repair — Fix Plans surface.</td>
+</tr>
+</tbody></table>
+<h3>Fleet</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="fleet/fleet.md">Fleet</a></td>
+<td>Fleet — Fleet surface.</td>
+</tr>
+</tbody></table>
+<h3>Forensics</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="forensics/forensic-diff.md">Forensic Diff</a></td>
+<td>Forensic Diff — Forensics surface.</td>
+</tr>
+</tbody></table>
+<h3>Guest Agent</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="guest-agent/guest-agent.md">Guest Agent</a></td>
+<td>Guest Agent — Guest Agent surface.</td>
+</tr>
+</tbody></table>
+<h3>Guest Files</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="guest-files/files.md">Guest Files</a></td>
+<td>Guest Files — Guest Files surface.</td>
+</tr>
+<tr>
+<td><a href="guest-files/guest-control-fabric.md">Guest Control Fabric</a></td>
+<td>Guest Control Fabric — Guest Files surface.</td>
+</tr>
+</tbody></table>
+<h3>Guides</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="guides/vm-migration.md">VM Migration Guide</a></td>
+<td>VM Migration Guide — Guides surface.</td>
+</tr>
+</tbody></table>
+<h3>Inspection</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="inspection/filesystems.md">Filesystems</a></td>
+<td>Filesystems — Inspection surface.</td>
+</tr>
+<tr>
+<td><a href="inspection/inspect.md">Inspect</a></td>
+<td>Inspect — Inspection surface.</td>
+</tr>
+<tr>
+<td><a href="inspection/network.md">Network Inspect</a></td>
+<td>Network Inspect — Inspection surface.</td>
+</tr>
+<tr>
+<td><a href="inspection/packages.md">Packages</a></td>
+<td>Packages — Inspection surface.</td>
+</tr>
+<tr>
+<td><a href="inspection/services-users.md">Services &amp; Users</a></td>
+<td>Services &amp; Users — Inspection surface.</td>
+</tr>
+</tbody></table>
+<h3>Integration</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="integration/kubevirt-integration.md">KubeVirt Integration</a></td>
+<td>KubeVirt Integration — Integration surface.</td>
+</tr>
+<tr>
+<td><a href="integration/zeus-vm-tools.md">Zeus VM Tools</a></td>
+<td>Zeus VM Tools — Integration surface.</td>
+</tr>
+</tbody></table>
+<h3>Interfaces</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="interfaces/python-bindings.md">Python Bindings</a></td>
+<td>Python Bindings — Interfaces surface.</td>
+</tr>
+<tr>
+<td><a href="interfaces/tui.md">TUI (guestctl)</a></td>
+<td>TUI (guestctl) — Interfaces surface.</td>
+</tr>
+</tbody></table>
+<h3>Onboarding</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="onboarding/cli-guide.md">CLI Guide</a></td>
+<td>CLI Guide — Onboarding surface.</td>
+</tr>
+<tr>
+<td><a href="onboarding/getting-started.md">Getting Started</a></td>
+<td>Getting Started — Onboarding surface.</td>
+</tr>
+<tr>
+<td><a href="onboarding/interactive-mode.md">Interactive Mode</a></td>
+<td>Interactive Mode — Onboarding surface.</td>
+</tr>
+<tr>
+<td><a href="onboarding/quick-reference.md">Quick Reference</a></td>
+<td>Quick Reference — Onboarding surface.</td>
+</tr>
+</tbody></table>
+<h3>Profiles</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="profiles/profiles.md">Profiles</a></td>
+<td>Profiles — Profiles surface.</td>
+</tr>
+</tbody></table>
+<h3>Support</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>What it covers</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="support/faq.md">FAQ</a></td>
+<td>FAQ — Support surface.</td>
+</tr>
+<tr>
+<td><a href="support/troubleshooting.md">Troubleshooting</a></td>
+<td>Troubleshooting — Support surface.</td>
+</tr>
+</tbody></table>
+<hr>
+<p>29 guides. Regenerate: <code>node scripts/user-docs/generate-guide-index.mjs</code>.</p>
+<hr>
+<h2>Doctor</h2>
+<h3>Purpose</h3>
+<p>Doctor — Assurance surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Doctor</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>doctor</code></li>
+<li>Nav: <strong>Assurance → Doctor</strong></li>
+<li>Primary interface: <code>guestkit doctor IMAGE</code> · TUI Assurance <code>d</code> · web Passport</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit doctor IMAGE</code> · TUI Assurance <code>d</code> · web Passport.</li>
+<li><code>guestkit doctor vm.qcow2 --target kvm|proxmox|kubevirt|aws…</code>.</li>
+<li><code>--explain</code> for root-cause.</li>
+<li><code>-o json --fail-below 80</code> for CI.</li>
+<li>TUI: Assurance or <code>: doctor</code>.</li>
+<li>Fix blockers → re-run doctor.</li>
+<li><strong>Empty / fail:</strong> Low score + blockers until repaired; mount failures abort.</li>
+<li><strong>Success:</strong> Score 0–100; exit 0 if above <code>--fail-below</code>.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="migrate-plan.md">Migration Plan</a></li>
+<li><a href="../fix-plans/repair.md">Repair</a></li>
+<li><a href="migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Migration Plan</h2>
+<h3>Purpose</h3>
+<p>Migration Plan — Assurance surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Migration Plan</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>migrate-plan</code></li>
+<li>Nav: <strong>Assurance → Migration Plan</strong></li>
+<li>Primary interface: <code>guestkit migrate-plan IMAGE --target …</code> · TUI <code>e</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit migrate-plan IMAGE --target …</code> · TUI <code>e</code>.</li>
+<li><code>guestkit migrate-plan IMAGE --target proxmox</code>.</li>
+<li><code>--explain</code> / <code>-o json</code>.</li>
+<li><code>--export plan.yaml</code> for FixPlan.</li>
+<li>Optional <code>--inject-agent</code>.</li>
+<li>Follow with migrate-assess / migrate-repair; TUI: <code>t</code>/<code>p</code>/<code>e</code>.</li>
+<li><strong>Empty / fail:</strong> Missing <code>--target</code>; Windows VirtIO gaps need <code>GUESTKIT_VIRTIO_WIN</code>.</li>
+<li><strong>Success:</strong> Migration score + checklist; YAML plan if exported.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="doctor.md">Doctor</a></li>
+<li><a href="../fix-plans/fix-plans.md">Fix Plans</a></li>
+<li><a href="../guides/vm-migration.md">VM Migration Guide</a></li>
+<li><a href="migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Migration Assurance</h2>
+<h3>Purpose</h3>
+<p>Migration Assurance — Assurance surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Migration Assurance</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>migration-assurance</code></li>
+<li>Nav: <strong>Assurance → Migration Assurance</strong></li>
+<li>Primary interface: doctor → plan → policy → passport → fleet</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>doctor → plan → policy → passport → fleet.</li>
+<li><code>doctor --explain</code>.</li>
+<li><code>migrate-plan --export</code>.</li>
+<li><code>inspect --profile windows-migration</code> if Windows.</li>
+<li><code>policy check</code>.</li>
+<li><code>passport emit … -o passport.json</code> then <code>passport verify --fail-below 80</code>.</li>
+<li>Fleet: <code>fleet analyze</code> / <code>wave-plan</code>.</li>
+<li><strong>Empty / fail:</strong> Verify fails below threshold → repair then re-emit; BitLocker hard-block.</li>
+<li><strong>Success:</strong> Passport verify exit 0; doctor score acceptable for target.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="doctor.md">Doctor</a></li>
+<li><a href="migrate-plan.md">Migration Plan</a></li>
+<li><a href="policy.md">Policy Gate</a></li>
+<li><a href="../fleet/fleet.md">Fleet</a></li>
+<li><a href="../guides/vm-migration.md">VM Migration Guide</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Policy Gate</h2>
+<h3>Purpose</h3>
+<p>Policy Gate — Assurance surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Policy Gate</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>policy</code></li>
+<li>Nav: <strong>Assurance → Policy Gate</strong></li>
+<li>Primary interface: <code>guestkit policy check IMAGE</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit policy check IMAGE</code>.</li>
+<li><code>policy check IMAGE --example-policy</code>.</li>
+<li><code>policy check IMAGE --policy FILE.yaml</code>.</li>
+<li>Or <code>--benchmark cis</code>.</li>
+<li><code>-f json -o report.json</code>.</li>
+<li>Gate pipelines on non-zero / <code>--strict</code>; pair with passport verify.</li>
+<li><strong>Empty / fail:</strong> Missing policy file; expressions fail if evidence fields absent.</li>
+<li><strong>Success:</strong> Pass/fail per rule; JSON report written.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="doctor.md">Doctor</a></li>
+<li><a href="migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../fleet/fleet.md">Fleet</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Export Formats</h2>
+<h3>Purpose</h3>
+<p>Export Formats — Export surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Export Formats</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>export-formats</code></li>
+<li>Nav: <strong>Export → Export Formats</strong></li>
+<li>Primary interface: <code>--output</code> vs <code>--export</code> on inspect; plan export; passport JSON</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>--output</code> vs <code>--export</code> on inspect; plan export; passport JSON.</li>
+<li>Data: <code>inspect -o json|yaml|csv</code>.</li>
+<li>Docs: <code>--export html|markdown|pdf --export-output PATH</code>.</li>
+<li>Plans: <code>plan export plan.yaml -f bash -o fix.sh</code>.</li>
+<li>Assurance: <code>migrate-plan --export</code>, <code>passport emit -o</code>.</li>
+<li>TUI view export / web Passport download.</li>
+<li><strong>Empty / fail:</strong> Missing <code>--export-output</code>; PDF may need Chrome/wkhtmltopdf.</li>
+<li><strong>Success:</strong> File opens (HTML) or validates (JSON/YAML).</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../profiles/profiles.md">Profiles</a></li>
+<li><a href="../fix-plans/fix-plans.md">Fix Plans</a></li>
+<li><a href="../assurance/migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Fix Plans</h2>
+<h3>Purpose</h3>
+<p>Fix Plans — Fix Plans surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Fix Plans</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>fix-plans</code></li>
+<li>Nav: <strong>Fix Plans → Fix Plans</strong></li>
+<li>Primary interface: <code>guestkit plan …</code> · export from migrate-plan/repair</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit plan …</code> · export from migrate-plan/repair.</li>
+<li><code>plan generate IMAGE -p linux-ssh|windows-rdp|… -o plan.yaml</code>.</li>
+<li><code>plan preview plan.yaml</code> (<code>--diff</code>).</li>
+<li><code>plan validate plan.yaml --vm IMAGE</code>.</li>
+<li><code>plan apply plan.yaml --vm IMAGE --yes</code>.</li>
+<li><code>plan export</code> to bash/ansible; <code>plan rollback</code> if needed.</li>
+<li><strong>Empty / fail:</strong> Apply refused without backup unless <code>--skip-backup</code>.</li>
+<li><strong>Success:</strong> Preview lists ops; apply reports success; doctor improves.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="repair.md">Repair</a></li>
+<li><a href="../assurance/migrate-plan.md">Migration Plan</a></li>
+<li><a href="../profiles/profiles.md">Profiles</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Repair</h2>
+<h3>Purpose</h3>
+<p>Repair — Fix Plans surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Repair</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>repair</code></li>
+<li>Nav: <strong>Fix Plans → Repair</strong></li>
+<li>Primary interface: <code>guestkit repair</code> · <code>rescue</code> · <code>migrate-repair</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit repair</code> · <code>rescue</code> · <code>migrate-repair</code>.</li>
+<li><code>repair IMAGE --fix boot --dry-run</code>.</li>
+<li><code>repair IMAGE --fix boot</code> (apply + re-doctor).</li>
+<li>Day-0: <code>rescue IMAGE -o enable-ssh|fix-grub|reset-password…</code>.</li>
+<li>Migration: <code>migrate-repair IMAGE --target kvm [--apply --yes]</code>.</li>
+<li>Prefer dry-run → backup → apply.</li>
+<li><strong>Empty / fail:</strong> Dry-run only = no disk change; NTFS dirty → ntfsfix first.</li>
+<li><strong>Success:</strong> Doctor score rises; rescue op applied.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="fix-plans.md">Fix Plans</a></li>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Fleet</h2>
+<h3>Purpose</h3>
+<p>Fleet — Fleet surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Fleet</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>fleet</code></li>
+<li>Nav: <strong>Fleet → Fleet</strong></li>
+<li>Primary interface: <code>guestkit fleet analyze|wave-plan|watch DIR</code> · TUI <code>--fleet DIR</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit fleet analyze|wave-plan|watch DIR</code> · TUI <code>--fleet DIR</code>.</li>
+<li><code>fleet analyze ./vms/ [--recursive -j 4]</code>.</li>
+<li><code>fleet wave-plan ./vms/ -o json</code>.</li>
+<li><code>fleet watch ./vms/</code> (first run = baseline).</li>
+<li>Later: <code>watch --fail-on-drift</code> in cron.</li>
+<li>TUI: <code>guestctl tui one.qcow2 --fleet ./vms/</code>.</li>
+<li><strong>Empty / fail:</strong> Empty dir / no disk formats.</li>
+<li><strong>Success:</strong> Clusters/snowflakes/blockers; waves; watch reports drift or clean.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../forensics/forensic-diff.md">Forensic Diff</a></li>
+<li><a href="../assurance/migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Forensic Diff</h2>
+<h3>Purpose</h3>
+<p>Forensic Diff — Forensics surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Forensic Diff</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>forensic-diff</code></li>
+<li>Nav: <strong>Forensics → Forensic Diff</strong></li>
+<li>Primary interface: <code>guestkit forensic-diff OLD NEW</code> · <code>diff</code> / <code>compare</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit forensic-diff OLD NEW</code> · <code>diff</code> / <code>compare</code>.</li>
+<li>Snapshot before/after.</li>
+<li><code>forensic-diff before.qcow2 after.qcow2</code>.</li>
+<li><code>-o json</code> for drift score.</li>
+<li>Lighter: <code>guestkit diff a b</code>.</li>
+<li>Fleet continuous: <code>fleet watch</code>.</li>
+<li><strong>Empty / fail:</strong> Identical images → low drift; mount fail on either side.</li>
+<li><strong>Success:</strong> Drift findings / security indicators JSON.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../fleet/fleet.md">Fleet</a></li>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../profiles/profiles.md">Profiles</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Guest Agent</h2>
+<h3>Purpose</h3>
+<p>Guest Agent — Guest Agent surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Guest Agent</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>guest-agent</code></li>
+<li>Nav: <strong>Guest Agent → Guest Agent</strong></li>
+<li>Primary interface: Build <code>--features agent</code>; inject offline; proxy on host</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Build <code>--features agent</code>; inject offline; proxy on host.</li>
+<li><code>cargo build --release --features agent --target x86_64-unknown-linux-musl</code>.</li>
+<li><code>guestkit agent-inject IMAGE --agent-binary …</code>.</li>
+<li>Boot guest; <code>guestkit agent-proxy --socket … --listen 127.0.0.1:8765</code>.</li>
+<li><code>curl /ping</code> <code>/doctor</code> <code>/evidence</code>.</li>
+<li>Or <code>guestkit agent-call --socket … --method guestkit.getEvidence</code>.</li>
+<li><strong>Empty / fail:</strong> No channel → missing virtio-serial/QGA; Windows needs virtio-serial driver.</li>
+<li><strong>Success:</strong> <code>/ping</code> OK; RPC returns doctor JSON.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../guest-files/guest-control-fabric.md">Guest Control Fabric</a></li>
+<li><a href="../integration/kubevirt-integration.md">KubeVirt Integration</a></li>
+<li><a href="../fix-plans/repair.md">Repair</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Guest Files</h2>
+<h3>Purpose</h3>
+<p>Guest Files — Guest Files surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Guest Files</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>files</code></li>
+<li>Nav: <strong>Guest Files → Guest Files</strong></li>
+<li>Primary interface: <code>list|ls</code>, <code>cat</code>, <code>extract|get</code>, <code>search|find</code>, <code>explore</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>list|ls</code>, <code>cat</code>, <code>extract|get</code>, <code>search|find</code>, <code>explore</code>.</li>
+<li><code>guestkit ls disk.qcow2 /etc</code>.</li>
+<li><code>guestkit cat disk.qcow2 /etc/fstab</code>.</li>
+<li><code>guestkit extract disk.qcow2 /etc/hostname ./hostname.txt</code>.</li>
+<li><code>guestkit find disk.qcow2 &#39;*.conf&#39;</code>.</li>
+<li>Multi-step: <code>interactive</code> or <code>explore</code>; backup: <code>guestkit backup IMAGE -o out.tar.gz</code>.</li>
+<li><strong>Empty / fail:</strong> Path missing → wrong mount/root; permission → sudo/NBD.</li>
+<li><strong>Success:</strong> Listing/content/extracted file on host.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../onboarding/interactive-mode.md">Interactive Mode</a></li>
+<li><a href="../interfaces/tui.md">TUI (guestctl)</a></li>
+<li><a href="../inspection/filesystems.md">Filesystems</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Guest Control Fabric</h2>
+<h3>Purpose</h3>
+<p>Guest Control Fabric — Guest Files surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Guest Control Fabric</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>guest-control-fabric</code></li>
+<li>Nav: <strong>Guest Files → Guest Control Fabric</strong></li>
+<li>Primary interface: Web/API via zyvor-api KubeVirt guest routes</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Web/API via zyvor-api KubeVirt guest routes.</li>
+<li>Deploy API+UI (compose/Helm).</li>
+<li><code>GET .../guest/status</code> → control state.</li>
+<li><code>GET .../guest/capabilities</code> → transport.</li>
+<li>Live: <code>POST .../guest/doctor</code> or agent-proxy.</li>
+<li>Airgap: <code>POST .../guest/install-agent</code>; halted VM: <code>POST .../guest/repair-plan</code>.</li>
+<li><strong>Empty / fail:</strong> <code>console_only</code>/<code>blind_vm</code> → install QGA/agent or stop VM for offline path.</li>
+<li><strong>Success:</strong> Envelope with transport, controlState, ok:true.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="../integration/kubevirt-integration.md">KubeVirt Integration</a></li>
+<li><a href="../integration/zeus-vm-tools.md">Zeus VM Tools</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>VM Migration Guide</h2>
+<h3>Purpose</h3>
+<p>VM Migration Guide — Guides surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>VM Migration Guide</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>vm-migration</code></li>
+<li>Nav: <strong>Guides → VM Migration Guide</strong></li>
+<li>Primary interface: CLI assurance-first workflow (+ h2kvm convert)</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>CLI assurance-first workflow (+ h2kvm convert).</li>
+<li>Convert if needed: <code>guestkit convert</code> / <code>qemu-img</code>.</li>
+<li><code>doctor --target … --explain</code>.</li>
+<li><code>migrate-plan --export</code>.</li>
+<li><code>repair --fix boot</code> / <code>migrate-repair --apply</code>.</li>
+<li>Windows VirtIO via <code>GUESTKIT_VIRTIO_WIN</code>.</li>
+<li><code>passport emit/verify</code> then convert/boot on target.</li>
+<li><strong>Empty / fail:</strong> Boot fail post-cutover → fstab/GRUB/VirtIO; never write while guest running.</li>
+<li><strong>Success:</strong> Doctor high enough; passport verifies; first boot on target.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../assurance/migration-assurance.md">Migration Assurance</a></li>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../assurance/migrate-plan.md">Migration Plan</a></li>
+<li><a href="../fix-plans/repair.md">Repair</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Filesystems</h2>
+<h3>Purpose</h3>
+<p>Filesystems — Inspection surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Filesystems</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>filesystems</code></li>
+<li>Nav: <strong>Inspection → Filesystems</strong></li>
+<li>Primary interface: <code>guestkit filesystems|fs IMAGE</code> · REPL · TUI Storage</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit filesystems|fs IMAGE</code> · REPL · TUI Storage.</li>
+<li><code>guestkit filesystems disk.qcow2</code>.</li>
+<li><code>--detailed</code> for types/labels.</li>
+<li>Cross-check <code>guestkit usage|df</code> and <code>check|fsck</code>.</li>
+<li>In REPL: <code>mount</code> root then <code>ls /</code>.</li>
+<li>LVM clues via <code>inspect --profile migration</code>.</li>
+<li><strong>Empty / fail:</strong> Empty partition list → wrong image / need NBD; LUKS needs cryptsetup.</li>
+<li><strong>Success:</strong> Partition/FS list (ext4/xfs + swap).</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="inspect.md">Inspect</a></li>
+<li><a href="../guest-files/files.md">Guest Files</a></li>
+<li><a href="../fix-plans/repair.md">Repair</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Inspect</h2>
+<h3>Purpose</h3>
+<p>Inspect — Inspection surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Inspect</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>inspect</code></li>
+<li>Nav: <strong>Inspection → Inspect</strong></li>
+<li>Primary interface: <code>guestkit inspect IMAGE</code> · TUI Overview · web Image Vault</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit inspect IMAGE</code> · TUI Overview · web Image Vault.</li>
+<li><code>guestkit inspect disk.qcow2</code>.</li>
+<li>Add <code>-o json</code> or <code>--summary</code>.</li>
+<li>Depth: <code>--depth quick|standard|deep</code>.</li>
+<li>Flags: <code>--include-packages|--include-services|--include-network</code>.</li>
+<li>Profile: <code>--profile security|migration|performance|windows-migration</code>.</li>
+<li>Batch: <code>inspect-batch *.qcow2 -p 4</code>.</li>
+<li><strong>Empty / fail:</strong> No OS → encrypted/corrupt/empty disk; use filesystems + interactive mount.</li>
+<li><strong>Success:</strong> OS type/distro/hostname + sections (or JSON).</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="filesystems.md">Filesystems</a></li>
+<li><a href="packages.md">Packages</a></li>
+<li><a href="../profiles/profiles.md">Profiles</a></li>
+<li><a href="../export/export-formats.md">Export Formats</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Network Inspect</h2>
+<h3>Purpose</h3>
+<p>Network Inspect — Inspection surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Network Inspect</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>network</code></li>
+<li>Nav: <strong>Inspection → Network Inspect</strong></li>
+<li>Primary interface: <code>guestkit network IMAGE</code> · REPL · TUI Network</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit network IMAGE</code> · REPL · TUI Network.</li>
+<li><code>guestkit network disk.qcow2</code>.</li>
+<li><code>--show-interfaces</code> / <code>--show-dns</code> / <code>--show-routes</code>.</li>
+<li><code>--export-json</code>.</li>
+<li>Or <code>inspect --include-network</code>.</li>
+<li>Live: agent-proxy <code>/evidence</code> or KubeVirt guest/network.</li>
+<li><strong>Empty / fail:</strong> No ifaces → cloud-init-only / netplan not parsed.</li>
+<li><strong>Success:</strong> Interfaces + IP/MAC/DHCP + DNS.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="inspect.md">Inspect</a></li>
+<li><a href="../assurance/migrate-plan.md">Migration Plan</a></li>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Packages</h2>
+<h3>Purpose</h3>
+<p>Packages — Inspection surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Packages</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>packages</code></li>
+<li>Nav: <strong>Inspection → Packages</strong></li>
+<li>Primary interface: <code>guestkit packages|pkg IMAGE</code> · REPL · TUI Packages</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit packages|pkg IMAGE</code> · REPL · TUI Packages.</li>
+<li><code>guestkit packages disk.qcow2</code>.</li>
+<li><code>--filter nginx</code> / <code>--limit 50</code>.</li>
+<li><code>--json</code> for automation.</li>
+<li>Or <code>inspect --include-packages</code>.</li>
+<li>Offline install staging: <code>GUESTKIT_PACKAGE_CACHE</code> + <code>plan apply</code>.</li>
+<li><strong>Empty / fail:</strong> Empty = no package DB / Windows guest / mount failed.</li>
+<li><strong>Success:</strong> Manager + package rows.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="inspect.md">Inspect</a></li>
+<li><a href="../fix-plans/fix-plans.md">Fix Plans</a></li>
+<li><a href="../profiles/profiles.md">Profiles</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Services &amp; Users</h2>
+<h3>Purpose</h3>
+<p>Services &amp; Users — Inspection surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Services &amp; Users</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>services-users</code></li>
+<li>Nav: <strong>Inspection → Services &amp; Users</strong></li>
+<li>Primary interface: <code>guestkit systemd-services IMAGE</code>; users via REPL/inspect; TUI</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit systemd-services IMAGE</code>; users via REPL/inspect; TUI.</li>
+<li><code>guestkit systemd-services disk.qcow2</code> (<code>--failed</code>, <code>--service UNIT</code>).</li>
+<li><code>guestkit systemd-journal</code> / <code>systemd-boot</code> as needed.</li>
+<li>Users: interactive → <code>users</code>, or inspect User Accounts.</li>
+<li>TUI → Services / Users tabs.</li>
+<li><code>inspect --include-services</code>.</li>
+<li><strong>Empty / fail:</strong> Non-systemd OS → sparse services; Windows users via registry inspect.</li>
+<li><strong>Success:</strong> Enabled units listed; users show uid/shell.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="inspect.md">Inspect</a></li>
+<li><a href="../onboarding/interactive-mode.md">Interactive Mode</a></li>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>KubeVirt Integration</h2>
+<h3>Purpose</h3>
+<p>KubeVirt Integration — Integration surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>KubeVirt Integration</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>kubevirt-integration</code></li>
+<li>Nav: <strong>Integration → KubeVirt Integration</strong></li>
+<li>Primary interface: zyvor-api HTTP + CLI offline on PVC path</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>zyvor-api HTTP + CLI offline on PVC path.</li>
+<li>Deploy API with KubeVirt RBAC.</li>
+<li>Stopped VM: <code>GET/POST /api/v1/kubevirt/vms/{ns}/{name}/boot-inspect</code>.</li>
+<li>Or CLI: <code>doctor PVC_PATH --target kubevirt</code>.</li>
+<li>Live: guest/status, guest/doctor, guest/evidence.</li>
+<li>Install agent via guest/install-agent or vmtools.</li>
+<li><strong>Empty / fail:</strong> Running VM → offline inspect skipped; missing PVC path.</li>
+<li><strong>Success:</strong> available:true, source:guestkit, boot fields populated.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../guest-files/guest-control-fabric.md">Guest Control Fabric</a></li>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="zeus-vm-tools.md">Zeus VM Tools</a></li>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Zeus VM Tools</h2>
+<h3>Purpose</h3>
+<p>Zeus VM Tools — Integration surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Zeus VM Tools</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>zeus-vm-tools</code></li>
+<li>Nav: <strong>Integration → Zeus VM Tools</strong></li>
+<li>Primary interface: Package zyvor-vm-tools / zyvor-guest-agent; API <code>/api/v1/vmtools/*</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Package zyvor-vm-tools / zyvor-guest-agent; API <code>/api/v1/vmtools/*</code>.</li>
+<li>Build packages.</li>
+<li><code>POST .../vmtools/install?method=auto|cloud-init|qga|iso</code>.</li>
+<li>Check <code>GET /api/v1/vmtools/coverage</code>.</li>
+<li>Quiesce: <code>.../vmtools/quiesce</code> / unquiesce.</li>
+<li>Exec: <code>.../vmtools/exec</code>; offline: <code>agent-inject</code>.</li>
+<li><strong>Empty / fail:</strong> Coverage 0 → QGA down / no network → use qga file bootstrap.</li>
+<li><strong>Success:</strong> Agent connected; coverage chip; freeze/thaw works.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../guest-agent/guest-agent.md">Guest Agent</a></li>
+<li><a href="kubevirt-integration.md">KubeVirt Integration</a></li>
+<li><a href="../guest-files/guest-control-fabric.md">Guest Control Fabric</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Python Bindings</h2>
+<h3>Purpose</h3>
+<p>Python Bindings — Interfaces surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Python Bindings</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>python-bindings</code></li>
+<li>Nav: <strong>Interfaces → Python Bindings</strong></li>
+<li>Primary interface: <code>pip install zyvorai-guestkit</code> or <code>maturin develop --features python-bindings</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>pip install zyvorai-guestkit</code> or <code>maturin develop --features python-bindings</code>.</li>
+<li><code>from guestkit import Guestfs</code>.</li>
+<li><code>add_drive_ro</code> → <code>launch</code> → <code>inspect_os</code>.</li>
+<li>Mount via <code>inspect_get_mountpoints</code> + <code>mount_ro</code>.</li>
+<li><code>cat</code>/<code>ls</code> as needed.</li>
+<li><code>umount_all</code> + <code>shutdown</code>; see <code>examples/python/</code>.</li>
+<li><strong>Empty / fail:</strong> Import error → wrong package/feature; launch fail → NBD/sudo.</li>
+<li><strong>Success:</strong> Distro/hostname printed; clean shutdown.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../onboarding/cli-guide.md">CLI Guide</a></li>
+<li><a href="../guest-files/files.md">Guest Files</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>TUI (guestctl)</h2>
+<h3>Purpose</h3>
+<p>TUI (guestctl) — Interfaces surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>TUI (guestctl)</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>tui</code></li>
+<li>Nav: <strong>Interfaces → TUI (guestctl)</strong></li>
+<li>Primary interface: <code>guestctl tui IMAGE</code> · <code>guestkit tui|ui IMAGE</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestctl tui IMAGE</code> · <code>guestkit tui|ui IMAGE</code>.</li>
+<li>Open TUI (optional <code>--fleet DIR</code>, <code>--compare OTHER</code>).</li>
+<li><code>{</code>/<code>}</code> groups; Tab views; Ctrl+P jump; <code>:</code> palette.</li>
+<li>Assurance: <code>d</code> doctor, <code>t</code> target, <code>p</code> preview, <code>e</code> export.</li>
+<li>Browse Packages/Services/Users/Network.</li>
+<li>Config <code>~/.config/guestkit/tui.toml</code>; <code>h</code>/<code>?</code> help.</li>
+<li><strong>Empty / fail:</strong> Blank panes → inspect failed (permissions/format); check footer.</li>
+<li><strong>Success:</strong> Dashboard populated; doctor score on Assurance.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../assurance/migrate-plan.md">Migration Plan</a></li>
+<li><a href="../onboarding/interactive-mode.md">Interactive Mode</a></li>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>CLI Guide</h2>
+<h3>Purpose</h3>
+<p>CLI Guide — Onboarding surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>CLI Guide</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>cli-guide</code></li>
+<li>Nav: <strong>Onboarding → CLI Guide</strong></li>
+<li>Primary interface: <code>guestkit --help</code>; <code>guestkit commands</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit --help</code>; <code>guestkit commands</code>.</li>
+<li><code>guestkit commands</code> for catalog.</li>
+<li>Inspect group: inspect, filesystems, packages, network.</li>
+<li>Assurance: doctor, migrate-plan, passport, policy, fleet.</li>
+<li>Plans: <code>plan generate|preview|apply|rollback</code>.</li>
+<li>Rescue: <code>rescue -o …</code>; prefer <code>-o json</code> / <code>--fail-below</code> for CI.</li>
+<li><strong>Empty / fail:</strong> Unknown subcommand → <code>guestkit commands</code>; feature-gated cmds need <code>--features agent|ai|mcp</code>.</li>
+<li><strong>Success:</strong> Help lists groups; sample inspect returns text/JSON.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="quick-reference.md">Quick Reference</a></li>
+<li><a href="interactive-mode.md">Interactive Mode</a></li>
+<li><a href="../export/export-formats.md">Export Formats</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Getting Started</h2>
+<h3>Purpose</h3>
+<p>Getting Started — Onboarding surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Getting Started</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>getting-started</code></li>
+<li>Nav: <strong>Onboarding → Getting Started</strong></li>
+<li>Primary interface: CLI first-hour; optional web <code>:8088</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>CLI first-hour; optional web <code>:8088</code>.</li>
+<li>Install: <code>cargo install guestkit</code> or release binary.</li>
+<li>Confirm deps: <code>qemu-img --version</code>.</li>
+<li><code>guestkit doctor vm.qcow2 --target kvm --explain</code>.</li>
+<li><code>guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml</code>.</li>
+<li>Optional: <code>guestctl tui vm.qcow2</code> or GHCR compose → <code>:8088</code>.</li>
+<li><strong>Empty / fail:</strong> Missing qemu-img/NBD → install qemu-utils; permission denied → sudo or <code>modprobe nbd</code>.</li>
+<li><strong>Success:</strong> Doctor prints 0–100 score + blockers; <code>guestkit version</code> works.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="quick-reference.md">Quick Reference</a></li>
+<li><a href="cli-guide.md">CLI Guide</a></li>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../interfaces/tui.md">TUI (guestctl)</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Interactive Mode</h2>
+<h3>Purpose</h3>
+<p>Interactive Mode — Onboarding surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Interactive Mode</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>interactive-mode</code></li>
+<li>Nav: <strong>Onboarding → Interactive Mode</strong></li>
+<li>Primary interface: <code>guestkit interactive|repl|shell IMAGE</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit interactive|repl|shell IMAGE</code>.</li>
+<li>Launch REPL (one mount).</li>
+<li><code>info</code> → <code>filesystems</code> → <code>mount /dev/… /</code>.</li>
+<li><code>ls</code> / <code>cat</code> / <code>find</code> / <code>download</code>.</li>
+<li><code>packages</code> / <code>services</code> / <code>users</code> / <code>network</code>.</li>
+<li>Optional <code>explore</code>; then <code>exit</code>.</li>
+<li><strong>Empty / fail:</strong> <code>ls /etc</code> empty usually means unmounted — run <code>mount</code>; launch fail → NBD/loop/permissions.</li>
+<li><strong>Success:</strong> Welcome shows detected OS; packages/users return lists.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../guest-files/files.md">Guest Files</a></li>
+<li><a href="../interfaces/tui.md">TUI (guestctl)</a></li>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../inspection/packages.md">Packages</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Quick Reference</h2>
+<h3>Purpose</h3>
+<p>Quick Reference — Onboarding surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Quick Reference</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>quick-reference</code></li>
+<li>Nav: <strong>Onboarding → Quick Reference</strong></li>
+<li>Primary interface: Cheat sheet — CLI / TUI keys</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Cheat sheet — CLI / TUI keys.</li>
+<li><code>guestkit inspect disk.qcow2</code>.</li>
+<li><code>guestkit doctor IMAGE --target kvm</code>.</li>
+<li><code>guestkit migrate-plan IMAGE --target proxmox --export plan.yaml</code>.</li>
+<li><code>guestkit rescue IMAGE -o enable-ssh</code> / <code>fix-grub</code>.</li>
+<li><code>guestctl tui IMAGE</code> → <code>d</code>/<code>t</code>/<code>p</code>/<code>e</code>.</li>
+<li><strong>Empty / fail:</strong> No OS found → check filesystems; wrong format → detect/info.</li>
+<li><strong>Success:</strong> Inspect shows OS/hostname; doctor score present.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="cli-guide.md">CLI Guide</a></li>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../assurance/doctor.md">Doctor</a></li>
+<li><a href="../interfaces/tui.md">TUI (guestctl)</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Profiles</h2>
+<h3>Purpose</h3>
+<p>Profiles — Profiles surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Profiles</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>profiles</code></li>
+<li>Nav: <strong>Profiles → Profiles</strong></li>
+<li>Primary interface: <code>guestkit inspect IMAGE --profile NAME</code> · <code>plan generate -p …</code></li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li><code>guestkit inspect IMAGE --profile NAME</code> · <code>plan generate -p …</code>.</li>
+<li>Inspect profiles: security, migration, performance, compliance, hardening, windows-migration.</li>
+<li><code>-o json</code> / <code>--export html|markdown</code>.</li>
+<li>Day-0: <code>plan generate</code> with windows-rdp / linux-ssh.</li>
+<li>Automate over fleet with shell loop.</li>
+<li><code>--cache-refresh</code> when needed.</li>
+<li><strong>Empty / fail:</strong> Unknown profile name.</li>
+<li><strong>Success:</strong> Profile sections + risk_level / inventory.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="../inspection/inspect.md">Inspect</a></li>
+<li><a href="../fix-plans/fix-plans.md">Fix Plans</a></li>
+<li><a href="../export/export-formats.md">Export Formats</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>FAQ</h2>
+<h3>Purpose</h3>
+<p>FAQ — Support surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>FAQ</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>faq</code></li>
+<li>Nav: <strong>Support → FAQ</strong></li>
+<li>Primary interface: Reference answers; commands embedded</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Reference answers; commands embedded.</li>
+<li>Install: <code>cargo install guestkit</code>.</li>
+<li>Not legacy appliance tooling — use GuestKit stack.</li>
+<li>Passport: certify, then convert.</li>
+<li>Extract/list/rescue examples as in FAQ.</li>
+<li>Cache under <code>~/.cache/guestkit/</code>; escalate with version + repro.</li>
+<li><strong>Empty / fail:</strong> N/A (doc); point to troubleshooting for runtime.</li>
+<li><strong>Success:</strong> Reader can run cited command successfully.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="troubleshooting.md">Troubleshooting</a></li>
+<li><a href="../onboarding/getting-started.md">Getting Started</a></li>
+<li><a href="../guides/vm-migration.md">VM Migration Guide</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>Troubleshooting</h2>
+<h3>Purpose</h3>
+<p>Troubleshooting — Support surface.</p>
+<h3>When to use it</h3>
+<ul>
+<li>Operate <strong>Troubleshooting</strong> when your job matches this surface</li>
+<li>Prefer dry-run / doctor before mutating repairs on disks</li>
+<li>Shut down the guest before write operations</li>
+</ul>
+<h3>How to get there</h3>
+<ul>
+<li>Doc id: <code>troubleshooting</code></li>
+<li>Nav: <strong>Support → Troubleshooting</strong></li>
+<li>Primary interface: Ops runbook — CLI diagnostics</li>
+</ul>
+<h3>Operate from CLI / TUI (UX)</h3>
+<ol>
+<li>Ops runbook — CLI diagnostics.</li>
+<li><code>guestkit -v inspect …</code> / <code>RUST_LOG=debug</code>.</li>
+<li>NBD: <code>modprobe nbd</code>; <code>qemu-nbd --disconnect</code>.</li>
+<li>Loop: <code>losetup -D</code>.</li>
+<li><code>qemu-img check IMAGE</code>.</li>
+<li>Container: privileged + <code>/dev/nbd*</code>; gather version + uname + lsmod.</li>
+<li><strong>Empty / fail:</strong> Persistent device busy → disconnect all nbd / reboot.</li>
+<li><strong>Success:</strong> Same failing command succeeds after fix.</li>
+</ol>
+<p>Host needs Linux + <code>qemu-img</code> / losetup / qemu-nbd; mount/repair often need root. GuestKit does not invent disk contents.</p>
+<h3>Related pages</h3>
+<ul>
+<li><a href="faq.md">FAQ</a></li>
+<li><a href="../onboarding/getting-started.md">Getting Started</a></li>
+<li><a href="../inspection/filesystems.md">Filesystems</a></li>
+<li><a href="../../getting-started.md">Getting Started</a></li>
+<li><a href="../../PAGE_INDEX.md">Page index</a></li>
+</ul>
+<hr>
+<h2>GuestKit — Complete page index</h2>
+<p>Every primary navigable dashboard route.</p>
+<p><em>Generated: 2026-08-29 · 29 routes</em></p>
+<p>Regenerate: <code>node scripts/user-docs/generate-page-index.mjs</code></p>
+<h3>Onboarding</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Getting Started</td>
+<td><code>getting-started</code></td>
+<td>Getting Started — Onboarding surface.</td>
+<td><a href="pages/onboarding/getting-started.md">Open</a></td>
+</tr>
+<tr>
+<td>Quick Reference</td>
+<td><code>quick-reference</code></td>
+<td>Quick Reference — Onboarding surface.</td>
+<td><a href="pages/onboarding/quick-reference.md">Open</a></td>
+</tr>
+<tr>
+<td>CLI Guide</td>
+<td><code>cli-guide</code></td>
+<td>CLI Guide — Onboarding surface.</td>
+<td><a href="pages/onboarding/cli-guide.md">Open</a></td>
+</tr>
+<tr>
+<td>Interactive Mode</td>
+<td><code>interactive-mode</code></td>
+<td>Interactive Mode — Onboarding surface.</td>
+<td><a href="pages/onboarding/interactive-mode.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Inspection</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Inspect</td>
+<td><code>inspect</code></td>
+<td>Inspect — Inspection surface.</td>
+<td><a href="pages/inspection/inspect.md">Open</a></td>
+</tr>
+<tr>
+<td>Filesystems</td>
+<td><code>filesystems</code></td>
+<td>Filesystems — Inspection surface.</td>
+<td><a href="pages/inspection/filesystems.md">Open</a></td>
+</tr>
+<tr>
+<td>Packages</td>
+<td><code>packages</code></td>
+<td>Packages — Inspection surface.</td>
+<td><a href="pages/inspection/packages.md">Open</a></td>
+</tr>
+<tr>
+<td>Services &amp; Users</td>
+<td><code>services-users</code></td>
+<td>Services &amp; Users — Inspection surface.</td>
+<td><a href="pages/inspection/services-users.md">Open</a></td>
+</tr>
+<tr>
+<td>Network Inspect</td>
+<td><code>network</code></td>
+<td>Network Inspect — Inspection surface.</td>
+<td><a href="pages/inspection/network.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Guest Files</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Guest Files</td>
+<td><code>files</code></td>
+<td>Guest Files — Guest Files surface.</td>
+<td><a href="pages/guest-files/files.md">Open</a></td>
+</tr>
+<tr>
+<td>Guest Control Fabric</td>
+<td><code>guest-control-fabric</code></td>
+<td>Guest Control Fabric — Guest Files surface.</td>
+<td><a href="pages/guest-files/guest-control-fabric.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Guest Agent</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Guest Agent</td>
+<td><code>guest-agent</code></td>
+<td>Guest Agent — Guest Agent surface.</td>
+<td><a href="pages/guest-agent/guest-agent.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Assurance</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Doctor</td>
+<td><code>doctor</code></td>
+<td>Doctor — Assurance surface.</td>
+<td><a href="pages/assurance/doctor.md">Open</a></td>
+</tr>
+<tr>
+<td>Migration Plan</td>
+<td><code>migrate-plan</code></td>
+<td>Migration Plan — Assurance surface.</td>
+<td><a href="pages/assurance/migrate-plan.md">Open</a></td>
+</tr>
+<tr>
+<td>Migration Assurance</td>
+<td><code>migration-assurance</code></td>
+<td>Migration Assurance — Assurance surface.</td>
+<td><a href="pages/assurance/migration-assurance.md">Open</a></td>
+</tr>
+<tr>
+<td>Policy Gate</td>
+<td><code>policy</code></td>
+<td>Policy Gate — Assurance surface.</td>
+<td><a href="pages/assurance/policy.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Fix Plans</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fix Plans</td>
+<td><code>fix-plans</code></td>
+<td>Fix Plans — Fix Plans surface.</td>
+<td><a href="pages/fix-plans/fix-plans.md">Open</a></td>
+</tr>
+<tr>
+<td>Repair</td>
+<td><code>repair</code></td>
+<td>Repair — Fix Plans surface.</td>
+<td><a href="pages/fix-plans/repair.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Fleet</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Fleet</td>
+<td><code>fleet</code></td>
+<td>Fleet — Fleet surface.</td>
+<td><a href="pages/fleet/fleet.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Forensics</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Forensic Diff</td>
+<td><code>forensic-diff</code></td>
+<td>Forensic Diff — Forensics surface.</td>
+<td><a href="pages/forensics/forensic-diff.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Profiles</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Profiles</td>
+<td><code>profiles</code></td>
+<td>Profiles — Profiles surface.</td>
+<td><a href="pages/profiles/profiles.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Export</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Export Formats</td>
+<td><code>export-formats</code></td>
+<td>Export Formats — Export surface.</td>
+<td><a href="pages/export/export-formats.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Integration</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>KubeVirt Integration</td>
+<td><code>kubevirt-integration</code></td>
+<td>KubeVirt Integration — Integration surface.</td>
+<td><a href="pages/integration/kubevirt-integration.md">Open</a></td>
+</tr>
+<tr>
+<td>Zeus VM Tools</td>
+<td><code>zeus-vm-tools</code></td>
+<td>Zeus VM Tools — Integration surface.</td>
+<td><a href="pages/integration/zeus-vm-tools.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Interfaces</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TUI (guestctl)</td>
+<td><code>tui</code></td>
+<td>TUI (guestctl) — Interfaces surface.</td>
+<td><a href="pages/interfaces/tui.md">Open</a></td>
+</tr>
+<tr>
+<td>Python Bindings</td>
+<td><code>python-bindings</code></td>
+<td>Python Bindings — Interfaces surface.</td>
+<td><a href="pages/interfaces/python-bindings.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Guides</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VM Migration Guide</td>
+<td><code>vm-migration</code></td>
+<td>VM Migration Guide — Guides surface.</td>
+<td><a href="pages/guides/vm-migration.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Support</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Route</th>
+<th>Purpose</th>
+<th>Guide</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Troubleshooting</td>
+<td><code>troubleshooting</code></td>
+<td>Troubleshooting — Support surface.</td>
+<td><a href="pages/support/troubleshooting.md">Open</a></td>
+</tr>
+<tr>
+<td>FAQ</td>
+<td><code>faq</code></td>
+<td>FAQ — Support surface.</td>
+<td><a href="pages/support/faq.md">Open</a></td>
+</tr>
+</tbody></table>
+<h3>Related</h3>
+<ul>
+<li><a href="README.md">User docs home</a></li>
+<li><a href="pages/README.md">Page-by-page guides</a></li>
+</ul>
+</main></body></html>

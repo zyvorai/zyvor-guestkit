@@ -1,0 +1,14 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
+//! Built-in operation handlers
+
+pub mod echo;
+pub mod guestkit;
+
+pub use echo::EchoHandler;
+pub use guestkit::{
+    AgentCallHandler, AgentDoctorHandler, AgentEvidenceHandler, AgentFixHandler, ConvertHandler, DoctorHandler,
+    ExploreHandler, InspectHandler, MigratePlanHandler, PassportHandler,
+    ProfileHandler, RepairHandler,
+};

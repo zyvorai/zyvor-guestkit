@@ -1,0 +1,63 @@
+# GuestKit agent policy.
+# Preferred location: /etc/guestkit/agent-policy.yaml
+# (legacy /etc/zyvor/agent-policy.yaml still honored; override with
+# ZYVOR_AGENT_POLICY). Missing sections take the safe defaults shown here.
+
+actions:
+  restart_unit:
+    # Also governs guestkit.startUnit / guestkit.stopUnit.
+    enabled: true
+    # Empty list = any unit; otherwise an exact-name allowlist.
+    allowed_units: []
+    require_approval: false
+  run_shell_command:
+    enabled: false
+  reboot_vm:
+    # When true, reboot/shutdown requests must carry {"confirm": true}.
+    require_approval: true
+  self_update:
+    enabled: false
+    auto_apply: false
+  customization:
+    # hostname/timezone/DNS changes (system identity); opt-in.
+    enabled: false
+
+# Coarse feature switches. A disabled category rejects its whole method
+# group with policy_denied (-32005) before dispatch.
+capabilities:
+  inventory: true      # evidence, process/service/filesystem listings
+  telemetry: true      # metrics, cpu/memory stats, performance history
+  events: true         # heartbeat push subscriptions
+  network_test: true   # DNS/TCP/gateway probes
+  file_ops:
+    enabled: false     # file read/write/stat/list/checksum
+    # Canonicalized prefixes file operations must stay inside.
+    allowed_paths: []
+    max_bytes: 1048576
+  storage_ops:
+    rescan: true
+    trim: true
+    expand: false      # filesystem/LV expansion is opt-in
+  packages:
+    inventory: true    # installed package listing
+    updates: true      # available-update query (security-classified)
+    install: false     # package installation mutates the system; opt-in
+  certificates: true   # X.509 + SSH host-key inventory (read-only)
+  users: true          # local user/session/access inventory (read-only)
+  integrity: true      # tamper/integrity baseline + check (§19)
+
+# Explicit method allow/deny globs on the wire name. Deny wins.
+# An empty allow list permits everything not denied.
+methods:
+  allow: []
+  deny: []
+  # Example:
+  # deny: ["guestkit.migration.*", "guestkit.exec"]
+
+security:
+  # When true, mutating requests without ts/ttl_ms are rejected.
+  require_request_expiry: false
+  # Hard ceiling applied to any requested ttl_ms.
+  max_ttl_ms: 300000
+  # Distinct nonces remembered for replay rejection.
+  nonce_cache_size: 4096

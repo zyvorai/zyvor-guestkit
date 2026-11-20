@@ -1,0 +1,203 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: vmtoolsbundles.zeus.zyvor.dev
+spec:
+  group: zeus.zyvor.dev
+  scope: Cluster
+  names:
+    kind: VMToolsBundle
+    plural: vmtoolsbundles
+    singular: vmtoolsbundle
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                version:
+                  type: string
+                channel:
+                  type: string
+                linux:
+                  type: object
+                  properties:
+                    rpm:
+                      type: string
+                    deb:
+                      type: string
+                    tar:
+                      type: string
+                windows:
+                  type: object
+                  properties:
+                    exe:
+                      type: string
+                    msi:
+                      type: string
+                    zip:
+                      type: string
+                    installPs1:
+                      type: string
+                iso:
+                  type: string
+                agentBinaryUrl:
+                  type: string
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true
+      subresources:
+        status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: vmguestagents.zeus.zyvor.dev
+spec:
+  group: zeus.zyvor.dev
+  scope: Namespaced
+  names:
+    kind: VMGuestAgent
+    plural: vmguestagents
+    singular: vmguestagent
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                vmRef:
+                  type: object
+                  properties:
+                    namespace:
+                      type: string
+                    name:
+                      type: string
+                desiredVersion:
+                  type: string
+            status:
+              type: object
+              properties:
+                installed:
+                  type: boolean
+                connected:
+                  type: boolean
+                version:
+                  type: string
+                os:
+                  type: string
+                ip:
+                  type: string
+                qgaReady:
+                  type: boolean
+                zyvorAgentReady:
+                  type: boolean
+                lastHeartbeat:
+                  type: string
+                guestHealth:
+                  type: string
+                healthScore:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                failedUnits:
+                  type: integer
+                  minimum: 0
+                systemdState:
+                  type: string
+                hostname:
+                  type: string
+                journalHintCount:
+                  type: integer
+                  minimum: 0
+                agentState:
+                  type: string
+                migrationReady:
+                  type: boolean
+                pendingReboot:
+                  type: boolean
+                fsFrozen:
+                  type: boolean
+                migrationReadiness:
+                  type: object
+                  properties:
+                    score:
+                      type: number
+                      minimum: 0
+                      maximum: 100
+                    readiness:
+                      type: string
+                      enum: [ready, ready_with_warnings, blocked]
+                    subScores:
+                      type: object
+                      properties:
+                        boot: { type: number }
+                        storage: { type: number }
+                        network: { type: number }
+                        driver: { type: number }
+                        application: { type: number }
+                        security: { type: number }
+                    blockers:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          checkId: { type: string }
+                          title: { type: string }
+                    target:
+                      type: string
+                    assessedAt:
+                      type: string
+      subresources:
+        status: {}
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: vmtoolspolicies.zeus.zyvor.dev
+spec:
+  group: zeus.zyvor.dev
+  scope: Cluster
+  names:
+    kind: VMToolsPolicy
+    plural: vmtoolspolicies
+    singular: vmtoolspolicy
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                selector:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+                autoInstall:
+                  type: boolean
+                autoUpgrade:
+                  type: boolean
+                channel:
+                  type: string
+                rebootPolicy:
+                  type: string
+                maxConcurrent:
+                  type: integer
+                  minimum: 1
+                  default: 3
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true

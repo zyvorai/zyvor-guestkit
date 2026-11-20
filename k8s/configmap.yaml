@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: guestkit-worker-config
+  namespace: guestkit-workers
+  labels:
+    app: guestkit
+    component: worker
+data:
+  worker.conf: |
+    # Guestkit Worker Configuration
+    worker_id: "auto"  # Auto-generate from hostname
+    pool: "default"
+    max_concurrent: 4
+
+    # Directories
+    jobs_dir: /var/lib/guestkit/jobs
+    results_dir: /var/lib/guestkit/results
+
+    # Timeouts
+    job_timeout_seconds: 7200
+
+    # Logging
+    log_level: info

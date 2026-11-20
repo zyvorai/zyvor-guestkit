@@ -1,0 +1,224 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zyvor-api
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.zyvorApi.replicas }}
+  selector:
+    matchLabels:
+      app: zyvor-api
+  template:
+    metadata:
+      labels:
+        app: zyvor-api
+    spec:
+      {{- if .Values.kubevirt.enabled }}
+      serviceAccountName: zyvor-api
+      {{- end }}
+      hostPID: true
+      containers:
+        - name: zyvor-api
+          image: {{ .Values.zyvorApi.image }}
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: {{ .Values.zyvorApi.privileged }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 8443
+          env:
+            - name: BIND_ADDR
+              value: "0.0.0.0:8080"
+            {{- if .Values.zyvorApi.auth.enabled }}
+            - name: AUTH_ENABLED
+              value: "true"
+            - name: JWT_ISSUER
+              value: {{ .Values.zyvorApi.auth.jwtIssuer | default "guestkit" | quote }}
+            - name: JWT_EXPIRY_HOURS
+              value: {{ .Values.zyvorApi.auth.jwtExpiryHours | default 24 | quote }}
+            - name: DEFAULT_ROLE
+              value: {{ .Values.zyvorApi.auth.defaultRole | default "operator" | quote }}
+            - name: PUBLIC_BASE_URL
+              value: {{ .Values.zyvorApi.auth.publicBaseUrl | quote }}
+            - name: UI_BASE_URL
+              value: {{ .Values.zyvorApi.auth.uiBaseUrl | quote }}
+            - name: OIDC_ISSUER_URL
+              value: {{ .Values.zyvorApi.auth.oidc.issuerUrl | default "" | quote }}
+            - name: OIDC_CLIENT_ID
+              value: {{ .Values.zyvorApi.auth.oidc.clientId | default "" | quote }}
+            - name: OIDC_BUTTON_LABEL
+              value: {{ .Values.zyvorApi.auth.oidc.buttonLabel | default "Sign in with SSO" | quote }}
+            - name: SAML_ENABLED
+              value: {{ ternary "true" "false" .Values.zyvorApi.auth.saml.enabled | quote }}
+            - name: SAML_ENTITY_ID
+              value: {{ .Values.zyvorApi.auth.saml.entityId | default "" | quote }}
+            - name: SAML_SSO_URL
+              value: {{ .Values.zyvorApi.auth.saml.ssoUrl | default "" | quote }}
+            - name: SAML_METADATA_URL
+              value: {{ .Values.zyvorApi.auth.saml.metadataUrl | default "" | quote }}
+            {{- if .Values.zyvorApi.auth.jwtSecret }}
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-api-auth
+                  key: JWT_SECRET
+            {{- end }}
+            {{- if .Values.zyvorApi.auth.oidc.clientSecret }}
+            - name: OIDC_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-api-auth
+                  key: OIDC_CLIENT_SECRET
+            {{- end }}
+            {{- if .Values.zyvorApi.auth.saml.certificatePem }}
+            - name: SAML_CERTIFICATE_PEM
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-api-auth
+                  key: SAML_CERTIFICATE_PEM
+            {{- end }}
+            {{- end }}
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-secrets
+                  key: database-url
+            - name: REDIS_URL
+              value: {{ include "zyvor.redisUrl" . | quote }}
+            - name: STORAGE_PATH
+              value: /var/lib/zyvor/images
+            - name: STORAGE_PUBLIC_URL
+              value: http://minio:9000/vm-images
+            - name: STORAGE_CLASS
+              value: {{ .Values.zyvorApi.storageClass }}
+            - name: DEFAULT_NAMESPACE
+              value: {{ .Values.zyvorApi.defaultNamespace }}
+            - name: NFS_MOUNT_ROOT
+              value: {{ .Values.zyvorApi.auth.nfsMountRoot | default "/mnt/nfs" | quote }}
+            {{- if .Values.zyvorApi.agentProxyUrl }}
+            - name: AGENT_PROXY_URL
+              value: {{ .Values.zyvorApi.agentProxyUrl | quote }}
+            {{- end }}
+            {{- if .Values.zyvorApi.zeusPublicUrl }}
+            - name: ZEUS_PUBLIC_URL
+              value: {{ .Values.zyvorApi.zeusPublicUrl | quote }}
+            {{- end }}
+            {{- if .Values.zyvorApi.clusterName }}
+            - name: CLUSTER_NAME
+              value: {{ .Values.zyvorApi.clusterName | quote }}
+            {{- end }}
+            {{- if .Values.zyvorApi.guestkitBinaryUrl }}
+            - name: GUESTKIT_BINARY_URL
+              value: {{ .Values.zyvorApi.guestkitBinaryUrl | quote }}
+            {{- end }}
+            {{- if .Values.vmtools.bundle.enabled }}
+            - name: VMTOOLS_BUNDLE_URL
+              value: {{ include "zyvor.vmtoolsBundleBaseUrl" . | quote }}
+            - name: VMTOOLS_VERSION
+              value: {{ .Values.vmtools.bundle.version | default "0.1.0" | quote }}
+            - name: VMTOOLS_CHANNEL
+              value: {{ .Values.vmtools.bundle.channel | default "stable" | quote }}
+            {{- if .Values.vmtools.bundle.linuxTarSha256 }}
+            - name: VMTOOLS_LINUX_TAR_SHA256
+              value: {{ .Values.vmtools.bundle.linuxTarSha256 | quote }}
+            {{- end }}
+            {{- if .Values.vmtools.bundle.linuxTarSignature }}
+            - name: VMTOOLS_LINUX_TAR_SIGNATURE
+              value: {{ .Values.vmtools.bundle.linuxTarSignature | quote }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.vmtools.reconcile.preferIso }}
+            - name: VMTOOLS_RECONCILE_ISO
+              value: "true"
+            {{- end }}
+            {{- if .Values.persistence.kubevirtLocalPath }}
+            - name: KUBEVIRT_DISK_ROOT
+              value: {{ .Values.persistence.kubevirtLocalPath | quote }}
+            {{- end }}
+            - name: AGENT_CA_DIR
+              value: /var/lib/zyvor/agent-ca
+            {{- if .Values.zyvorApi.auth.agentBootstrapToken }}
+            - name: AGENT_BOOTSTRAP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-api-auth
+                  key: AGENT_BOOTSTRAP_TOKEN
+            {{- end }}
+            {{- if .Values.zyvorApi.agentMtls.enabled }}
+            - name: AGENT_MTLS_BIND_ADDR
+              value: {{ .Values.zyvorApi.agentMtls.bindAddr | quote }}
+            - name: AGENT_MTLS_SERVER_SANS
+              value: {{ .Values.zyvorApi.agentMtls.serverSans | quote }}
+            {{- if .Values.ingress.hosts.agentMtls }}
+            - name: AGENT_MTLS_PUBLIC_URL
+              value: https://{{ .Values.ingress.hosts.agentMtls }}
+            {{- end }}
+            {{- end }}
+            {{- if .Values.zyvorApi.packetwolf.correlationUrl }}
+            - name: PACKETWOLF_CORRELATION_URL
+              value: {{ .Values.zyvorApi.packetwolf.correlationUrl | quote }}
+            {{- end }}
+            {{- if .Values.zyvorApi.packetwolf.fleetCorrelateUrl }}
+            - name: PACKETWOLF_FLEET_CORRELATE_URL
+              value: {{ .Values.zyvorApi.packetwolf.fleetCorrelateUrl | quote }}
+            {{- end }}
+            {{- if .Values.zyvorApi.packetwolf.fleetIntervalSecs }}
+            - name: PACKETWOLF_FLEET_INTERVAL_SECS
+              value: {{ .Values.zyvorApi.packetwolf.fleetIntervalSecs | quote }}
+            {{- end }}
+          volumeMounts:
+            {{- include "zyvor.vmVolumeMount" . | nindent 12 }}
+            {{- include "zyvor.kubevirtStorageVolumeMount" . | nindent 12 }}
+            {{- include "zyvor.agentCaVolumeMount" . | nindent 12 }}
+            - name: dev
+              mountPath: /dev
+              mountPropagation: HostToContainer
+        {{- if and .Values.kubevirt.enabled .Values.zyvorApi.agentProxy.enabled }}
+        - name: agent-proxy
+          image: {{ .Values.zyvorApi.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/local/bin/guestkit"]
+          args:
+            - agent-proxy
+            - --vsock-port
+            - {{ .Values.zyvorApi.agentProxy.vsockPort | default 1234 | quote }}
+            - --listen
+            - {{ .Values.zyvorApi.agentProxy.listen | default "127.0.0.1:8765" | quote }}
+          securityContext:
+            privileged: {{ .Values.zyvorApi.privileged }}
+          env:
+            - name: RUST_LOG
+              value: info
+          volumeMounts:
+            - name: dev
+              mountPath: /dev
+              mountPropagation: HostToContainer
+        {{- end }}
+      volumes:
+        {{- include "zyvor.vmVolume" . | nindent 8 }}
+        {{- include "zyvor.kubevirtStorageVolume" . | nindent 8 }}
+        - name: dev
+          hostPath:
+            path: /dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zyvor-api
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.zyvorApi.service.type }}
+  selector:
+    app: zyvor-api
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      {{- if eq .Values.zyvorApi.service.type "NodePort" }}
+      nodePort: {{ .Values.zyvorApi.service.nodePort }}
+      {{- end }}
+    {{- if .Values.zyvorApi.agentMtls.enabled }}
+    - port: 8443
+      targetPort: 8443
+      name: agent-mtls
+    {{- end }}

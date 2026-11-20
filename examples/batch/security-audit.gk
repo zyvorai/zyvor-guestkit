@@ -1,0 +1,33 @@
+# Security Audit Batch Script
+# Extracts security-relevant information from a VM disk
+
+# Mount root filesystem
+mount /dev/sda1 /
+
+# Check for users with shell access
+cat /etc/passwd > users.txt
+
+# List all installed packages for vulnerability scanning
+pkg > installed-packages.txt
+
+# Extract SSH configuration
+cat /etc/ssh/sshd_config > sshd_config.txt
+
+# List active services
+services > services.txt
+
+# Get network configuration
+cat /etc/network/interfaces > network-config.txt
+
+# Find SUID binaries (potential privilege escalation)
+find /usr/bin > binaries.txt
+
+# Get cron jobs
+cat /etc/crontab > crontab.txt
+
+# Download system logs for analysis
+download /var/log/auth.log auth.log
+download /var/log/syslog syslog.log
+
+# Unmount
+umount /

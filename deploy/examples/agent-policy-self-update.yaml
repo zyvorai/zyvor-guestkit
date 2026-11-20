@@ -1,0 +1,16 @@
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# Example agent policy — enable signed self-update (auto-apply optional).
+
+actions:
+  restart_unit:
+    enabled: true
+    allowed_units: []
+    require_approval: false
+  run_shell_command:
+    enabled: false
+  reboot_vm:
+    require_approval: true
+  self_update:
+  # Requires Zeus bundle linux_tar_sha256 + linux_tar_signature (Ed25519).
+    enabled: true
+    auto_apply: false

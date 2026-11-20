@@ -1,0 +1,80 @@
+{{- if .Values.backup.imageVault.enabled }}
+{{- if .Values.persistence.vmImages.hostPath }}
+{{- fail "backup.imageVault.enabled requires PVC-backed persistence.vmImages (unset hostPath)" }}
+{{- end }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: zyvor-image-store-backup
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: zyvor
+    app.kubernetes.io/component: image-vault-backup
+spec:
+  accessModes:
+    - {{ .Values.backup.imageVault.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.backup.imageVault.size }}
+  {{- if .Values.backup.imageVault.storageClass }}
+  storageClassName: {{ .Values.backup.imageVault.storageClass | quote }}
+  {{- end }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: zyvor-image-vault-backup
+  namespace: {{ .Values.namespace }}
+  labels:
+    app.kubernetes.io/name: zyvor
+    app.kubernetes.io/component: image-vault-backup
+spec:
+  schedule: {{ .Values.backup.imageVault.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      template:
+        metadata:
+          labels:
+            app.kubernetes.io/name: zyvor
+            app.kubernetes.io/component: image-vault-backup
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: backup
+              image: {{ .Values.backup.imageVault.image | quote }}
+              env:
+                - name: RETAIN
+                  value: {{ .Values.backup.imageVault.retain | quote }}
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  set -eu
+                  stamp=$(date -u +%Y%m%dT%H%M%SZ)
+                  dest="/backup/zyvor-image-store-${stamp}.tar.gz"
+                  echo "backing up /vault → ${dest}"
+                  tar -czf "${dest}" -C /vault .
+                  ls -lh "${dest}"
+                  # prune older archives; keep newest $RETAIN
+                  ls -1t /backup/zyvor-image-store-*.tar.gz 2>/dev/null | awk -v n="$RETAIN" 'NR>n' | while read -r old; do
+                    echo "pruning ${old}"
+                    rm -f "${old}"
+                  done
+              volumeMounts:
+                - name: vault
+                  mountPath: /vault
+                  readOnly: true
+                - name: backup
+                  mountPath: /backup
+          volumes:
+            - name: vault
+              persistentVolumeClaim:
+                claimName: zyvor-image-store
+            - name: backup
+              persistentVolumeClaim:
+                claimName: zyvor-image-store-backup
+{{- end }}

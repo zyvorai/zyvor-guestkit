@@ -1,0 +1,64 @@
+# CI routing: runs on the org self-hosted zyvor-build runners (plain docker
+# build/push, no sudo); pull_request-triggered runs would stay on ubuntu-latest.
+name: Publish Zyvor Images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'crates/guestkit-worker/**'
+      - 'crates/guestkit-job-spec/**'
+      - 'crates/guestkit-agent-protocol/**'
+      - 'crates/zyvor-api/**'
+      - 'deploy/ui/**'
+      - 'deploy/scripts/publish-images.sh'
+      - 'src/**'
+      - '.github/workflows/publish-zyvor-images.yml'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Image tag (default: short SHA)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io/zyvorai
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: tag
+        run: |
+          if [ -n "${{ inputs.tag }}" ]; then
+            echo "value=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push images
+        env:
+          TAG: ${{ steps.tag.outputs.value }}
+          PUSH: '1'
+          BUILDER: docker
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./deploy/scripts/publish-images.sh

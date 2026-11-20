@@ -1,0 +1,50 @@
+[Unit]
+Description=Zyvor GuestKit Agent
+Documentation=https://zyvor.dev/guestkit
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/guestkitd
+Restart=always
+RestartSec=5
+User=zyvor-agent
+Group=zyvor-agent
+SupplementaryGroups=systemd-journal
+StandardOutput=journal
+StandardError=journal
+Environment=RUST_LOG=info
+RuntimeDirectory=guestkit zyvor
+RuntimeDirectoryMode=0750
+StateDirectory=guestkit
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=true
+ProtectClock=true
+ProtectProc=invisible
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_VSOCK
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+RestrictRealtime=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallFilter=@system-service
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+UMask=0077
+ReadWritePaths=/var/lib/zyvor /var/lib/guestkit
+ReadOnlyPaths=/etc/hostname /etc/os-release /etc/zyvor /etc/guestkit
+
+# Privileged operations (fsfreeze, storage expansion, time set) run in the
+# separate guestkitd-exec helper service, which carries only the specific
+# capabilities those operations need.
+
+[Install]
+WantedBy=multi-user.target
+Alias=zyvor-guest-agent.service

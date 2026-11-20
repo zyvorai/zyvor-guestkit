@@ -1,0 +1,238 @@
+name: 'GuestKit Passport Gate'
+description: 'Score a VM disk offline and fail the job if the GuestKit Cutover Passport score is below a floor.'
+author: 'zyvorai'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  disk:
+    description: 'Path to the disk image to score (qcow2/vmdk/vhdx/raw/…).'
+    required: true
+  target:
+    description: 'Migration target GuestKit should score against (kvm, proxmox, qemu, aws, azure, gcp, cloud, hyperv).'
+    required: false
+    default: 'kvm'
+  fail-below:
+    description: 'Minimum passport score required to pass the gate (0-100).'
+    required: false
+    default: '80'
+  version:
+    description: 'GuestKit release version to install (e.g. 1.0.1). Defaults to the latest GitHub release.'
+    required: false
+    default: 'latest'
+  bundle:
+    description: 'Attach the FixPlan bundle to the emitted passport (--bundle).'
+    required: false
+    default: 'true'
+  sign-key:
+    description: 'Ed25519 seed (value, not a path) used to sign the emitted passport. Pass via a secret.'
+    required: false
+    default: ''
+  issuer:
+    description: 'Issuer string recorded in the passport when signing (e.g. ci/mig-prod).'
+    required: false
+    default: ''
+  require-signature:
+    description: 'Require a valid signature on verify (only meaningful together with sign-key).'
+    required: false
+    default: 'false'
+  trust-keys:
+    description: 'Path to a file of trusted Ed25519 public keys, required when require-signature is true.'
+    required: false
+    default: ''
+  artifact-name:
+    description: 'Name for the uploaded doctor/plan/passport artifact bundle. Empty disables upload.'
+    required: false
+    default: 'guestkit-passport'
+  rescue:
+    description: 'Optional rescue operation to export as a dry-run FixPlan (enable-ssh, fix-fstab, enable-rdp, …). Empty skips rescue.'
+    required: false
+    default: ''
+  rescue-user:
+    description: 'Username for rescue operations that need one (enable-ssh, inject-ssh-key, reset-password).'
+    required: false
+    default: ''
+  sbom:
+    description: 'If true, emit SPDX inventory JSON next to the passport.'
+    required: false
+    default: 'false'
+  handoff:
+    description: 'If true, run `guestkit passport handoff` after verify and upload the YAML.'
+    required: false
+    default: 'false'
+
+outputs:
+  score:
+    description: 'The doctor/passport score GuestKit computed for the disk (0-100, or empty if scoring failed).'
+    value: ${{ steps.gate.outputs.score }}
+  passport-path:
+    description: 'Path to the emitted passport.json.'
+    value: ${{ steps.gate.outputs.passport-path }}
+  passed:
+    description: '"true" if passport verify succeeded, "false" otherwise.'
+    value: ${{ steps.gate.outputs.passed }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve GuestKit version
+      id: resolve-version
+      shell: bash
+      env:
+        GK_VERSION: ${{ inputs.version }}
+      run: |
+        set -euo pipefail
+        VERSION="${GK_VERSION}"
+        if [[ "${VERSION}" == "latest" ]]; then
+          # Capture the full body before parsing — piping straight into
+          # `grep -m1` lets grep close the pipe after its first match,
+          # which kills curl with "Failure writing output to destination"
+          # (exit 23) under `pipefail`.
+          BODY="$(curl -fsSL https://api.github.com/repos/zyvorai/guestkit/releases/latest)"
+          VERSION="$(printf '%s' "${BODY}" | grep -m1 '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/')"
+        fi
+        VERSION="${VERSION#v}"
+        if [[ -z "${VERSION}" ]]; then
+          echo "::error::could not resolve a GuestKit release version" >&2
+          exit 1
+        fi
+        echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+    - name: Install GuestKit ${{ steps.resolve-version.outputs.version }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        VERSION="${{ steps.resolve-version.outputs.version }}"
+        ASSET="guestkit-${VERSION}-linux-amd64.tar.gz"
+        BASE_URL="https://github.com/zyvorai/guestkit/releases/download/v${VERSION}"
+        WORKDIR="${RUNNER_TEMP}/guestkit-install"
+        mkdir -p "${WORKDIR}"
+        cd "${WORKDIR}"
+
+        curl -fsSL -o "${ASSET}" "${BASE_URL}/${ASSET}"
+        curl -fsSL -o "${ASSET}.sha256" "${BASE_URL}/${ASSET}.sha256"
+        sha256sum -c "${ASSET}.sha256"
+        tar -xzf "${ASSET}"
+
+        # The user bundle tarball extracts into a versioned
+        # subdirectory (guestkit-<version>-<arch>/guestkit), not a flat
+        # binary at the tar root — find it rather than assume the path.
+        BIN_PATH="$(find "${WORKDIR}" -mindepth 1 -maxdepth 2 -type f -name guestkit | head -n1)"
+        if [[ -z "${BIN_PATH}" ]]; then
+          echo "::error::guestkit binary not found after extracting ${ASSET}" >&2
+          find "${WORKDIR}" -maxdepth 2 >&2
+          exit 1
+        fi
+        chmod +x "${BIN_PATH}"
+        echo "$(dirname "${BIN_PATH}")" >> "$GITHUB_PATH"
+        # doctor/migrate-plan/passport need loop/NBD mount, which needs root;
+        # sudo resets PATH (secure_path), so resolve the absolute binary path
+        # up front and invoke it explicitly via sudo in the gate step below.
+        echo "GUESTKIT_BIN=${BIN_PATH}" >> "$GITHUB_ENV"
+
+    - name: Install host dependencies (qemu-img, nbd, libhivex0, …)
+      shell: bash
+      run: |
+        set -euo pipefail
+        # The release bundle ships its own installer next to the binary —
+        # same package list (incl. libhivex0, required at runtime by the
+        # glibc build's registry-write feature) used by users who
+        # download the tarball directly. Reuse it instead of a second,
+        # drifting copy of the dependency list here.
+        INSTALLER="$(dirname "${GUESTKIT_BIN}")/install-client-deps.sh"
+        if [[ -x "${INSTALLER}" ]]; then
+          "${INSTALLER}"
+        else
+          echo "::warning::install-client-deps.sh not found next to guestkit; falling back to qemu-utils only"
+          sudo apt-get update -y
+          sudo apt-get install -y qemu-utils
+        fi
+        sudo modprobe loop || true
+
+    - name: Run passport gate
+      id: gate
+      shell: bash
+      env:
+        GK_DISK: ${{ inputs.disk }}
+        GK_TARGET: ${{ inputs.target }}
+        GK_FLOOR: ${{ inputs.fail-below }}
+        GK_BUNDLE: ${{ inputs.bundle }}
+        GK_SIGN_KEY: ${{ inputs.sign-key }}
+        GK_ISSUER: ${{ inputs.issuer }}
+        GK_REQUIRE_SIG: ${{ inputs.require-signature }}
+        GK_TRUST_KEYS: ${{ inputs.trust-keys }}
+        GK_HANDOFF: ${{ inputs.handoff }}
+        GK_RESCUE: ${{ inputs.rescue }}
+        GK_RESCUE_USER: ${{ inputs.rescue-user }}
+        GK_SBOM: ${{ inputs.sbom }}
+      run: |
+        set -uo pipefail
+        OUTDIR="${RUNNER_TEMP}/guestkit-passport-gate"
+        mkdir -p "${OUTDIR}"
+        guestkit() { sudo "${GUESTKIT_BIN}" "$@"; }
+
+        guestkit --version
+
+        guestkit doctor "${GK_DISK}" --target "${GK_TARGET}" --explain 2>&1 | tee "${OUTDIR}/doctor.txt"
+        guestkit migrate-plan "${GK_DISK}" --target "${GK_TARGET}" --export "${OUTDIR}/plan.yaml" || true
+
+        EMIT_ARGS=(passport emit "${GK_DISK}" --target "${GK_TARGET}" -o "${OUTDIR}/passport.json")
+        if [[ "${GK_BUNDLE}" == "true" ]]; then
+          EMIT_ARGS+=(--bundle)
+        fi
+        if [[ -n "${GK_SIGN_KEY}" ]]; then
+          EMIT_ARGS+=(--sign-key "${GK_SIGN_KEY}")
+          [[ -n "${GK_ISSUER}" ]] && EMIT_ARGS+=(--issuer "${GK_ISSUER}")
+        fi
+        guestkit "${EMIT_ARGS[@]}"
+
+        VERIFY_ARGS=(passport verify "${OUTDIR}/passport.json" --fail-below "${GK_FLOOR}")
+        if [[ "${GK_REQUIRE_SIG}" == "true" ]]; then
+          VERIFY_ARGS+=(--require-signature --trust-keys "${GK_TRUST_KEYS}")
+        fi
+
+        SCORE="$(grep -m1 -oE '"score"[[:space:]]*:[[:space:]]*[0-9]+' "${OUTDIR}/passport.json" | grep -oE '[0-9]+$' || true)"
+        echo "score=${SCORE}" >> "$GITHUB_OUTPUT"
+        echo "passport-path=${OUTDIR}/passport.json" >> "$GITHUB_OUTPUT"
+
+        echo "GK_GATE_OUTDIR=${OUTDIR}" >> "$GITHUB_ENV"
+
+        if guestkit "${VERIFY_ARGS[@]}"; then
+          echo "passed=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "passed=false" >> "$GITHUB_OUTPUT"
+          echo "::error::passport verify failed (score=${SCORE:-unknown}, floor=${GK_FLOOR})"
+          exit 1
+        fi
+
+        if [[ "${GK_HANDOFF}" == "true" ]]; then
+          guestkit passport handoff "${OUTDIR}/passport.json" -o "${OUTDIR}/handoff.yaml" --fail-below "${GK_FLOOR}" || true
+        fi
+
+        if [[ -n "${GK_RESCUE}" ]]; then
+          RESCUE_ARGS=(rescue "${GK_DISK}" -o "${GK_RESCUE}" --export-plan "${OUTDIR}/rescue.yaml")
+          if [[ -n "${GK_RESCUE_USER}" ]]; then
+            RESCUE_ARGS+=(-u "${GK_RESCUE_USER}")
+          fi
+          guestkit "${RESCUE_ARGS[@]}" || echo "::warning::rescue dry-run export failed"
+        fi
+
+        if [[ "${GK_SBOM}" == "true" ]]; then
+          guestkit inventory "${GK_DISK}" --format spdx -o "${OUTDIR}/sbom.spdx.json" || echo "::warning::sbom emit failed"
+        fi
+
+    - name: Upload doctor/plan/passport artifact
+      if: always() && inputs.artifact-name != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: |
+          ${{ env.GK_GATE_OUTDIR }}/doctor.txt
+          ${{ env.GK_GATE_OUTDIR }}/plan.yaml
+          ${{ env.GK_GATE_OUTDIR }}/passport.json
+          ${{ env.GK_GATE_OUTDIR }}/handoff.yaml
+          ${{ env.GK_GATE_OUTDIR }}/rescue.yaml
+          ${{ env.GK_GATE_OUTDIR }}/sbom.spdx.json
+        if-no-files-found: ignore

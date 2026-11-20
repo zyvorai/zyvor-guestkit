@@ -1,0 +1,86 @@
+{
+  "$schema": "https://guestkit.dev/schemas/job-v1.json",
+  "version": "1.0",
+  "job_id": "job-01JAB5D9XAMBNCPDQERF",
+  "created_at": "2026-01-30T12:00:00Z",
+  "kind": "VMOperation",
+  "operation": "guestkit.fix",
+
+  "metadata": {
+    "name": "fix-corrupted-filesystem",
+    "namespace": "production",
+    "labels": {
+      "environment": "prod",
+      "urgency": "high",
+      "vm-type": "application"
+    },
+    "annotations": {
+      "incident": "INC-789",
+      "issue": "filesystem corruption detected"
+    }
+  },
+
+  "execution": {
+    "idempotency_key": "fix-app-server-01-corruption",
+    "priority": 9,
+    "timeout_seconds": 10800,
+    "max_attempts": 1,
+    "cancellable": false
+  },
+
+  "constraints": {
+    "required_capabilities": [
+      "guestkit.fix",
+      "fs.fsck"
+    ],
+    "required_features": [
+      "lvm",
+      "ext4",
+      "selinux"
+    ],
+    "require_privileged": true
+  },
+
+  "payload": {
+    "type": "guestkit.fix.v1",
+    "data": {
+      "image": {
+        "path": "/vms/app-server-01.qcow2",
+        "format": "qcow2",
+        "checksum": "sha256:def456...",
+        "create_backup": true,
+        "backup_path": "/backups/app-server-01-pre-fix.qcow2"
+      },
+      "operations": [
+        {
+          "type": "fsck",
+          "options": {
+            "auto_repair": true,
+            "filesystem": "ext4"
+          }
+        },
+        {
+          "type": "selinux_relabel",
+          "options": {
+            "force": false
+          }
+        },
+        {
+          "type": "initramfs_regenerate",
+          "options": {
+            "kernel_version": "auto"
+          }
+        }
+      ],
+      "execution_policy": {
+        "stop_on_error": true,
+        "validate_before_commit": true
+      },
+      "output": {
+        "fixed_image": "/vms/app-server-01-fixed.qcow2",
+        "log_path": "/logs/fix-app-server-01.log",
+        "report_format": "json"
+      }
+    }
+  }
+}

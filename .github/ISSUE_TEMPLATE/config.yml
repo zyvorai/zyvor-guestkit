@@ -1,0 +1,20 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "▶ Watch migration demo (video + dashboard)"
+    url: https://zyvor.dev/demo?utm_source=github&utm_medium=guestkit
+    about: Migration video and live dashboard tour at zyvor.dev/demo
+  - name: "🏢 Enterprise, sales & SLAs (Zyvor)"
+    url: https://zyvor.dev/contact?utm_source=github&utm_medium=guestkit
+    about: Production migrations, VMware exit, licensing, and guided demos — not for GitHub Issues
+  - name: "📧 Email sales"
+    url: mailto:sales@zyvor.dev
+    about: sales@zyvor.dev — enterprise quotes and migration programs
+  - name: "ROI calculator"
+    url: https://zyvor.dev/roi?utm_source=github&utm_medium=guestkit
+    about: Estimate savings from VMware exit and platform migration
+  - name: "💬 Discussions"
+    url: https://github.com/zyvorai/guestkit/discussions
+    about: Community questions and ideas
+  - name: "🔐 Security"
+    url: https://github.com/zyvorai/guestkit/blob/main/SECURITY.md
+    about: Report vulnerabilities privately (not for sales)

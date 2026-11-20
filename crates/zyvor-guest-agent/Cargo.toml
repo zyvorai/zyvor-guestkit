@@ -1,0 +1,37 @@
+[package]
+name = "zyvor-guest-agent"
+version = "0.1.0"
+edition = "2021"
+license = "LicenseRef-Zyvor-Production-1.0"
+description = "Zeus VM Tools in-guest agent (Windows + Linux)"
+
+[[bin]]
+name = "guestkitd"
+path = "src/main.rs"
+
+[[bin]]
+name = "guestkitd-exec"
+path = "src/exec_main.rs"
+
+[[bin]]
+name = "guestkitctl"
+path = "src/ctl_main.rs"
+
+[dependencies]
+anyhow = "1.0"
+base64 = "0.22"
+clap = { version = "4", features = ["derive"] }
+env_logger = "0.11"
+guestkit = { path = "../../", default-features = false, features = ["agent"] }
+log = "0.4"
+serde_json = "1.0"
+tokio = { version = "1", features = ["rt-multi-thread", "macros"] }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+guestkit = { path = "../../", default-features = false, features = ["agent", "ebpf"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-service = "0.7"
+
+[dev-dependencies]
+tempfile = "3.0"

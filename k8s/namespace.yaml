@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: guestkit-workers
+  labels:
+    name: guestkit-workers
+    app: guestkit

@@ -1,0 +1,10 @@
+apiVersion: zeus.zyvor.dev/v1alpha1
+kind: GuestActionPolicy
+metadata:
+  name: approval-required
+spec:
+  allowedActions:
+    - restart_unit
+    - collect_support_bundle
+  restartUnitAllowlist: []
+  requireApproval: true

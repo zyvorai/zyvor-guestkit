@@ -1,0 +1,75 @@
+[workspace]
+
+[package]
+name = "guestkit-worker"
+version = "0.1.0"
+edition = "2021"
+authors = ["ZyvorAI Labs Private Limited <info@zyvor.dev>"]
+license = "LicenseRef-Zyvor-Production-1.0"
+description = "Worker daemon for distributed VM operations"
+repository = "https://github.com/zyvorai/guestkit"
+keywords = ["virtualization", "vm", "worker", "distributed"]
+
+[dependencies]
+# Job protocol
+guestkit-job-spec = { version = "0.1.0", path = "../guestkit-job-spec" }
+
+# Guestkit library for VM operations
+guestkit = { path = "../..", features = ["guest-inspect"] }
+
+# Core
+anyhow = "1.0"
+thiserror = "2.0"
+log = "0.4"
+env_logger = "0.11"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Filesystem watching
+notify = "7.0"
+
+# Process management
+signal-hook = "0.3"
+signal-hook-tokio = { version = "0.3", features = ["futures-v0_3"] }
+
+# Utilities
+uuid = { version = "1.0", features = ["v4", "serde"] }
+ulid = { version = "1.1", features = ["serde"] }
+dashmap = "6.1"
+
+# Cryptography (checksum verification)
+sha2 = "0.10"
+hex = "0.4"
+
+# Metrics (Prometheus)
+prometheus-client = "0.22"
+
+# HTTP server (for metrics endpoint)
+axum = "0.7"
+tower = "0.4"
+tower-http = { version = "0.5", features = ["trace"] }
+
+# CLI (for worker binary)
+clap = { version = "4", features = ["derive", "env"] }
+reqwest = { version = "0.12", features = ["json"] }
+urlencoding = "2.1"
+redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+prettytable-rs = "0.10"
+
+[dev-dependencies]
+tempfile = "3.0"
+tokio-test = "0.4"
+
+[[bin]]
+name = "guestkit-worker"
+path = "src/bin/worker.rs"

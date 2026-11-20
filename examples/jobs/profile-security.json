@@ -1,0 +1,65 @@
+{
+  "$schema": "https://guestkit.dev/schemas/job-v1.json",
+  "version": "1.0",
+  "job_id": "job-01JAB4C8X9M2N6P3Q7R5",
+  "created_at": "2026-01-30T11:00:00Z",
+  "kind": "VMOperation",
+  "operation": "guestkit.profile",
+
+  "metadata": {
+    "name": "security-profile-db-server",
+    "namespace": "production",
+    "labels": {
+      "environment": "prod",
+      "team": "security",
+      "vm-type": "database"
+    },
+    "annotations": {
+      "compliance-check": "PCI-DSS",
+      "ticket": "SEC-456"
+    }
+  },
+
+  "execution": {
+    "idempotency_key": "security-profile-db-01-2026-01-30",
+    "priority": 8,
+    "timeout_seconds": 3600,
+    "max_attempts": 2
+  },
+
+  "constraints": {
+    "required_capabilities": [
+      "guestkit.profile"
+    ],
+    "required_features": [
+      "selinux",
+      "apparmor"
+    ],
+    "require_privileged": true
+  },
+
+  "payload": {
+    "type": "guestkit.profile.v1",
+    "data": {
+      "image": {
+        "path": "/vms/prod-db-01.qcow2",
+        "format": "qcow2",
+        "checksum": "sha256:abc123..."
+      },
+      "profiles": [
+        "security",
+        "compliance",
+        "hardening"
+      ],
+      "options": {
+        "severity_threshold": "medium",
+        "fail_on_critical": true
+      },
+      "output": {
+        "format": "json",
+        "destination": "/output/db-01-security-profile.json",
+        "include_remediation": true
+      }
+    }
+  }
+}

@@ -1,0 +1,86 @@
+# GitHub Actions / local CI overlay (deploy/scripts/ci-k3s-e2e.sh, k3s-e2e.yml).
+# URLs are set at deploy time via --set (NODE_IP from kubectl or hostname -I).
+ingress:
+  enabled: false
+
+networkPolicy:
+  enabled: false
+
+guestkitWorker:
+  replicas: 1
+
+zyvorApi:
+  storageClass: local-path
+  privileged: true
+  zeusPublicUrl: ""
+  clusterName: "k3s-ci"
+  guestkitBinaryUrl: ""
+  agentProxyUrl: "http://127.0.0.1:8765"
+  agentProxy:
+    enabled: true
+    vsockPort: 1234
+    listen: "127.0.0.1:8765"
+  # agentMtls.enabled defaults to true (see values.yaml), which requires a
+  # bootstrap token independent of full UI/API auth being on — without this,
+  # zyvor-api's Config::from_env() refuses to start at all ("AGENT_MTLS_BIND_ADDR
+  # is set but AGENT_BOOTSTRAP_TOKEN is unset"). Ephemeral CI cluster, torn
+  # down after the job — a static placeholder is fine here.
+  auth:
+    agentBootstrapToken: "ci-e2e-bootstrap-token"
+  service:
+    type: NodePort
+    nodePort: 30080
+
+zyvorUi:
+  service:
+    type: NodePort
+    nodePort: 30081
+
+persistence:
+  vmImages:
+    storageClass: local-path
+    accessMode: ReadWriteOnce
+    hostPath: /var/lib/zyvor/images
+  kubevirtLocalPath: /data/k3s/storage
+
+postgresql:
+  # On GitHub's ubuntu-latest (Ubuntu 26.04, kernel 7.x) the containerd AppArmor profile
+  # (cri-containerd.apparmor.d, stacked with &unconfined) denies a container's processes
+  # signalling each other: `gosu` (postgres entrypoint) spins forever on SIGRTMIN+1 and
+  # `pg_ctl stop` fails with "Permission denied" (dmesg: apparmor="DENIED" operation="signal"),
+  # so postgres never came up and zyvor-api died with "pool timed out". Run this pod
+  # unconfined in CI; a real host fix belongs in the node's AppArmor/containerd policy.
+  securityContext:
+    appArmorProfile:
+      type: Unconfined
+
+minio:
+  enabled: true
+  # minio/minio is no longer pullable from Docker Hub or quay.io (ImagePullBackOff on every
+  # k3s E2E run); the Bitnami legacy mirror still serves a pinned build. Its entrypoint is a
+  # Bitnami wrapper, so run the binary directly with the chart's args.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  command: ["minio"]
+  service:
+    type: NodePort
+    nodePort: 30092
+
+kubevirt:
+  enabled: true
+
+vmtools:
+  installCrds: true
+  defaultPolicy:
+    enabled: true
+    autoInstall: true
+    autoUpgrade: false
+    maxConcurrent: 2
+  bundle:
+    enabled: true
+    version: "0.1.0"
+    channel: stable
+    baseUrl: ""
+  reconcile:
+    enabled: true
+    schedule: "*/10 * * * *"
+    preferIso: false

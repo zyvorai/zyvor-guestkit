@@ -1,0 +1,27 @@
+GuestKit — Prerequisites checklist
+===================================
+
+HOST (Linux inspector — not Kubernetes)
+  [ ] Linux x86_64
+  [ ] ./install.sh completed
+  [ ] qemu-img installed
+  [ ] nbd module loaded (lsmod | grep nbd)
+  [ ] ./test-host.sh passes
+  [ ] ./test-selftest.sh passes (recommended)
+  [ ] Disk image path readable (qcow2/vmdk/raw)
+
+NOT required: legacy guest tools, virt-inspector
+
+CLIENT BUNDLE (this directory)
+  [ ] ./guestkit executable
+  [ ] guestkit --version works
+  [ ] ./test-package.sh passes
+
+QUICK COMMANDS
+  ./install.sh
+  ./test-host.sh
+  ./test-selftest.sh --quick
+  ./guestkit inspect /path/to/disk.qcow2
+
+UNINSTALL
+  ./uninstall.sh --yes [--remove-dir]

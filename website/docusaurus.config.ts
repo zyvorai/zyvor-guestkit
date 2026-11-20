@@ -1,0 +1,132 @@
+// Copyright 2026 Zyvor AI Labs · https://zyvor.dev
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+
+import {themes as prismThemes} from 'prism-react-renderer';
+import type {Config} from '@docusaurus/types';
+import type * as Preset from '@docusaurus/preset-classic';
+
+const config: Config = {
+  title: 'GuestKit',
+  tagline: 'Offline VM intelligence. Migration assurance you can prove.',
+  favicon: 'img/favicon.svg',
+
+  future: {
+    v4: true,
+  },
+
+  url: 'https://zyvorai.github.io',
+  baseUrl: '/zyvor-guestkit/',
+
+  organizationName: 'zyvorai',
+  projectName: 'zyvor-guestkit',
+
+  // Serve the repo's existing screenshot/social assets in place instead of
+  // duplicating them into static/, so the README and this site share one copy.
+  staticDirectories: ['static', '../docs/social', '../docs/img'],
+
+  onBrokenLinks: 'warn',
+
+  markdown: {
+    format: 'md',
+    hooks: {
+      onBrokenMarkdownLinks: 'warn',
+    },
+  },
+
+  i18n: {
+    defaultLocale: 'en',
+    locales: ['en'],
+  },
+
+  presets: [
+    [
+      'classic',
+      {
+        docs: {
+          path: '../docs',
+          routeBasePath: 'docs',
+          sidebarPath: './sidebars.ts',
+          editUrl: 'https://github.com/zyvorai/zyvor-guestkit/tree/main/docs/',
+        },
+        blog: false,
+        theme: {
+          customCss: './src/css/custom.css',
+        },
+      } satisfies Preset.Options,
+    ],
+  ],
+
+  themeConfig: {
+    image: 'guestkit-share-card.png',
+    colorMode: {
+      defaultMode: 'dark',
+      respectPrefersColorScheme: false,
+    },
+    navbar: {
+      hideOnScroll: false,
+      title: 'GuestKit',
+      logo: {
+        alt: 'GuestKit',
+        src: 'img/favicon.svg',
+      },
+      items: [
+        {
+          type: 'docSidebar',
+          sidebarId: 'docsSidebar',
+          position: 'left',
+          label: 'Docs',
+        },
+        {to: '/gallery', label: 'Gallery', position: 'left'},
+        {to: '/resources', label: 'Resources', position: 'left'},
+        {to: '/support', label: 'Support', position: 'right'},
+        {
+          href: 'https://github.com/zyvorai/zyvor-guestkit',
+          label: 'GitHub',
+          position: 'right',
+        },
+        {
+          href: 'https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit',
+          label: 'Enterprise',
+          position: 'right',
+        },
+      ],
+    },
+    footer: {
+      style: 'dark',
+      links: [
+        {
+          title: 'Docs',
+          items: [
+            {label: 'Getting started', to: '/docs/user-guides/getting-started'},
+            {label: 'Quick reference', to: '/docs/user-guides/quick-reference'},
+            {label: 'Gallery', to: '/gallery'},
+            {label: 'Resources (downloads)', to: '/resources'},
+          ],
+        },
+        {
+          title: 'Project',
+          items: [
+            {label: 'GitHub', href: 'https://github.com/zyvorai/zyvor-guestkit'},
+            {label: 'Support', to: '/support'},
+            {label: 'crates.io', href: 'https://crates.io/crates/guestkit'},
+            {label: 'License (Zyvor Production)', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/LICENSE'},
+          ],
+        },
+        {
+          title: 'Zyvor Enterprise',
+          items: [
+            {label: '30-day Enterprise trial', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/docs/enterprise-trial-install.md'},
+            {label: 'Book a demo', href: 'https://zyvor.dev/contact?utm_source=github&utm_medium=guestkit&intent=demo'},
+          ],
+        },
+      ],
+      copyright: `Copyright © ${new Date().getFullYear()} Zyvor. GuestKit is licensed under the Zyvor Production License v1.0.`,
+    },
+    prism: {
+      theme: prismThemes.github,
+      darkTheme: prismThemes.dracula,
+    },
+  } satisfies Preset.ThemeConfig,
+};
+
+export default config;

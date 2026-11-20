@@ -1,0 +1,103 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: guestkit-worker
+  namespace: guestkit-workers
+  labels:
+    app: guestkit
+    component: worker-daemon
+spec:
+  selector:
+    matchLabels:
+      app: guestkit-worker
+  template:
+    metadata:
+      labels:
+        app: guestkit-worker
+        component: worker-daemon
+    spec:
+      serviceAccountName: guestkit-worker
+      nodeSelector:
+        guestkit.io/worker-enabled: "true"
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: worker
+        image: guestkit-worker:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /usr/local/bin/guestkit-worker
+        args:
+        - --worker-id
+        - $(WORKER_ID)
+        - --pool
+        - default
+        - --jobs-dir
+        - /var/lib/guestkit/jobs
+        - --results-dir
+        - /var/lib/guestkit/results
+        - --max-concurrent
+        - "4"
+        env:
+        - name: WORKER_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: RUST_LOG
+          value: info
+        - name: RUST_BACKTRACE
+          value: "1"
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 2
+            memory: 2Gi
+        volumeMounts:
+        - name: config
+          mountPath: /etc/guestkit
+          readOnly: true
+        - name: worker-state
+          mountPath: /var/lib/guestkit
+        - name: data-storage
+          mountPath: /data
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "pgrep -f guestkit-worker"
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - "test -d /var/lib/guestkit/jobs"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          privileged: true
+          capabilities:
+            add:
+            - SYS_ADMIN
+            - SYS_RESOURCE
+      terminationGracePeriodSeconds: 300
+      volumes:
+      - name: config
+        configMap:
+          name: guestkit-worker-config
+      - name: worker-state
+        emptyDir: {}
+      - name: data-storage
+        hostPath:
+          path: /data
+          type: DirectoryOrCreate

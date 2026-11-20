@@ -1,0 +1,105 @@
+# ─────────────────────────────────────────────────────────────
+# GuestKit / Zyvor web stack — EVALUATION ONLY (NOT FOR PRODUCTION)
+#
+#   ⚠️  AUTH_ENABLED=false, no Redis password, no agent bootstrap token.
+#       Suitable for local demos on localhost:8088 only.
+#       For production, use deploy/docker-compose.prod.example.yml
+#
+#   REGISTRY (default ghcr.io/zyvorai) · TAG (default latest)
+#
+#   docker compose -f deploy/docker-compose.ghcr.yml pull
+#   docker compose -f deploy/docker-compose.ghcr.yml up -d
+#   open http://localhost:8088        # web console
+#
+# Images are public — no `docker login` required to pull.
+# ─────────────────────────────────────────────────────────────
+name: zyvor
+
+x-images:
+  registry: &registry ${REGISTRY:-ghcr.io/zyvorai}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: zyvor
+      POSTGRES_PASSWORD: zyvor
+      POSTGRES_DB: zyvor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zyvor"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # NOTE: service name MUST stay `zyvor-api` — the UI's nginx proxies
+  # /api/ to http://zyvor-api:8080/api/ by that hostname.
+  zyvor-api:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/zyvor-api:${TAG:-latest}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://zyvor:zyvor@postgres:5432/zyvor
+      REDIS_URL: redis://redis:6379
+      QUEUE_URL: redis://redis:6379
+      STORAGE_PATH: /var/lib/zyvor/images
+      # EVAL ONLY — see deploy/docker-compose.prod.example.yml for production.
+      # Eval: UI opens without a login. Do not expose this stack beyond localhost.
+      AUTH_ENABLED: "false"
+      # JWT_SECRET: "change-me-to-a-long-random-string"
+      RUST_LOG: info
+    volumes:
+      - vm-images:/var/lib/zyvor/images
+
+  guestkit-worker:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/guestkit-worker:${TAG:-latest}
+    depends_on:
+      redis:
+        condition: service_healthy
+    # NBD/loop disk access for assurance operations.
+    privileged: true
+    command:
+      - daemon
+      - --transport
+      - redis
+      - --redis-url
+      - redis://redis:6379
+      - --results-dir
+      - /var/lib/guestkit/results
+      - --work-dir
+      - /var/lib/guestkit/work
+      - --max-concurrent
+      - "4"
+    environment:
+      QUEUE_URL: redis://redis:6379
+      RUST_LOG: info
+    volumes:
+      - vm-images:/var/lib/zyvor/images
+      - worker-results:/var/lib/guestkit/results
+      - worker-work:/var/lib/guestkit/work
+
+  zyvor-ui:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/zyvor-ui:${TAG:-latest}
+    depends_on:
+      - zyvor-api
+    ports:
+      - "8088:80"
+
+volumes:
+  pgdata:
+  vm-images:
+  worker-results:
+  worker-work:

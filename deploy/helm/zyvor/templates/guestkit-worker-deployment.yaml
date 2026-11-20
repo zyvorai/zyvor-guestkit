@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestkit-worker
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.guestkitWorker.replicas }}
+  selector:
+    matchLabels:
+      app: guestkit-worker
+  template:
+    metadata:
+      labels:
+        app: guestkit-worker
+    spec:
+      hostPID: true
+      containers:
+        - name: guestkit-worker
+          image: {{ .Values.guestkitWorker.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/local/bin/guestkit-worker"]
+          args:
+            - daemon
+            - --transport
+            - {{ .Values.guestkitWorker.transport }}
+            - --redis-url
+            - {{ include "zyvor.redisUrl" . | quote }}
+            - --results-dir
+            - /var/lib/guestkit/results
+            - --work-dir
+            - /var/lib/guestkit/work
+            - --max-concurrent
+            - "4"
+          env:
+            - name: QUEUE_URL
+              value: {{ include "zyvor.redisUrl" . | quote }}
+            - name: RUST_LOG
+              value: info
+          securityContext:
+            privileged: {{ .Values.guestkitWorker.privileged }}
+          resources:
+            {{- toYaml .Values.guestkitWorker.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "zyvor.vmVolumeMount" . | nindent 12 }}
+            {{- include "zyvor.kubevirtStorageVolumeMount" . | nindent 12 }}
+            - name: results
+              mountPath: /var/lib/guestkit/results
+            - name: work
+              mountPath: /var/lib/guestkit/work
+            - name: dev
+              mountPath: /dev
+              mountPropagation: HostToContainer
+      volumes:
+        {{- include "zyvor.vmVolume" . | nindent 8 }}
+        {{- include "zyvor.kubevirtStorageVolume" . | nindent 8 }}
+        - name: results
+          emptyDir: {}
+        - name: work
+          emptyDir: {}
+        - name: dev
+          hostPath:
+            path: /dev
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestkit-worker
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: guestkit-worker
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

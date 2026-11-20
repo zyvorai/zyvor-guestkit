@@ -1,0 +1,212 @@
+# Standalone workspace — avoids joining a parent Cargo workspace when deployed
+# under e.g. ~/.deployments/guestkit next to machina.
+[workspace]
+members = [".", "crates/guestkit-agent-protocol", "crates/guestkit-job-spec", "crates/zyvor-guest-agent", "crates/guestkit-ebpf-common", "crates/guestkit-ebpf-runtime"]
+# Kernel-side programs: bpfel-unknown-none only, built by guestkit-ebpf-runtime/build.rs.
+exclude = ["crates/guestkit-ebpf"]
+
+[package]
+name = "guestkit"
+version = "1.3.1"
+edition = "2021"
+authors = ["ZyvorAI Labs Private Limited <info@zyvor.dev>"]
+license = "LicenseRef-Zyvor-Production-1.0"
+description = "Pure Rust VM disk toolkit with beautiful output, Windows registry parsing, and VM migration support"
+readme = "README.md"
+repository = "https://github.com/zyvorai/guestkit"
+homepage = "https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit"
+documentation = "https://zyvor.dev/docs/products?utm_source=github&utm_medium=guestkit"
+keywords = ["virtualization", "vm", "disk", "qemu", "kvm"]
+categories = ["virtualization", "filesystem", "command-line-utilities"]
+
+[dependencies]
+# Core
+anyhow = "1.0"
+thiserror = "2.0"
+log = "0.4"
+env_logger = "0.11"
+
+# Async runtime
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process", "io-util", "fs", "net", "signal"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+toml = "0.8"
+csv = "1.3"
+
+# CLI
+clap = { version = "4", features = ["derive", "cargo"] }
+clap_complete = "4.5"
+indicatif = "0.18"
+miette = { version = "7.0", features = ["fancy"] }
+owo-colors = "4.0"
+colored = "3.1"
+unicode-width = "0.2"
+rustyline = "17.0"
+dirs = "6.0"
+rpassword = "7.3"
+
+# AI Assistant (optional feature)
+rig-core = { version = "0.29", optional = true }
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"], optional = true }
+
+# MCP server (optional feature) — exposes the read-only evidence tools to
+# external MCP hosts (Claude Desktop, etc.)
+rmcp = { version = "3", optional = true, features = ["server", "transport-io"] }
+
+# TUI
+ratatui = "0.30"
+crossterm = "0.29"
+
+# Utilities
+rand = "0.8"
+uuid = { version = "1.0", features = ["v4", "serde"] }
+once_cell = "1.19"
+chrono = { version = "0.4", features = ["serde"] }
+tempfile = "3.0"
+
+# Disk image and partition parsing (pure Rust)
+memmap2 = "0.9"
+byteorder = "1.5"
+
+# Regex for OS detection
+regex = "1"
+
+# Glob for pattern matching
+glob = "0.3"
+
+# Base64 encoding/decoding
+base64 = "0.22"
+
+# Unix system calls for privilege checking
+libc = "0.2"
+
+# Windows registry parsing (pure Rust)
+nt_hive2 = "4.2.4"
+
+# Windows event log parsing (pure Rust)
+evtx = { version = "0.15.1", default-features = false, optional = true }
+
+# Report generation and export
+printpdf = "0.12"
+
+# Hashing for cache keys
+sha2 = "0.10"
+
+# Windows SAM AES / RC4 password crypto (bootkey + NT hash)
+aes = "0.8"
+cbc = { version = "0.1", features = ["alloc"] }
+cipher = { version = "0.4", features = ["alloc"] }
+des = "0.8"
+md-5 = "0.10"
+md4 = "0.10"
+
+# Binary serialization for fast caching
+bincode = "1.3"
+
+# Parallel processing
+rayon = "1.8"
+
+# PyO3 for Python bindings (optional)
+pyo3 = { version = "0.29", features = ["extension-module", "abi3-py310"], optional = true }
+# Async support - waiting for pyo3-asyncio to support PyO3 0.22
+# pyo3-asyncio-0-21 = { version = "0.21", features = ["tokio-runtime"], optional = true }
+
+# In-guest agent (optional feature)
+guestkit-agent-protocol = { version = "0.1.0", path = "crates/guestkit-agent-protocol", optional = true }
+guestkit-ebpf-runtime = { version = "0.1.0", path = "crates/guestkit-ebpf-runtime", optional = true }
+sysinfo = { version = "0.33", optional = true }
+nix = { version = "0.29", features = ["user", "fs"], optional = true }
+zbus = { version = "5", default-features = false, features = ["tokio", "blocking-api"], optional = true }
+futures-util = { version = "0.3", optional = true }
+tar = { version = "0.4.40", optional = true }
+zstd = { version = "0.13", optional = true }
+flate2 = { version = "1", optional = true }
+ed25519-dalek = { version = "2", features = ["rand_core"], optional = true }
+hex = { version = "0.4", optional = true }
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libsystemd-sys = { version = "0.9", optional = true }
+libc = "0.2"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.14"
+tempfile = "3.0"
+assert_cmd = "2.0"
+predicates = "3.0"
+criterion = { version = "0.8", features = ["html_reports"] }
+proptest = "1.4"
+num_cpus = "1.16"
+
+[features]
+default = ["guest-inspect", "journal-native"]
+guest-inspect = ["evtx", "tar"]
+journal-native = ["dep:libsystemd-sys"]
+python-bindings = ["pyo3"]
+ai = ["rig-core", "reqwest"]
+local-ai = ["ai"]
+mcp = ["dep:rmcp", "ai"]
+# Offline Windows registry writes via libhivex FFI (needs libhivex-dev / hivex-devel)
+registry-write = []
+cloud-s3 = []
+cloud-azure = []
+cloud-gcs = []
+cloud = ["cloud-s3", "cloud-azure", "cloud-gcs"]
+agent = ["guestkit-agent-protocol", "sysinfo", "nix", "zbus", "futures-util", "reqwest", "tar", "zstd", "flate2", "ed25519-dalek", "hex"]
+# Per-container eBPF netpolicy + LSM MAC in the guest agent (Linux; programs need nightly + bpf-linker)
+ebpf = ["agent", "dep:guestkit-ebpf-runtime"]
+# nix fs for QGA guest-get-fsinfo statvfs
+
+# Python module (optional)
+[lib]
+name = "guestkit"
+# Use rlib for normal Rust builds. For Python bindings, build with:
+#   cargo build --features python-bindings
+# and add cdylib to crate-type below.
+crate-type = ["rlib"]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[[bench]]
+name = "operations"
+harness = false
+
+[[bench]]
+name = "performance"
+harness = false
+
+[[bin]]
+name = "guestkit"
+path = "src/main.rs"
+
+[[bin]]
+name = "guestctl"
+path = "src/bin/guestctl.rs"
+
+[[bin]]
+name = "guestkit-qemu"
+path = "src/bin/guestkit-qemu.rs"
+
+[[bin]]
+name = "zyvor-guest-agent"
+path = "src/bin/zyvor-guest-agent.rs"
+required-features = ["agent"]
+
+[[bin]]
+name = "virtctl-guestkit"
+path = "src/bin/virtctl-guestkit.rs"
+
+[[bin]]
+name = "kubectl-guestkit"
+path = "src/bin/virtctl-guestkit.rs"

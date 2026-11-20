@@ -1,0 +1,61 @@
+GuestKit — Host setup (offline VM disk inspection)
+=================================================
+
+GuestKit inspects QCOW2/VMDK/RAW images while VMs are powered off.
+It does NOT require Kubernetes — only Linux + qemu/nbd on this host.
+
+GuestKit is pure Rust. It does NOT use or require legacy appliance tooling, or virt-inspector.
+
+WHAT MUST EXIST FOR GUESTKIT TO WORK
+------------------------------------
+  1. Linux x86_64 (inspector host)
+  2. qemu-img (+ qemu-nbd for QCOW2 when needed) — see install-client-deps.sh
+  3. nbd kernel module (for QCOW2 via NBD): sudo modprobe nbd max_part=16
+  4. Read access to disk image files (paths you pass to guestkit)
+  5. root or sufficient privileges for NBD / loop mount operations
+
+ORDER OF OPERATIONS
+-------------------
+  Step A  ./install.sh
+  Step B  ./test-host.sh
+  Step C  ./test-selftest.sh          # full pipeline check (optional)
+  Step D  ./guestkit inspect disk.qcow2   # or: ./guestctl inspect ...
+  Step E  ./guestkit tui disk.qcow2       # guestctl is an alias for guestkit
+
+STEP A — install.sh
+-------------------
+  Installs: qemu-img, nbd client, lvm2, parted (not legacy guest tools)
+  Loads nbd module when possible.
+
+SKIP FLAGS (install-client-deps / source deploy-remote)
+  Use source repo for full remote deploy:
+    ./scripts/deploy-remote.sh HOST USER --quick
+    GUESTKIT_SKIP_* — see deploy-remote.sh --help
+
+STEP B — Automated tests
+------------------------
+  ./test-host.sh       Quick: binary + qemu + nbd
+  ./test-package.sh    Runs test-host + guestkit --version
+  ./test-selftest.sh   Full selftest from GuestKit (same as scripts/selftest.sh)
+
+ALIASES
+-------
+  guestctl is the same CLI as guestkit (symlink in the bundle).
+  Shorthand: ./guestctl vm.qcow2  runs inspect on the image.
+
+EXAMPLE COMMANDS
+----------------
+  ./guestkit inspect vm.qcow2
+  ./guestkit inspect vm.qcow2 --profile security
+  ./guestkit inspect vm.qcow2 --export report.html
+  ./guestkit inspect-batch ./images/*.qcow2 --parallel 4
+
+TROUBLESHOOTING
+---------------
+  qemu-nbd missing     → EL9: often bundled in qemu-img; install qemu-kvm-tools
+  Permission denied    → run with sudo for NBD, or fix image file permissions
+  QCOW2 open fails     → sudo modprobe nbd max_part=16; check qemu-img --version
+  nbd module           → sudo modprobe nbd max_part=16
+
+Pairs with hyper2kvm for VMware → KVM migration pipelines.
+See PREREQUISITES.txt for checklist.

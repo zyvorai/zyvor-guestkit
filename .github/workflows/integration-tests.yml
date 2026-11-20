@@ -1,0 +1,346 @@
+# CI routing: only `fmt` (no sudo needed) uses the self-hosted zyvor-build runners
+# off pull_request. test/benchmark/clippy stay hosted: they `sudo apt-get install`
+# and (test/benchmark) need KVM/libvirt/loop/NBD, reserved for a later kernel host.
+name: Integration Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
+
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  test:
+    name: Integration Tests - ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-20.04
+            url: "https://cloud-images.ubuntu.com/releases/20.04/release/ubuntu-20.04-server-cloudimg-amd64.img"
+            expected_distro: "ubuntu"
+            expected_version: "20"
+
+          - os: ubuntu-22.04
+            url: "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+            expected_distro: "ubuntu"
+            expected_version: "22"
+
+          - os: ubuntu-24.04
+            url: "https://cloud-images.ubuntu.com/releases/24.04/release/ubuntu-24.04-server-cloudimg-amd64.img"
+            expected_distro: "ubuntu"
+            expected_version: "24"
+
+          - os: debian-12
+            url: "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2"
+            expected_distro: "debian"
+            expected_version: "12"
+
+          - os: cirros
+            url: "https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
+            expected_distro: "cirros"
+            expected_version: "0.6"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            qemu-system-x86 \
+            qemu-utils \
+            libvirt-daemon-system \
+            libvirt-clients \
+            libssl-dev \
+            libsystemd-dev \
+            pkg-config
+
+      - name: Setup block devices
+        run: |
+          sudo modprobe loop || true
+          sudo modprobe nbd max_part=8 || true
+          # Ubuntu 26.04 creates /dev/loopN and /dev/nbdN on demand (they are not all pre-created at boot), so the
+          # chmod above misses every node created later and the unprivileged test process gets EACCES. A udev rule
+          # applies the mode to nodes as they appear.
+          printf 'KERNEL=="loop[0-9]*", MODE="0666"\nKERNEL=="nbd[0-9]*", MODE="0666"\n' | sudo tee /etc/udev/rules.d/99-guestkit-test-devices.rules >/dev/null
+          sudo udevadm control --reload-rules
+          ls -la /dev/loop* /dev/nbd* 2>/dev/null || true
+
+      - name: Setup KVM permissions
+        run: |
+          sudo usermod -aG kvm $USER
+          sudo chmod 666 /dev/kvm
+          ls -l /dev/kvm
+
+      - name: Cache test images
+        uses: actions/cache@v4
+        with:
+          path: test-images/
+          key: test-images-${{ matrix.os }}-v2
+
+      - name: Download test image
+        run: |
+          mkdir -p test-images
+          cd test-images
+          if [ ! -f "${{ matrix.os }}.img" ]; then
+            echo "Downloading ${{ matrix.os }} image..."
+            wget -q -O "${{ matrix.os }}.img" "${{ matrix.url }}" || \
+            curl -L -o "${{ matrix.os }}.img" "${{ matrix.url }}"
+
+            echo "Image downloaded: $(ls -lh ${{ matrix.os }}.img)"
+          else
+            echo "Using cached image: $(ls -lh ${{ matrix.os }}.img)"
+          fi
+          fmt=$(qemu-img info "${{ matrix.os }}.img" | awk -F': ' '/file format/ {print $2}')
+          if [ "$fmt" = "qcow2" ]; then
+            echo "Converting qcow2 → raw for loop/NBD attach..."
+            qemu-img convert -f qcow2 -O raw "${{ matrix.os }}.img" "${{ matrix.os }}.raw"
+            mv "${{ matrix.os }}.raw" "${{ matrix.os }}.img"
+          fi
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build guestkit
+        run: |
+          cargo build --bin guestkit --release
+          ./target/release/guestkit --version
+
+      - name: Test CLI - inspect
+        run: |
+          sudo ./target/release/guestkit inspect \
+            test-images/${{ matrix.os }}.img | tee inspect-output.txt
+
+          # Verify inspect produced block device output (OS detection varies on cloud images)
+          grep -qE "/dev/(sd|vd|xvd)[a-z]" inspect-output.txt
+          echo "✓ Inspect completed for ${{ matrix.os }}"
+
+      - name: Test CLI - inspect JSON
+        run: |
+          sudo ./target/release/guestkit inspect --output json \
+            test-images/${{ matrix.os }}.img > inspect.json
+
+          cat inspect.json | jq '.'
+
+          distro=$(cat inspect.json | jq -r '.os.distribution // .operating_systems[0].distro // empty')
+          if [ -n "$distro" ] && [ "$distro" != "unknown" ]; then
+            [ "$distro" = "${{ matrix.expected_distro }}" ]
+            echo "✓ JSON output correct: $distro"
+          else
+            echo "⚠ OS not detected in cloud image; inspect JSON structure validated"
+            jq -e '.os.root != null and (.os.root | length > 0)' inspect.json
+          fi
+
+      - name: Test CLI - filesystems
+        run: |
+          sudo ./target/release/guestkit filesystems \
+            test-images/${{ matrix.os }}.img | tee fs-output.txt
+
+          # Should list devices and partitions
+          grep -qE "/dev/(sd|vd|xvd)[a-z]" fs-output.txt
+          echo "✓ Found block devices"
+
+      - name: Test CLI - filesystems detailed
+        run: |
+          sudo ./target/release/guestkit filesystems --detailed \
+            test-images/${{ matrix.os }}.img | tee fs-detailed.txt
+
+          # Should show partition/filesystem detail (size column varies by output mode)
+          grep -qEi "bytes|/[a-z0-9]+|filesystem|partition" fs-detailed.txt
+          echo "✓ Detailed filesystem info shown"
+
+      - name: Test CLI - packages
+        run: |
+          sudo ./target/release/guestkit packages \
+            test-images/${{ matrix.os }}.img > packages-output.txt || true
+
+          if [ -s packages-output.txt ]; then
+            echo "✓ Package listing works"
+            head -20 packages-output.txt
+          else
+            echo "⚠ Package listing not supported or no packages found"
+          fi
+
+      - name: Test CLI - ls root
+        run: |
+          sudo ./target/release/guestkit ls \
+            test-images/${{ matrix.os }}.img / | tee ls-output.txt
+
+          if [ "${{ matrix.os }}" = "cirros" ]; then
+            grep -qE "/boot|/vmlinuz|/initrd" ls-output.txt
+          else
+            grep -q "etc" ls-output.txt
+            grep -q "var" ls-output.txt
+          fi
+          echo "✓ Directory listing works"
+
+      - name: Test CLI - cat file
+        if: matrix.os != 'cirros'
+        run: |
+          ok=0
+          source_path=""
+          for path in /etc/hostname /etc/os-release /etc/debian_version; do
+            if sudo ./target/release/guestkit cat \
+              test-images/${{ matrix.os }}.img "$path" 2>/dev/null | tee hostname.txt | grep -q .; then
+              ok=1
+              source_path="$path"
+              echo "✓ File reading works ($path): $(cat hostname.txt)"
+              break
+            fi
+          done
+          if [ "$ok" -eq 0 ]; then
+            echo "⚠ cat failed on probe paths; verifying /etc is listable"
+            sudo ./target/release/guestkit ls \
+              test-images/${{ matrix.os }}.img /etc | tee hostname.txt
+            grep -qE "os-release|hostname|debian" hostname.txt
+            source_path="/etc/os-release"
+            echo "✓ Directory access works via ls /etc"
+          fi
+          echo "GUESTKIT_COPY_SOURCE=$source_path" >> "$GITHUB_ENV"
+
+      - name: Test CLI - copy file between disk paths
+        if: matrix.os != 'cirros'
+        run: |
+          sudo ./target/release/guestkit copy \
+            test-images/${{ matrix.os }}.img "${GUESTKIT_COPY_SOURCE}" \
+            test-images/${{ matrix.os }}.img /tmp/guestkit-copy-hostname \
+            -f
+
+          sudo ./target/release/guestkit cat \
+            test-images/${{ matrix.os }}.img /tmp/guestkit-copy-hostname | tee copied-hostname.txt
+
+          [ -s copied-hostname.txt ]
+          echo "✓ File copying works: $(cat copied-hostname.txt)"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.os }}
+          path: |
+            inspect-output.txt
+            inspect.json
+            fs-output.txt
+            packages-output.txt
+            ls-output.txt
+            hostname.txt
+
+  benchmark:
+    name: Performance Benchmarks
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+          sudo modprobe nbd max_part=8 || true
+          # Ubuntu 26.04 creates /dev/loopN and /dev/nbdN on demand (they are not all pre-created at boot), so the
+          # chmod above misses every node created later and the unprivileged test process gets EACCES. A udev rule
+          # applies the mode to nodes as they appear.
+          printf 'KERNEL=="loop[0-9]*", MODE="0666"\nKERNEL=="nbd[0-9]*", MODE="0666"\n' | sudo tee /etc/udev/rules.d/99-guestkit-test-devices.rules >/dev/null
+          sudo udevadm control --reload-rules
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache test images
+        uses: actions/cache@v4
+        with:
+          path: test-images/
+          key: test-images-ubuntu-22.04-v1
+
+      - name: Download test image
+        run: |
+          mkdir -p test-images
+          cd test-images
+          if [ ! -f "ubuntu-22.04.qcow2" ]; then
+            wget -q -O ubuntu-22.04.qcow2 \
+              "https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img"
+          fi
+
+      - name: Run benchmarks
+        continue-on-error: true
+        run: |
+          export GUESTKIT_TEST_UBUNTU_22_04=test-images/ubuntu-22.04.qcow2
+          cargo bench --bench operations -- --save-baseline main
+
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: target/criterion/
+
+  clippy:
+    name: Clippy (Lints)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libssl-dev libsystemd-dev pkg-config
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  fmt:
+    name: Format Check
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check

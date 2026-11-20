@@ -1,0 +1,90 @@
+{{- if .Values.minio.enabled }}
+{{- if .Values.persistence.minio.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: minio-data
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: minio
+spec:
+  accessModes:
+    - {{ .Values.persistence.minio.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.minio.size }}
+  {{- if .Values.persistence.minio.storageClass }}
+  storageClassName: {{ .Values.persistence.minio.storageClass | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: minio
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      containers:
+        - name: minio
+          image: {{ .Values.minio.image }}
+          {{- with .Values.minio.command }}
+          command: {{ toJson . }}
+          {{- end }}
+          args: ["server", "/data", "--console-address", ":9001"]
+          env:
+            - name: MINIO_ROOT_USER
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-secrets
+                  key: minio-access-key
+            - name: MINIO_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: zyvor-secrets
+                  key: minio-secret-key
+          ports:
+            - containerPort: 9000
+            - containerPort: 9001
+          volumeMounts:
+            - name: data
+              mountPath: /data
+      volumes:
+        - name: data
+          {{- if .Values.persistence.minio.enabled }}
+          persistentVolumeClaim:
+            claimName: minio-data
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: {{ .Values.namespace }}
+spec:
+  type: {{ .Values.minio.service.type | default "ClusterIP" }}
+  selector:
+    app: minio
+  ports:
+    - name: api
+      port: 9000
+      targetPort: 9000
+      {{- if and (eq (.Values.minio.service.type | default "ClusterIP") "NodePort") .Values.minio.service.nodePort }}
+      nodePort: {{ .Values.minio.service.nodePort }}
+      {{- end }}
+    - name: console
+      port: 9001
+      targetPort: 9001
+{{- end }}

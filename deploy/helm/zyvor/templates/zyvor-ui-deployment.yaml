@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zyvor-ui
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.zyvorUi.replicas }}
+  selector:
+    matchLabels:
+      app: zyvor-ui
+  template:
+    metadata:
+      labels:
+        app: zyvor-ui
+    spec:
+      containers:
+        - name: zyvor-ui
+          image: {{ .Values.zyvorUi.image }}
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8443  # serve-https.py (image CMD) is TLS-only on 8443; nothing listens on 80
+          env:
+            - name: ZYVOR_API_URL
+              value: http://zyvor-api:8080/api/v1
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zyvor-ui
+  namespace: {{ .Values.namespace }}
+  {{- if and .Values.ingress.enabled (eq .Values.ingress.className "traefik") (eq (.Values.ingress.uiBackendProtocol | default "") "HTTPS") }}
+  annotations:
+    traefik.ingress.kubernetes.io/service.serversscheme: https
+  {{- end }}
+spec:
+  type: {{ .Values.zyvorUi.service.type }}
+  selector:
+    app: zyvor-ui
+  ports:
+    # The UI image only serves HTTPS (self-signed) on 8443; this used to target port 80 where
+    # nothing listens, so the NodePort refused every connection (curl exit 7 in the k3s E2E).
+    - name: https
+      port: 80
+      targetPort: 8443
+      {{- if eq .Values.zyvorUi.service.type "NodePort" }}
+      nodePort: {{ .Values.zyvorUi.service.nodePort }}
+      {{- end }}

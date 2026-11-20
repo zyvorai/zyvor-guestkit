@@ -1,0 +1,26 @@
+# GuestKit Batch Script Example
+# This script performs a comprehensive disk inspection
+
+# Mount the root filesystem
+mount /dev/sda1 /
+
+# List installed packages and save to file
+packages > packages.txt
+
+# List running services
+services > services.txt
+
+# Get system information
+cat /etc/os-release > os-release.txt
+
+# Find all configuration files
+find /etc > config-files.txt
+
+# Download important logs
+download /var/log/syslog syslog.log
+
+# List home directories
+ls /home
+
+# Unmount when done
+umount /

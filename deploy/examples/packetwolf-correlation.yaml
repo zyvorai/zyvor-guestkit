@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# PacketWolf guest ↔ flow correlation (per-VM + fleet batch).
+
+# Per-VM ingest (on each guest-agent report):
+# PACKETWOLF_CORRELATION_URL=http://packetwolf-api.packetwolf.svc:8080/api/v1/correlate/guest-health
+
+# Fleet batch sweep (default every 300s, all VMs with reports):
+# PACKETWOLF_FLEET_CORRELATE_URL=http://packetwolf-api.packetwolf.svc:8080/api/v1/correlate/fleet
+# PACKETWOLF_FLEET_INTERVAL_SECS=300
+
+# Zeus API:
+#   GET  /api/v1/packetwolf/fleet-snapshot
+#   POST /api/v1/packetwolf/fleet-correlate  (manual trigger)
+
+# VM annotations:
+#   zeus.zyvor.dev/packetwolf-correlation
+#   zeus.zyvor.dev/packetwolf-fleet-correlation
+#   zeus.zyvor.dev/packetwolf-fleet-count
+
+# Fleet POST body includes members[] with ip_addresses, rx_bytes, tx_bytes per VM.

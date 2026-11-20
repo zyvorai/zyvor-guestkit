@@ -1,0 +1,75 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>Admin Basics — GuestKit</title>
+<style>
+@page{size:A4;margin:15mm 16mm}*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#1f2937;line-height:1.58;font-size:10.5pt}
+.cover{height:262mm;margin:-15mm -16mm 0;background:linear-gradient(135deg,#1c1917,#78350f,#0d1b2a);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;page-break-after:always;position:relative}
+.cover .kicker{letter-spacing:5px;text-transform:uppercase;opacity:.72;margin-bottom:1.4em}
+.cover h1{font-size:3.2em;font-weight:800;letter-spacing:-2px}
+.cover h1 span{color:#fbbf24}
+.cover .sub{font-size:1.3em;font-weight:300;opacity:.93;margin:1em 0;max-width:24em}
+.cover .badge{display:inline-block;background:rgba(96,165,250,.2);border:1px solid #fbbf24;padding:8px 22px;border-radius:20px;margin-top:2em}
+.cover .foot{position:absolute;bottom:34px;font-size:.82em;opacity:.6}
+h2{page-break-before:always;margin:0 0 .35em;font-size:1.55em;font-weight:750;color:#12203a;border-bottom:2px solid #e5edfb;padding-bottom:.28em}
+h2:first-of-type{page-break-before:avoid}
+h3{margin:1.1em 0 .4em;font-size:1.12em;font-weight:700}
+p,li{margin:.4em 0}ul,ol{margin:.5em 0 .9em 1.4em}
+a{color:#2563eb;text-decoration:none}
+code{background:#eef2f7;padding:1px 6px;border-radius:4px;font-size:.86em;font-family:ui-monospace,Menlo,monospace}
+pre{background:#0f172a;color:#e2e8f0;padding:12px 15px;border-radius:9px;overflow-x:auto;margin:.8em 0}
+table{width:100%;border-collapse:collapse;margin:.8em 0 1.1em;font-size:9.5pt}
+th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f1f5f9}
+hr{border:none;border-top:1px solid #e5e7eb;margin:1.2em 0}
+</style></head><body>
+<section class="cover"><div class="kicker">ZyvorAI Labs · User Documentation</div>
+<h1>Guest<span>Kit</span></h1>
+<div class="sub">Admin Basics</div>
+<div class="badge">2026-08-29</div>
+<div class="foot">zyvor.dev · Confidential — for licensed users</div></section>
+<main><h2>Ports / access</h2>
+<table>
+<thead>
+<tr>
+<th>Port / surface</th>
+<th>Service</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CLI / TUI</strong></td>
+<td><code>guestkit</code> / <code>guestctl</code> on the operator host</td>
+</tr>
+<tr>
+<td><strong>8088</strong></td>
+<td>Optional zyvor-ui / Image Vault (GHCR compose eval)</td>
+</tr>
+<tr>
+<td><strong>8765</strong></td>
+<td>Guest agent proxy (<code>guestkit agent-proxy</code>) when used</td>
+</tr>
+<tr>
+<td>KubeVirt API</td>
+<td>zyvor-api guest / boot-inspect routes when integrated</td>
+</tr>
+</tbody></table>
+<p>Eval web (optional): <code>http://&lt;host&gt;:8088</code> — change default admin password immediately. Never publish lab IPs in user docs.</p>
+<h2>Auth</h2>
+<ul>
+<li>Local CLI needs disk/image access (often root for NBD/loop).</li>
+<li>SAML/OIDC on zyvor-api when the web/API surface is enabled.</li>
+<li>Agent channel: virtio-serial / QGA after inject.</li>
+</ul>
+<h2>Install sketch</h2>
+<pre><code class="language-bash">cargo install guestkit
+# or: download the release binary for your OS
+qemu-img --version
+guestkit version
+guestkit doctor /path/to/disk.qcow2 --target kvm --explain
+</code></pre>
+<p>Optional UI: <code>docker compose -f deploy/docker-compose.ghcr.yml up -d</code> → open <code>:8088</code>.</p>
+<p>Host needs: Linux + <code>qemu-utils</code> (qemu-img, qemu-nbd). For NBD: <code>modprobe nbd max_part=16</code>.</p>
+<h2>Related</h2>
+<ul>
+<li><a href="getting-started.md">Getting Started</a></li>
+<li><a href="pages/support/troubleshooting.md">Troubleshooting</a></li>
+</ul>
+</main></body></html>

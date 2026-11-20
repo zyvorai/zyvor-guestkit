@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuestKit Inspection Report - {{ vm_name }}</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #f5f5f5;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border-color: #e0e0e0;
+            --accent-primary: #667eea;
+            --accent-secondary: #764ba2;
+            --shadow: rgba(0,0,0,0.1);
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --info: #17a2b8;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1e1e1e;
+            --bg-secondary: #2d2d2d;
+            --bg-tertiary: #252525;
+            --text-primary: #e0e0e0;
+            --text-secondary: #b0b0b0;
+            --text-tertiary: #808080;
+            --border-color: #404040;
+            --shadow: rgba(0,0,0,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-primary);
+            box-shadow: 0 4px 6px var(--shadow);
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+            color: white;
+            padding: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header .meta {
+            opacity: 0.95;
+            font-size: 15px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.05);
+        }
+
+        .search-container {
+            padding: 20px 40px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px 20px;
+            font-size: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            outline: none;
+        }
+
+        .search-box:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            padding: 30px 40px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .summary-card {
+            background: var(--bg-primary);
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 5px solid var(--accent-primary);
+            box-shadow: 0 2px 4px var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px var(--shadow);
+        }
+
+        .summary-card h3 {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .summary-card .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .summary-card .subvalue {
+            font-size: 14px;
+            color: var(--text-tertiary);
+            margin-top: 5px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .section {
+            margin-bottom: 35px;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px var(--shadow);
+        }
+
+        .section-header {
+            cursor: pointer;
+            padding: 20px 25px;
+            background: var(--bg-secondary);
+            border-left: 5px solid var(--accent-primary);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .section-header:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .section-header h2 {
+            font-size: 22px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+        }
+
+        .section-header .icon {
+            font-size: 16px;
+            color: var(--text-tertiary);
+            transition: transform 0.2s ease;
+        }
+
+        .section-header.collapsed .icon {
+            transform: rotate(-90deg);
+        }
+
+        .section-content {
+            padding: 25px;
+            background: var(--bg-primary);
+            max-height: 800px;
+            overflow-y: auto;
+        }
+
+        .section-content.collapsed {
+            display: none;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background: var(--bg-secondary);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tr {
+            transition: background-color 0.15s ease;
+        }
+
+        tr:hover {
+            background: var(--bg-secondary);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+
+        [data-theme="dark"] .badge-success { background: #1e4620; color: #7dff88; }
+        [data-theme="dark"] .badge-warning { background: #4d3800; color: #ffeb3b; }
+        [data-theme="dark"] .badge-danger { background: #4d1f1f; color: #ff8a80; }
+        [data-theme="dark"] .badge-info { background: #0d3c47; color: #64d8ff; }
+
+        .footer {
+            padding: 25px 40px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .key-value {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .key-value:last-child {
+            border-bottom: none;
+        }
+
+        .key {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .value {
+            color: var(--text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-primary);
+        }
+
+        .stat-card h4 {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; }
+            .theme-toggle, .search-container { display: none; }
+            .section-header { cursor: default; }
+            .section-content.collapsed { display: block !important; }
+        }
+
+        @media (max-width: 768px) {
+            .header { padding: 25px 20px; }
+            .content { padding: 20px; }
+            .summary { grid-template-columns: 1fr; padding: 20px; }
+            .key-value { grid-template-columns: 1fr; gap: 5px; }
+            .theme-toggle { position: static; margin-top: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()">🌓 Toggle Theme</button>
+            <h1>🔍 VM Inspection Report</h1>
+            <div class="meta">
+                <span><strong>VM:</strong> {{ vm_name }}</span>
+                <span><strong>Generated:</strong> {{ timestamp }}</span>
+                <span><strong>GuestKit:</strong> v0.3.0</span>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔎 Search packages, services, users..." onkeyup="searchTables()">
+        </div>
+
+        <div class="summary">
+            <div class="summary-card">
+                <h3>Operating System</h3>
+                <div class="value">{{ os_type }}</div>
+                <div class="subvalue">{{ distro }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Version</h3>
+                <div class="value">{{ version }}</div>
+                <div class="subvalue">{{ arch }}</div>
+            </div>
+            <div class="summary-card">
+                <h3>Packages</h3>
+                <div class="value">{{ packages_count }}</div>
+                <div class="subvalue">Installed</div>
+            </div>
+            <div class="summary-card">
+                <h3>Services</h3>
+                <div class="value">{{ services_count }}</div>
+                <div class="subvalue">Configured</div>
+            </div>
+            <div class="summary-card">
+                <h3>Users</h3>
+                <div class="value">{{ users_count }}</div>
+                <div class="subvalue">Registered</div>
+            </div>
+        </div>
+
+        <div class="content">
+            {% if os_section %}
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>💻 Operating System <span class="icon">▼</span></h2>
+                </div>
+                <div class="section-content">
+                    <div class="key-value">
+                        <div class="key">Hostname:</div>
+                        <div class="value">{{ hostname }}</div>
+                    </div>
+                    <div class="key-value">
+                        <div class="key">Product Name:</div>
+                        <div class="value">{{ product_name }}</div>
+                    </div>
+                    <div class="key-value">
+                        <div class="key">Package Format:</div>
+                        <div class="value">{{ package_format }}</div>
+                    </div>
+                    <div class="key-value">
+                        <div class="key">Package Manager:</div>
+                        <div class="value">{{ package_manager }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if !packages.is_empty() %}
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>📦 Packages <span class="badge badge-info">{{ packages_count }}</span> <span class="icon">▼</span></h2>
+                </div>
+                <div class="section-content">
+                    <div class="chart-container">
+                        <canvas id="packagesChart"></canvas>
+                    </div>
+                    <table class="searchable-table">
+                        <thead>
+                            <tr>
+                                <th>Package</th>
+                                <th>Version</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pkg in packages %}
+                            <tr>
+                                <td>{{ pkg.name }}</td>
+                                <td>{{ pkg.version }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if !services.is_empty() %}
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>⚙️ Services <span class="badge badge-info">{{ services_count }}</span> <span class="icon">▼</span></h2>
+                </div>
+                <div class="section-content">
+                    <div class="chart-container">
+                        <canvas id="servicesChart"></canvas>
+                    </div>
+                    <table class="searchable-table">
+                        <thead>
+                            <tr>
+                                <th>Service</th>
+                                <th>State</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for svc in services %}
+                            <tr>
+                                <td>{{ svc.name }}</td>
+                                <td><span class="badge badge-success">{{ svc.state }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if !users.is_empty() %}
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>👥 Users <span class="badge badge-info">{{ users_count }}</span> <span class="icon">▼</span></h2>
+                </div>
+                <div class="section-content">
+                    <table class="searchable-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>UID</th>
+                                <th>Home Directory</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.username }}</td>
+                                <td>{{ user.uid }}</td>
+                                <td>{{ user.home }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if !network.is_empty() %}
+            <div class="section">
+                <div class="section-header" onclick="toggleSection(this)">
+                    <h2>🌐 Network Interfaces <span class="icon">▼</span></h2>
+                </div>
+                <div class="section-content">
+                    <table class="searchable-table">
+                        <thead>
+                            <tr>
+                                <th>Interface</th>
+                                <th>IP Address</th>
+                                <th>MAC Address</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for iface in network %}
+                            <tr>
+                                <td>{{ iface.name }}</td>
+                                <td>{{ iface.ip }}</td>
+                                <td>{{ iface.mac }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            Generated by <strong>GuestKit v0.3.0</strong> - Pure Rust VM Inspection Toolkit<br>
+            <small>Report generated on {{ timestamp }}</small>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+
+            // Update charts when theme changes
+            updateChartsForTheme(newTheme);
+        }
+
+        // Load saved theme
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            initializeCharts();
+        });
+
+        // Section toggle
+        function toggleSection(header) {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('.icon');
+
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                header.classList.remove('collapsed');
+                icon.textContent = '▼';
+            } else {
+                content.classList.add('collapsed');
+                header.classList.add('collapsed');
+                icon.textContent = '▶';
+            }
+        }
+
+        // Search functionality
+        function searchTables() {
+            const input = document.getElementById('searchBox');
+            const filter = input.value.toLowerCase();
+            const tables = document.querySelectorAll('.searchable-table');
+
+            tables.forEach(table => {
+                const rows = table.getElementsByTagName('tr');
+                let visibleCount = 0;
+
+                for (let i = 1; i < rows.length; i++) {
+                    const cells = rows[i].getElementsByTagName('td');
+                    let found = false;
+
+                    for (let j = 0; j < cells.length; j++) {
+                        const cellText = cells[j].textContent || cells[j].innerText;
+                        if (cellText.toLowerCase().indexOf(filter) > -1) {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (found) {
+                        rows[i].style.display = '';
+                        visibleCount++;
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Chart initialization
+        function initializeCharts() {
+            const theme = document.documentElement.getAttribute('data-theme');
+            const textColor = theme === 'dark' ? '#e0e0e0' : '#333333';
+            const gridColor = theme === 'dark' ? '#404040' : '#e0e0e0';
+
+            // Services chart (if exists)
+            const servicesCanvas = document.getElementById('servicesChart');
+            if (servicesCanvas) {
+                const ctx = servicesCanvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Enabled Services', 'Total Capacity'],
+                        datasets: [{
+                            data: [{{ services_count }}, Math.max({{ services_count }}, 100) - {{ services_count }}],
+                            backgroundColor: ['#667eea', '#e0e0e0'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { color: textColor }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Services Distribution',
+                                color: textColor
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Packages chart (if exists)
+            const packagesCanvas = document.getElementById('packagesChart');
+            if (packagesCanvas) {
+                const ctx = packagesCanvas.getContext('2d');
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Packages Installed'],
+                        datasets: [{
+                            label: 'Count',
+                            data: [{{ packages_count }}],
+                            backgroundColor: ['#764ba2'],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { color: textColor },
+                                grid: { color: gridColor }
+                            },
+                            x: {
+                                ticks: { color: textColor },
+                                grid: { color: gridColor }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Package Statistics',
+                                color: textColor
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function updateChartsForTheme(theme) {
+            // Destroy and recreate charts with new theme colors
+            Chart.helpers.each(Chart.instances, function(instance) {
+                instance.destroy();
+            });
+            initializeCharts();
+        }
+    </script>
+</body>
+</html>

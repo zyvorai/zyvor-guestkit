@@ -1,0 +1,16 @@
+{{- if and .Values.kubevirt.enabled .Values.vmtools.defaultPolicy.enabled }}
+apiVersion: zeus.zyvor.dev/v1alpha1
+kind: VMToolsPolicy
+metadata:
+  name: cluster-default
+  labels:
+    app.kubernetes.io/name: zyvor
+    app.kubernetes.io/component: vmtools
+spec:
+  selector: {}
+  autoInstall: {{ .Values.vmtools.defaultPolicy.autoInstall }}
+  autoUpgrade: {{ .Values.vmtools.defaultPolicy.autoUpgrade }}
+  channel: stable
+  rebootPolicy: if-needed
+  maxConcurrent: {{ .Values.vmtools.defaultPolicy.maxConcurrent }}
+{{- end }}

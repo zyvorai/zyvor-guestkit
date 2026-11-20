@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "job_id": "agent-call-example",
+  "kind": "VMOperation",
+  "operation": "guestkit.agent.call",
+  "payload": {
+    "type": "guestkit.agent.call.v1",
+    "data": {
+      "proxy_url": "http://127.0.0.1:8765",
+      "method": "guestkit.getCapabilities",
+      "params": {}
+    }
+  }
+}

@@ -1,0 +1,157 @@
+================================================================================
+GUESTKIT COMPREHENSIVE API TEST SUITE
+================================================================================
+
+--------------------------------------------------------------------------------
+📀 Testing: Photon OS 5.0 (QCOW2)
+   Path: /home/ssahani/by-path/out/work/working-flattened-20260123-193807.qcow2
+   OS Type: linux
+--------------------------------------------------------------------------------
+
+  🧪 OS Inspection... ✅ PASSED
+       === Disk Image: /home/ssahani/by-path/out/work/working-flattened-20260123-193807.qcow2 ===
+       
+       Found 1 operating system(s):
+       ... (11 more lines)
+
+  🧪 List Filesystems... ✅ PASSED
+       === Devices ===
+       /dev/sda
+       
+       ... (12 more lines)
+
+  🧪 List Packages... ✅ PASSED
+       Found 0 package(s)
+
+  🧪 List Root Directory... ✅ PASSED
+       bin
+       boot
+       dev
+       ... (16 more lines)
+
+  🧪 Read /etc/os-release... ✅ PASSED
+       NAME="VMware Photon OS"
+       VERSION="5.0"
+       ID=photon
+       ... (5 more lines)
+
+
+--------------------------------------------------------------------------------
+📀 Testing: Windows 11 (VMDK)
+   Path: /home/ssahani/tt/hyper2kvm/win11/win11.vmdk
+   OS Type: windows
+--------------------------------------------------------------------------------
+
+  🧪 OS Inspection... ✅ PASSED
+       === Disk Image: /home/ssahani/tt/hyper2kvm/win11/win11.vmdk ===
+       
+       Found 2 operating system(s):
+       ... (22 more lines)
+
+  🧪 List Filesystems... ✅ PASSED
+       === Devices ===
+       /dev/sda
+       
+       ... (16 more lines)
+
+  🧪 List Packages... ✅ PASSED
+       Found 0 package(s)
+
+  🧪 List Root Directory... ✅ PASSED
+       $Recycle.Bin
+       Documents and Settings
+       DumpStack.log.tmp
+       ... (11 more lines)
+
+  🧪 Read /etc/os-release... ❌ FAILED
+       ERROR: Error: File not found: /etc/os-release
+
+
+--------------------------------------------------------------------------------
+📀 Testing: Ubuntu 24.04 (QCOW2)
+   Path: /var/lib/libvirt/images/photon.qcow2
+   OS Type: linux
+--------------------------------------------------------------------------------
+
+  🧪 OS Inspection... ✅ PASSED
+       === Disk Image: /var/lib/libvirt/images/photon.qcow2 ===
+       
+       Found 1 operating system(s):
+       ... (11 more lines)
+
+  🧪 List Filesystems... ✅ PASSED
+       === Devices ===
+       /dev/sda
+       
+       ... (8 more lines)
+
+  🧪 List Packages... ✅ PASSED
+       Found 0 package(s)
+
+  🧪 List Root Directory... ✅ PASSED
+       bin
+       bin.usr-is-merged
+       boot
+       ... (23 more lines)
+
+  🧪 Read /etc/os-release... ✅ PASSED
+       PRETTY_NAME="Ubuntu 24.04.3 LTS"
+       NAME="Ubuntu"
+       VERSION_ID="24.04"
+       ... (10 more lines)
+
+
+--------------------------------------------------------------------------------
+📀 Testing: RHEL 10 Beta (QCOW2)
+   Path: /var/lib/libvirt/images/rhel10.qcow2
+   OS Type: linux
+--------------------------------------------------------------------------------
+
+  🧪 OS Inspection... ✅ PASSED
+       === Disk Image: /var/lib/libvirt/images/rhel10.qcow2 ===
+       
+       Found 1 operating system(s):
+       ... (11 more lines)
+
+  🧪 List Filesystems... ✅ PASSED
+       === Devices ===
+       /dev/sda
+       
+       ... (12 more lines)
+
+  🧪 List Packages... ✅ PASSED
+       Found 0 package(s)
+
+  🧪 List Root Directory... ✅ PASSED
+       .vmlinuz-6.11.0-0.rc5.23.el10.x86_64.hmac
+       System.map-6.11.0-0.rc5.23.el10.x86_64
+       config-6.11.0-0.rc5.23.el10.x86_64
+       ... (9 more lines)
+
+  🧪 Read /etc/os-release... ❌ FAILED
+       ERROR: Error: File not found: /etc/os-release
+
+
+⚠️  Skipping Arch Linux (VMDK) - File not found
+
+⚠️  Skipping Ubuntu Server 25.04 (VDI) - File not found
+
+⚠️  Skipping Photon Azure (VHD) - File not found
+
+================================================================================
+TEST SUMMARY
+================================================================================
+
+Total Tests:  20
+Passed:       18 ✅
+Failed:       2 ❌
+Success Rate: 90.0%
+
+--------------------------------------------------------------------------------
+PER-IMAGE RESULTS
+--------------------------------------------------------------------------------
+Photon OS 5.0 (QCOW2): 5/5 tests passed
+Windows 11 (VMDK): 4/5 tests passed
+Ubuntu 24.04 (QCOW2): 5/5 tests passed
+RHEL 10 Beta (QCOW2): 4/5 tests passed
+================================================================================

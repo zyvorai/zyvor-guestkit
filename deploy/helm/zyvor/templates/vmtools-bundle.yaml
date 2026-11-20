@@ -1,0 +1,25 @@
+{{- if and .Values.kubevirt.enabled .Values.vmtools.bundle.enabled }}
+{{- $base := include "zyvor.vmtoolsBundleBaseUrl" . -}}
+{{- $version := .Values.vmtools.bundle.version | default "0.1.0" -}}
+apiVersion: zeus.zyvor.dev/v1alpha1
+kind: VMToolsBundle
+metadata:
+  name: cluster-default
+  labels:
+    app.kubernetes.io/name: zyvor
+    app.kubernetes.io/component: vmtools
+spec:
+  version: {{ $version | quote }}
+  channel: {{ .Values.vmtools.bundle.channel | default "stable" | quote }}
+  linux:
+    rpm: {{ printf "%s/linux/zyvor-vm-tools-%s.rpm" $base $version | quote }}
+    deb: {{ printf "%s/linux/zyvor-vm-tools_%s_amd64.deb" $base $version | quote }}
+    tar: {{ printf "%s/linux/zyvor-vm-tools-linux-amd64.tar.gz" $base | quote }}
+  windows:
+    exe: {{ printf "%s/windows/zyvor-guest-agent.exe" $base | quote }}
+    msi: {{ printf "%s/windows/zyvor-vm-tools-%s.msi" $base $version | quote }}
+    zip: {{ printf "%s/windows/zyvor-vm-tools-windows-%s.zip" $base $version | quote }}
+    installPs1: {{ printf "%s/windows/install.ps1" $base | quote }}
+  iso: {{ printf "%s/zyvor-vm-tools.iso" $base | quote }}
+  agentBinaryUrl: {{ .Values.zyvorApi.guestkitBinaryUrl | default (printf "%s/linux/zyvor-guest-agent" $base) | quote }}
+{{- end }}

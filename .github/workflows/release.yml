@@ -1,0 +1,320 @@
+# CI routing: publish-release-images (plain `docker build`/push) and publish-mcp
+# (curl + sha256sum) run on the org self-hosted zyvor-build runners; PR runs stay
+# hosted. mcp-image stays hosted (qemu binfmt + buildx for arm64 needs privileged
+# containers); build-and-upload/publish-pypi/build-agent-artifacts
+# stay hosted because they `sudo apt-get install`, which the runner user lacks.
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  CARGO_TERM_COLOR: always
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog
+        id: changelog
+        run: |
+          VERSION=${{ steps.get_version.outputs.version }}
+          sed -n "/## \[${VERSION}\]/,/## \[/p" docs/development/CHANGELOG.md | sed '$d' > release_notes.md
+          if [ ! -s release_notes.md ]; then
+            echo "No changelog section for ${VERSION}" >&2
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.get_version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          generate_release_notes: false
+
+  build-agent-artifacts:
+    name: Build Zeus VM Tools Artifacts
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools genisoimage
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: Build Zeus VM Tools artifacts
+        env:
+          VERSION: ${{ needs.create-release.outputs.version }}
+        run: bash packaging/vmtools/build-artifacts.sh
+
+      - name: Upload agent release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.create-release.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          FILES=(
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz.sha256
+            "dist/vmtools/linux/zyvor-vm-tools_${VERSION}_amd64.deb"
+          )
+          if [[ -f dist/vmtools/zyvor-vm-tools.iso ]]; then
+            FILES+=(dist/vmtools/zyvor-vm-tools.iso)
+          fi
+          gh release upload "${TAG}" "${FILES[@]}" --clobber
+
+  publish-release-images:
+    name: Publish GHCR Release Images
+    needs: create-release
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Reclaim workspace ownership
+        # Earlier container builds on this self-hosted runner left root-owned dist/ and target/
+        # files that actions/checkout cannot delete.
+        run: |
+          if [ -d "$GITHUB_WORKSPACE" ]; then
+            docker run --rm -v "$GITHUB_WORKSPACE":/w alpine chown -R "$(id -u):$(id -g)" /w || true
+          fi
+
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish worker, API, and UI images
+        env:
+          VERSION: ${{ needs.create-release.outputs.version }}
+          TAG: v${{ needs.create-release.outputs.version }}
+          PUSH: "1"
+          BUILDER: docker
+          GITHUB_USER: ${{ github.actor }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          chmod +x deploy/scripts/publish-images.sh
+          REGISTRY=ghcr.io/zyvorai bash deploy/scripts/publish-images.sh
+
+  # Smoke test of the images just published above (k3s install, Helm deploy, E2E).
+  # Needs publish-release-images, not the whole workflow: the multi-arch MCP image
+  # and the other jobs take hours and are unrelated to this check.
+  k3s-e2e:
+    name: k3s E2E (release images)
+    needs: publish-release-images
+    permissions:
+      contents: read
+      packages: read
+    uses: ./.github/workflows/k3s-e2e.yml
+
+  mcp-image:
+    name: Build and push guestkit-mcp image (MCP Registry)
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write   # keyless cosign
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version gate (Cargo.toml, server.json, Dockerfile.mcp, tag)
+        run: bash scripts/check-mcp-registry.sh "${GITHUB_REF_NAME}"
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push (amd64 + arm64)
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.mcp
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/zyvorai/guestkit-mcp:${{ needs.create-release.outputs.version }}
+            ghcr.io/zyvorai/guestkit-mcp:latest
+
+      - uses: sigstore/cosign-installer@v3
+      - name: Sign the image digest (keyless)
+        run: cosign sign --yes ghcr.io/zyvorai/guestkit-mcp@${{ steps.build.outputs.digest }}
+
+  publish-mcp:
+    name: Publish to the MCP Registry
+    # Registry metadata only: the image above is what clients pull.
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: mcp-image
+    runs-on: ${{ fromJSON(github.event_name == 'pull_request' && '"ubuntu-latest"' || '["self-hosted","zyvor-build","docker"]') }}
+    permissions:
+      contents: read
+      id-token: write   # GitHub OIDC login to the MCP Registry, no long-lived token
+    env:
+      MCP_PUBLISHER_VERSION: v1.8.1
+    steps:
+      - name: Reclaim workspace ownership
+        # Earlier container builds on this self-hosted runner left root-owned dist/ and target/
+        # files that actions/checkout cannot delete.
+        run: |
+          if [ -d "$GITHUB_WORKSPACE" ]; then
+            docker run --rm -v "$GITHUB_WORKSPACE":/w alpine chown -R "$(id -u):$(id -g)" /w || true
+          fi
+
+      - uses: actions/checkout@v4
+      - name: Install mcp-publisher (pinned)
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz \
+            "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+      - run: ./mcp-publisher validate server.json
+      - run: ./mcp-publisher login github-oidc
+      - run: ./mcp-publisher publish server.json
+
+  build-and-upload:
+    name: Build and Upload Assets (${{ matrix.arch_suffix }})
+    needs: create-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            arch_suffix: linux-amd64
+          - target: x86_64-unknown-linux-musl
+            arch_suffix: linux-amd64-musl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install musl tools
+        if: matrix.target == 'x86_64-unknown-linux-musl'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libsystemd-dev pkg-config
+
+      - name: Install libhivex (glibc build only — enables registry-write)
+        if: matrix.target == 'x86_64-unknown-linux-gnu'
+        run: sudo apt-get install -y libhivex-dev
+
+      - name: Build and package user bundle
+        env:
+          GUESTKIT_PACKAGE_VERSION: ${{ needs.create-release.outputs.version }}
+          CARGO_TARGET: ${{ matrix.target }}
+        run: |
+          chmod +x scripts/package-binary-release.sh
+          ./scripts/package-binary-release.sh --build --target "${CARGO_TARGET}" --out-dir dist
+
+      - name: Upload release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/guestkit-${{ needs.create-release.outputs.version }}-${{ matrix.arch_suffix }}.tar.gz
+            dist/guestkit-${{ needs.create-release.outputs.version }}-${{ matrix.arch_suffix }}.tar.gz.sha256
+
+  publish-pypi:
+    name: Publish Python wheel to PyPI
+    needs: build-and-upload
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsystemd-dev pkg-config
+
+      - name: Install maturin
+        run: pip install --upgrade maturin
+
+      - name: Build and publish wheel
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          if [ -z "${PYPI_API_TOKEN}" ]; then
+            echo "Skipping PyPI publish (PYPI_API_TOKEN not configured)"
+            exit 0
+          fi
+          maturin build --release --bindings pyo3 --features python-bindings --out dist
+          maturin upload --username __token__ --password "${PYPI_API_TOKEN}" dist/*.whl --skip-existing
+
+  update-action-major-tag:
+    name: Move v1 tag (GitHub Action)
+    # action.yml is versioned independently of the CLI's v0.x tags — v1 is
+    # the moving major tag downstream `uses: zyvorai/guestkit@v1` consumers
+    # pin to (same convention as actions/checkout@v4). Skip prereleases
+    # (tags containing a `-`, e.g. v0.4.0-rc1) so v1 only ever points at a
+    # stable, fully-built release commit.
+    needs: [create-release, build-and-upload]
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Move v1 -> ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -fa v1 -m "action.yml: point v1 at ${GITHUB_REF_NAME}"
+          git push origin v1 --force

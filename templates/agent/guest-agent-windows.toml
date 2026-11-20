@@ -1,0 +1,11 @@
+# Zeus VM Tools guest agent — Windows configuration
+# Installed to C:\ProgramData\zyvor\guest-agent.toml
+
+zeus_url = "https://zeus.example.com"
+interval_secs = 60
+# bootstrap_token = "..."
+# cert_path = "C:\\ProgramData\\zyvor\\agent.crt"
+# key_path = "C:\\ProgramData\\zyvor\\agent.key"
+# ca_path = "C:\\ProgramData\\zyvor\\ca.crt"
+# namespace = "default"
+# vm_name = "my-vm"

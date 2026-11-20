@@ -1,0 +1,11 @@
+[Unit]
+Description=Periodic Zyvor GuestAgent update check
+Documentation=https://zyvor.dev/guestkit
+
+[Timer]
+OnCalendar=daily
+RandomizedDelaySec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

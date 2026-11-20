@@ -1,0 +1,89 @@
+name: 'GuestKit rescue dry-run'
+description: 'Export a reviewable rescue FixPlan from a disk image. Does not mutate the image.'
+author: 'zyvorai'
+
+branding:
+  icon: 'life-buoy'
+  color: 'purple'
+
+inputs:
+  disk:
+    description: 'Path to the disk image.'
+    required: true
+  operation:
+    description: 'Rescue operation (enable-ssh, fix-fstab, enable-rdp, set-hostname, …).'
+    required: true
+  user:
+    description: 'Username when the operation needs one.'
+    required: false
+    default: ''
+  hostname:
+    description: 'Hostname for set-hostname.'
+    required: false
+    default: ''
+  version:
+    description: 'GuestKit release to install. Defaults to latest.'
+    required: false
+    default: 'latest'
+  artifact-name:
+    description: 'Upload artifact name. Empty disables upload.'
+    required: false
+    default: 'guestkit-rescue-plan'
+
+outputs:
+  plan-path:
+    description: 'Path to the exported FixPlan YAML.'
+    value: ${{ steps.run.outputs.plan-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Resolve and install GuestKit
+      id: install
+      shell: bash
+      run: |
+        set -euo pipefail
+        VERSION="${{ inputs.version }}"
+        if [[ "${VERSION}" == "latest" ]]; then
+          BODY="$(curl -fsSL https://api.github.com/repos/zyvorai/guestkit/releases/latest)"
+          VERSION="$(printf '%s' "${BODY}" | grep -m1 '"tag_name"' | sed -E 's/.*"v?([^"]+)".*/\1/')"
+        fi
+        VERSION="${VERSION#v}"
+        ASSET="guestkit-${VERSION}-linux-amd64.tar.gz"
+        BASE_URL="https://github.com/zyvorai/guestkit/releases/download/v${VERSION}"
+        WORKDIR="${RUNNER_TEMP}/guestkit-rescue-install"
+        mkdir -p "${WORKDIR}"
+        cd "${WORKDIR}"
+        curl -fsSL -o "${ASSET}" "${BASE_URL}/${ASSET}"
+        tar -xzf "${ASSET}"
+        BIN_PATH="$(find "${WORKDIR}" -mindepth 1 -maxdepth 2 -type f -name guestkit | head -n1)"
+        chmod +x "${BIN_PATH}"
+        echo "GUESTKIT_BIN=${BIN_PATH}" >> "$GITHUB_ENV"
+
+    - name: Export rescue plan (no apply)
+      id: run
+      shell: bash
+      env:
+        GK_DISK: ${{ inputs.disk }}
+        GK_OP: ${{ inputs.operation }}
+        GK_USER: ${{ inputs.user }}
+        GK_HOST: ${{ inputs.hostname }}
+      run: |
+        set -euo pipefail
+        OUT="${RUNNER_TEMP}/guestkit-rescue"
+        mkdir -p "${OUT}"
+        guestkit() { sudo "${GUESTKIT_BIN}" "$@"; }
+        ARGS=(rescue "${GK_DISK}" -o "${GK_OP}" --export-plan "${OUT}/rescue.yaml")
+        [[ -n "${GK_USER}" ]] && ARGS+=(-u "${GK_USER}")
+        [[ -n "${GK_HOST}" ]] && ARGS+=(--hostname "${GK_HOST}")
+        guestkit "${ARGS[@]}"
+        echo "plan-path=${OUT}/rescue.yaml" >> "$GITHUB_OUTPUT"
+        echo "GK_RESCUE_OUT=${OUT}" >> "$GITHUB_ENV"
+
+    - name: Upload rescue plan
+      if: always() && inputs.artifact-name != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ env.GK_RESCUE_OUT }}/rescue.yaml
+        if-no-files-found: ignore

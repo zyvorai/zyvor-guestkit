@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>GuestKit share card (dark)</title>
+<style>
+  /* Dark variant of guestkit-share-card.html: only the :root block below differs. */
+  :root{
+    --bg:#000000;
+    --bg2:#0b0b0f;
+    --wash:rgba(41,151,255,.18);
+    --ink:#f5f5f7;
+    --ink-soft:#a1a1a6;
+    --hairline:#38383c;
+    --blue:#0a84ff;
+    --blue-2:#64b5ff;
+    --blue-text:#6cb4ff;
+    --panel:#1d1d1f;
+    --pill-bg:rgba(41,151,255,.12);
+    --pill-line:rgba(41,151,255,.38);
+    --spoke:rgba(41,151,255,.55);
+    --tick:rgba(41,151,255,.45);
+    --shadow:0 18px 40px rgba(0,0,0,.65);
+    --orange:#ff6a2a;
+  }
+  *{box-sizing:border-box;margin:0;}
+  html,body{width:1200px;height:630px;background:var(--bg);overflow:hidden;}
+  .card{
+    position:relative;width:1200px;height:630px;
+    background:
+      radial-gradient(circle at 900px 315px, var(--wash), transparent 420px),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    color:var(--ink);
+    font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;
+  }
+  .left{position:absolute;left:72px;top:0;width:560px;height:100%;}
+  .brand{position:absolute;top:44px;display:flex;align-items:center;gap:14px;}
+  .brand svg{display:block;}
+  .brand span{
+    font-family:Menlo,'SF Mono',Consolas,monospace;font-weight:700;font-size:16px;
+    letter-spacing:.2em;text-transform:uppercase;color:var(--ink);
+  }
+  .eyebrow{
+    position:absolute;top:124px;
+    font-family:Menlo,'SF Mono',Consolas,monospace;font-weight:700;font-size:15px;
+    letter-spacing:.22em;color:var(--blue-text);text-transform:uppercase;
+  }
+  h1{
+    position:absolute;top:148px;
+    font-size:124px;line-height:1;font-weight:700;letter-spacing:-.04em;color:var(--ink);
+  }
+  .tag{
+    position:absolute;top:300px;width:520px;
+    font-size:25px;line-height:1.42;font-weight:400;color:var(--ink-soft);
+  }
+  .pills{position:absolute;top:452px;display:flex;flex-wrap:nowrap;gap:9px;width:580px;}
+  .pill{
+    font-family:Menlo,'SF Mono',Consolas,monospace;font-weight:700;font-size:13px;
+    letter-spacing:.08em;text-transform:uppercase;white-space:nowrap;
+    padding:10px 14px;border-radius:999px;
+    color:var(--blue-text);background:var(--pill-bg);border:1px solid var(--pill-line);
+  }
+  .pill.solid{color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue-2));border-color:transparent;}
+  .foot{
+    position:absolute;top:566px;
+    font-family:Menlo,'SF Mono',Consolas,monospace;font-size:14px;color:var(--ink-soft);letter-spacing:.02em;
+  }
+  svg.gauge{position:absolute;left:600px;top:0;}
+  .disc{fill:var(--panel);stroke:var(--hairline);stroke-width:1;filter:drop-shadow(var(--shadow));}
+  .arc{fill:none;stroke:url(#gaugeGrad);stroke-width:7;stroke-linecap:round;}
+  .spoke{stroke:var(--spoke);stroke-width:1.5;}
+  .tick{stroke:var(--tick);}
+  .node{fill:var(--panel);stroke:var(--hairline);stroke-width:1.5;filter:drop-shadow(0 4px 10px rgba(0,60,160,.16));}
+  .dot{fill:var(--blue);}
+  .dot.orange{fill:var(--orange);}
+  .lbl{font-family:Menlo,'SF Mono',Consolas,monospace;font-weight:700;font-size:14px;letter-spacing:.1em;fill:var(--ink-soft);}
+  .gl{font-family:Menlo,'SF Mono',Consolas,monospace;font-weight:700;font-size:12px;letter-spacing:.2em;fill:var(--ink-soft);}
+  .gv{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:700;font-size:40px;letter-spacing:-.02em;fill:var(--ink);}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="left">
+    <div class="brand">
+      <svg width="44" height="44" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs><linearGradient id="zg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#0071e3"/><stop offset="1" stop-color="#2997ff"/></linearGradient></defs>
+        <rect width="64" height="64" rx="15" fill="url(#zg)"/>
+        <path d="M16.5 15.5 47.5 15.5 16.5 48.5 47.5 48.5" fill="none" stroke="#fff" stroke-width="8"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span>Zyvor</span>
+    </div>
+    <div class="eyebrow">Offline VM intelligence</div>
+    <h1>GuestKit</h1>
+    <p class="tag">Score boot readiness before power-on. Repair disks offline. Certify cutover with a Passport.</p>
+    <div class="pills">
+      <span class="pill solid">Pure-Rust</span>
+      <span class="pill solid">Offline-first</span>
+      <span class="pill">6 disk formats</span>
+      <span class="pill">Zyvor Production License</span>
+    </div>
+    <div class="foot">github.com/zyvorai/guestkit</div>
+  </div>
+
+  <!-- Gauge + six disk-format spokes, centred at (300,315) in this 600x630 box -->
+  <svg class="gauge" width="600" height="630" viewBox="0 0 600 630" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="gaugeGrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" style="stop-color:var(--blue)"/><stop offset="1" style="stop-color:var(--blue-2)"/>
+      </linearGradient>
+    </defs>
+    <g id="spokes"></g>
+    <g id="ticks"></g>
+    <circle class="disc" cx="300" cy="315" r="86"/>
+    <path id="arc" class="arc"/>
+    <text class="gl" x="300" y="296" text-anchor="middle">BOOT SCORE</text>
+    <text class="gv" x="300" y="338" text-anchor="middle">0–100</text>
+    <g id="nodes"></g>
+    <g id="labels"></g>
+  </svg>
+</div>
+<script>
+  const NS='http://www.w3.org/2000/svg', cx=300, cy=315;
+  const el=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent.appendChild(e);return e;};
+  const pt=(deg,r)=>[cx+r*Math.cos(deg*Math.PI/180), cy+r*Math.sin(deg*Math.PI/180)];
+
+  // Gauge arc, 270 degrees from 135 deg (bottom-left) sweeping clockwise to 45 deg.
+  const [ax,ay]=pt(135,86), [bx,by]=pt(45,86);
+  document.getElementById('arc').setAttribute('d',`M${ax},${ay} A86,86 0 1,1 ${bx},${by}`);
+
+  // Minor ticks around the gauge.
+  const ticks=document.getElementById('ticks');
+  for(let i=0;i<60;i++){
+    const d=i*6, major=i%5===0;
+    const [x1,y1]=pt(d,major?98:100), [x2,y2]=pt(d,108);
+    el('line',{x1,y1,x2,y2,class:'tick','stroke-width':major?2:1},ticks);
+  }
+
+  // Six spokes: one per disk format. The first (QCOW2) carries the single orange dot.
+  const fmts=[['QCOW2',-90],['VMDK',-30],['VHDX',30],['VHD',90],['VDI',150],['RAW',210]];
+  const spokes=document.getElementById('spokes'), nodes=document.getElementById('nodes'), labels=document.getElementById('labels');
+  fmts.forEach(([name,deg],i)=>{
+    const [x1,y1]=pt(deg,116), [x2,y2]=pt(deg,196);
+    el('line',{x1,y1,x2,y2,class:'spoke'},spokes);
+    el('circle',{cx:x2,cy:y2,r:9,class:'node'},nodes);
+    el('circle',{cx:x2,cy:y2,r:4,class:i===0?'dot orange':'dot'},nodes);
+    const [lx,ly]=pt(deg,226);
+    const cos=Math.cos(deg*Math.PI/180);
+    const anchor=Math.abs(cos)<.1?'middle':(cos>0?'start':'end');
+    const t=el('text',{x:lx+(anchor==='start'?-6:anchor==='end'?6:0),y:ly+5,'text-anchor':anchor,class:'lbl'},labels);
+    t.textContent=name;
+  });
+</script>
+</body>
+</html>

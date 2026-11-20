@@ -1,0 +1,10 @@
+# Generated/local artifacts from running the pipeline (see README.md) — never commit.
+node_modules
+raw/
+png/
+seg/
+out/
+*.webm
+*.mp4
+*-raw.webm
+*-raw.mp4

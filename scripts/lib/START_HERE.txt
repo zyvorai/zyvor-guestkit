@@ -1,0 +1,46 @@
+
+  ╔══════════════════════════════════════════════════════════════╗
+  ║                                                              ║
+  ║     ✦  Zyvor client bundle — welcome                         ║
+  ║                                                              ║
+  ╚══════════════════════════════════════════════════════════════╝
+
+  Best first open (offline — works in any browser):
+    docs/welcome.html
+
+  Or open the welcome PDF:
+    docs/pdf/WELCOME.pdf
+
+  ──────────────────────────────────────────────────────────────
+  QUICK INSTALL (3 steps)
+  ──────────────────────────────────────────────────────────────
+
+  1. You are already in the extracted folder (or: cd PRODUCT-*-linux-amd64)
+  2. ./install-everything.sh
+  3. Follow the URL printed at the end
+
+  ──────────────────────────────────────────────────────────────
+  LICENSE (read before install)
+  ──────────────────────────────────────────────────────────────
+
+  cat LICENSE              software license (required reading)
+  cat LEGAL-INDEX.txt      full list of legal files in this bundle
+
+  ──────────────────────────────────────────────────────────────
+  IMPORTANT
+  ──────────────────────────────────────────────────────────────
+
+  Always run ./install-*.sh from THIS folder — not from $HOME.
+  If you see "missing .../cluster/install-cluster-prereqs.sh", you are
+  in the wrong directory. cd into the extract dir and retry.
+
+  ──────────────────────────────────────────────────────────────
+  MORE HELP
+  ──────────────────────────────────────────────────────────────
+
+  docs/PDF_INDEX.txt    all PDFs + guides
+  ls docs/pdf/          printable docs (Zyvor logo)
+  cat HELP.txt          every script explained
+  ./install-everything.sh --help
+
+  zyvor.dev · HyperSDK · © 2026

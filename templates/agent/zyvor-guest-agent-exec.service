@@ -1,0 +1,17 @@
+[Unit]
+Description=Zyvor Guest Agent Executor (privileged remediation)
+After=zyvor-guest-agent.service
+Requires=zyvor-guest-agent.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/guestkitd-exec
+Restart=on-failure
+RestartSec=5
+User=root
+StandardOutput=journal
+StandardError=journal
+Environment=RUST_LOG=info
+
+[Install]
+WantedBy=multi-user.target

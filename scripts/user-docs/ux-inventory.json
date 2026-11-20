@@ -1,0 +1,539 @@
+{
+  "getting-started": {
+    "title": "Getting Started",
+    "how": "CLI first-hour; optional web `:8088`",
+    "actions": [
+      "Install: `cargo install guestkit` or release binary",
+      "Confirm deps: `qemu-img --version`",
+      "`guestkit doctor vm.qcow2 --target kvm --explain`",
+      "`guestkit migrate-plan vm.vmdk --target kvm --export plan.yaml`",
+      "Optional: `guestctl tui vm.qcow2` or GHCR compose \u2192 `:8088`"
+    ],
+    "empty": "Missing qemu-img/NBD \u2192 install qemu-utils; permission denied \u2192 sudo or `modprobe nbd`",
+    "success": "Doctor prints 0\u2013100 score + blockers; `guestkit version` works",
+    "related": [
+      "quick-reference",
+      "cli-guide",
+      "doctor",
+      "tui"
+    ]
+  },
+  "quick-reference": {
+    "title": "Quick Reference",
+    "how": "Cheat sheet \u2014 CLI / TUI keys",
+    "actions": [
+      "`guestkit inspect disk.qcow2`",
+      "`guestkit doctor IMAGE --target kvm`",
+      "`guestkit migrate-plan IMAGE --target proxmox --export plan.yaml`",
+      "`guestkit rescue IMAGE -o enable-ssh` / `fix-grub`",
+      "`guestctl tui IMAGE` \u2192 `d`/`t`/`p`/`e`"
+    ],
+    "empty": "No OS found \u2192 check filesystems; wrong format \u2192 detect/info",
+    "success": "Inspect shows OS/hostname; doctor score present",
+    "related": [
+      "cli-guide",
+      "inspect",
+      "doctor",
+      "tui"
+    ]
+  },
+  "cli-guide": {
+    "title": "CLI Guide",
+    "how": "`guestkit --help`; `guestkit commands`",
+    "actions": [
+      "`guestkit commands` for catalog",
+      "Inspect group: inspect, filesystems, packages, network",
+      "Assurance: doctor, migrate-plan, passport, policy, fleet",
+      "Plans: `plan generate|preview|apply|rollback`",
+      "Rescue: `rescue -o \u2026`; prefer `-o json` / `--fail-below` for CI"
+    ],
+    "empty": "Unknown subcommand \u2192 `guestkit commands`; feature-gated cmds need `--features agent|ai|mcp`",
+    "success": "Help lists groups; sample inspect returns text/JSON",
+    "related": [
+      "quick-reference",
+      "interactive-mode",
+      "export-formats"
+    ]
+  },
+  "interactive-mode": {
+    "title": "Interactive Mode",
+    "how": "`guestkit interactive|repl|shell IMAGE`",
+    "actions": [
+      "Launch REPL (one mount)",
+      "`info` \u2192 `filesystems` \u2192 `mount /dev/\u2026 /`",
+      "`ls` / `cat` / `find` / `download`",
+      "`packages` / `services` / `users` / `network`",
+      "Optional `explore`; then `exit`"
+    ],
+    "empty": "`ls /etc` empty usually means unmounted \u2014 run `mount`; launch fail \u2192 NBD/loop/permissions",
+    "success": "Welcome shows detected OS; packages/users return lists",
+    "related": [
+      "files",
+      "tui",
+      "inspect",
+      "packages"
+    ]
+  },
+  "inspect": {
+    "title": "Inspect",
+    "how": "`guestkit inspect IMAGE` \u00b7 TUI Overview \u00b7 web Image Vault",
+    "actions": [
+      "`guestkit inspect disk.qcow2`",
+      "Add `-o json` or `--summary`",
+      "Depth: `--depth quick|standard|deep`",
+      "Flags: `--include-packages|--include-services|--include-network`",
+      "Profile: `--profile security|migration|performance|windows-migration`",
+      "Batch: `inspect-batch *.qcow2 -p 4`"
+    ],
+    "empty": "No OS \u2192 encrypted/corrupt/empty disk; use filesystems + interactive mount",
+    "success": "OS type/distro/hostname + sections (or JSON)",
+    "related": [
+      "filesystems",
+      "packages",
+      "profiles",
+      "export-formats"
+    ]
+  },
+  "filesystems": {
+    "title": "Filesystems",
+    "how": "`guestkit filesystems|fs IMAGE` \u00b7 REPL \u00b7 TUI Storage",
+    "actions": [
+      "`guestkit filesystems disk.qcow2`",
+      "`--detailed` for types/labels",
+      "Cross-check `guestkit usage|df` and `check|fsck`",
+      "In REPL: `mount` root then `ls /`",
+      "LVM clues via `inspect --profile migration`"
+    ],
+    "empty": "Empty partition list \u2192 wrong image / need NBD; LUKS needs cryptsetup",
+    "success": "Partition/FS list (ext4/xfs + swap)",
+    "related": [
+      "inspect",
+      "files",
+      "repair"
+    ]
+  },
+  "packages": {
+    "title": "Packages",
+    "how": "`guestkit packages|pkg IMAGE` \u00b7 REPL \u00b7 TUI Packages",
+    "actions": [
+      "`guestkit packages disk.qcow2`",
+      "`--filter nginx` / `--limit 50`",
+      "`--json` for automation",
+      "Or `inspect --include-packages`",
+      "Offline install staging: `GUESTKIT_PACKAGE_CACHE` + `plan apply`"
+    ],
+    "empty": "Empty = no package DB / Windows guest / mount failed",
+    "success": "Manager + package rows",
+    "related": [
+      "inspect",
+      "fix-plans",
+      "profiles"
+    ]
+  },
+  "services-users": {
+    "title": "Services & Users",
+    "how": "`guestkit systemd-services IMAGE`; users via REPL/inspect; TUI",
+    "actions": [
+      "`guestkit systemd-services disk.qcow2` (`--failed`, `--service UNIT`)",
+      "`guestkit systemd-journal` / `systemd-boot` as needed",
+      "Users: interactive \u2192 `users`, or inspect User Accounts",
+      "TUI \u2192 Services / Users tabs",
+      "`inspect --include-services`"
+    ],
+    "empty": "Non-systemd OS \u2192 sparse services; Windows users via registry inspect",
+    "success": "Enabled units listed; users show uid/shell",
+    "related": [
+      "inspect",
+      "interactive-mode",
+      "doctor",
+      "guest-agent"
+    ]
+  },
+  "network": {
+    "title": "Network Inspect",
+    "how": "`guestkit network IMAGE` \u00b7 REPL \u00b7 TUI Network",
+    "actions": [
+      "`guestkit network disk.qcow2`",
+      "`--show-interfaces` / `--show-dns` / `--show-routes`",
+      "`--export-json`",
+      "Or `inspect --include-network`",
+      "Live: agent-proxy `/evidence` or KubeVirt guest/network"
+    ],
+    "empty": "No ifaces \u2192 cloud-init-only / netplan not parsed",
+    "success": "Interfaces + IP/MAC/DHCP + DNS",
+    "related": [
+      "inspect",
+      "migrate-plan",
+      "guest-agent"
+    ]
+  },
+  "files": {
+    "title": "Guest Files",
+    "how": "`list|ls`, `cat`, `extract|get`, `search|find`, `explore`",
+    "actions": [
+      "`guestkit ls disk.qcow2 /etc`",
+      "`guestkit cat disk.qcow2 /etc/fstab`",
+      "`guestkit extract disk.qcow2 /etc/hostname ./hostname.txt`",
+      "`guestkit find disk.qcow2 '*.conf'`",
+      "Multi-step: `interactive` or `explore`; backup: `guestkit backup IMAGE -o out.tar.gz`"
+    ],
+    "empty": "Path missing \u2192 wrong mount/root; permission \u2192 sudo/NBD",
+    "success": "Listing/content/extracted file on host",
+    "related": [
+      "interactive-mode",
+      "tui",
+      "filesystems"
+    ]
+  },
+  "guest-control-fabric": {
+    "title": "Guest Control Fabric",
+    "how": "Web/API via zyvor-api KubeVirt guest routes",
+    "actions": [
+      "Deploy API+UI (compose/Helm)",
+      "`GET .../guest/status` \u2192 control state",
+      "`GET .../guest/capabilities` \u2192 transport",
+      "Live: `POST .../guest/doctor` or agent-proxy",
+      "Airgap: `POST .../guest/install-agent`; halted VM: `POST .../guest/repair-plan`"
+    ],
+    "empty": "`console_only`/`blind_vm` \u2192 install QGA/agent or stop VM for offline path",
+    "success": "Envelope with transport, controlState, ok:true",
+    "related": [
+      "guest-agent",
+      "kubevirt-integration",
+      "zeus-vm-tools"
+    ]
+  },
+  "guest-agent": {
+    "title": "Guest Agent",
+    "how": "Build `--features agent`; inject offline; proxy on host",
+    "actions": [
+      "`cargo build --release --features agent --target x86_64-unknown-linux-musl`",
+      "`guestkit agent-inject IMAGE --agent-binary \u2026`",
+      "Boot guest; `guestkit agent-proxy --socket \u2026 --listen 127.0.0.1:8765`",
+      "`curl /ping` `/doctor` `/evidence`",
+      "Or `guestkit agent-call --socket \u2026 --method guestkit.getEvidence`"
+    ],
+    "empty": "No channel \u2192 missing virtio-serial/QGA; Windows needs virtio-serial driver",
+    "success": "`/ping` OK; RPC returns doctor JSON",
+    "related": [
+      "guest-control-fabric",
+      "kubevirt-integration",
+      "repair"
+    ]
+  },
+  "doctor": {
+    "title": "Doctor",
+    "how": "`guestkit doctor IMAGE` \u00b7 TUI Assurance `d` \u00b7 web Passport",
+    "actions": [
+      "`guestkit doctor vm.qcow2 --target kvm|proxmox|kubevirt|aws\u2026`",
+      "`--explain` for root-cause",
+      "`-o json --fail-below 80` for CI",
+      "TUI: Assurance or `: doctor`",
+      "Fix blockers \u2192 re-run doctor"
+    ],
+    "empty": "Low score + blockers until repaired; mount failures abort",
+    "success": "Score 0\u2013100; exit 0 if above `--fail-below`",
+    "related": [
+      "migrate-plan",
+      "repair",
+      "migration-assurance"
+    ]
+  },
+  "migrate-plan": {
+    "title": "Migration Plan",
+    "how": "`guestkit migrate-plan IMAGE --target \u2026` \u00b7 TUI `e`",
+    "actions": [
+      "`guestkit migrate-plan IMAGE --target proxmox`",
+      "`--explain` / `-o json`",
+      "`--export plan.yaml` for FixPlan",
+      "Optional `--inject-agent`",
+      "Follow with migrate-assess / migrate-repair; TUI: `t`/`p`/`e`"
+    ],
+    "empty": "Missing `--target`; Windows VirtIO gaps need `GUESTKIT_VIRTIO_WIN`",
+    "success": "Migration score + checklist; YAML plan if exported",
+    "related": [
+      "doctor",
+      "fix-plans",
+      "vm-migration",
+      "migration-assurance"
+    ]
+  },
+  "migration-assurance": {
+    "title": "Migration Assurance",
+    "how": "doctor \u2192 plan \u2192 policy \u2192 passport \u2192 fleet",
+    "actions": [
+      "`doctor --explain`",
+      "`migrate-plan --export`",
+      "`inspect --profile windows-migration` if Windows",
+      "`policy check`",
+      "`passport emit \u2026 -o passport.json` then `passport verify --fail-below 80`",
+      "Fleet: `fleet analyze` / `wave-plan`"
+    ],
+    "empty": "Verify fails below threshold \u2192 repair then re-emit; BitLocker hard-block",
+    "success": "Passport verify exit 0; doctor score acceptable for target",
+    "related": [
+      "doctor",
+      "migrate-plan",
+      "policy",
+      "fleet",
+      "vm-migration"
+    ]
+  },
+  "fix-plans": {
+    "title": "Fix Plans",
+    "how": "`guestkit plan \u2026` \u00b7 export from migrate-plan/repair",
+    "actions": [
+      "`plan generate IMAGE -p linux-ssh|windows-rdp|\u2026 -o plan.yaml`",
+      "`plan preview plan.yaml` (`--diff`)",
+      "`plan validate plan.yaml --vm IMAGE`",
+      "`plan apply plan.yaml --vm IMAGE --yes`",
+      "`plan export` to bash/ansible; `plan rollback` if needed"
+    ],
+    "empty": "Apply refused without backup unless `--skip-backup`",
+    "success": "Preview lists ops; apply reports success; doctor improves",
+    "related": [
+      "repair",
+      "migrate-plan",
+      "profiles"
+    ]
+  },
+  "repair": {
+    "title": "Repair",
+    "how": "`guestkit repair` \u00b7 `rescue` \u00b7 `migrate-repair`",
+    "actions": [
+      "`repair IMAGE --fix boot --dry-run`",
+      "`repair IMAGE --fix boot` (apply + re-doctor)",
+      "Day-0: `rescue IMAGE -o enable-ssh|fix-grub|reset-password\u2026`",
+      "Migration: `migrate-repair IMAGE --target kvm [--apply --yes]`",
+      "Prefer dry-run \u2192 backup \u2192 apply"
+    ],
+    "empty": "Dry-run only = no disk change; NTFS dirty \u2192 ntfsfix first",
+    "success": "Doctor score rises; rescue op applied",
+    "related": [
+      "doctor",
+      "fix-plans",
+      "guest-agent"
+    ]
+  },
+  "policy": {
+    "title": "Policy Gate",
+    "how": "`guestkit policy check IMAGE`",
+    "actions": [
+      "`policy check IMAGE --example-policy`",
+      "`policy check IMAGE --policy FILE.yaml`",
+      "Or `--benchmark cis`",
+      "`-f json -o report.json`",
+      "Gate pipelines on non-zero / `--strict`; pair with passport verify"
+    ],
+    "empty": "Missing policy file; expressions fail if evidence fields absent",
+    "success": "Pass/fail per rule; JSON report written",
+    "related": [
+      "doctor",
+      "migration-assurance",
+      "fleet"
+    ]
+  },
+  "fleet": {
+    "title": "Fleet",
+    "how": "`guestkit fleet analyze|wave-plan|watch DIR` \u00b7 TUI `--fleet DIR`",
+    "actions": [
+      "`fleet analyze ./vms/ [--recursive -j 4]`",
+      "`fleet wave-plan ./vms/ -o json`",
+      "`fleet watch ./vms/` (first run = baseline)",
+      "Later: `watch --fail-on-drift` in cron",
+      "TUI: `guestctl tui one.qcow2 --fleet ./vms/`"
+    ],
+    "empty": "Empty dir / no disk formats",
+    "success": "Clusters/snowflakes/blockers; waves; watch reports drift or clean",
+    "related": [
+      "doctor",
+      "forensic-diff",
+      "migration-assurance"
+    ]
+  },
+  "forensic-diff": {
+    "title": "Forensic Diff",
+    "how": "`guestkit forensic-diff OLD NEW` \u00b7 `diff` / `compare`",
+    "actions": [
+      "Snapshot before/after",
+      "`forensic-diff before.qcow2 after.qcow2`",
+      "`-o json` for drift score",
+      "Lighter: `guestkit diff a b`",
+      "Fleet continuous: `fleet watch`"
+    ],
+    "empty": "Identical images \u2192 low drift; mount fail on either side",
+    "success": "Drift findings / security indicators JSON",
+    "related": [
+      "fleet",
+      "inspect",
+      "profiles"
+    ]
+  },
+  "profiles": {
+    "title": "Profiles",
+    "how": "`guestkit inspect IMAGE --profile NAME` \u00b7 `plan generate -p \u2026`",
+    "actions": [
+      "Inspect profiles: security, migration, performance, compliance, hardening, windows-migration",
+      "`-o json` / `--export html|markdown`",
+      "Day-0: `plan generate` with windows-rdp / linux-ssh",
+      "Automate over fleet with shell loop",
+      "`--cache-refresh` when needed"
+    ],
+    "empty": "Unknown profile name",
+    "success": "Profile sections + risk_level / inventory",
+    "related": [
+      "inspect",
+      "fix-plans",
+      "export-formats"
+    ]
+  },
+  "export-formats": {
+    "title": "Export Formats",
+    "how": "`--output` vs `--export` on inspect; plan export; passport JSON",
+    "actions": [
+      "Data: `inspect -o json|yaml|csv`",
+      "Docs: `--export html|markdown|pdf --export-output PATH`",
+      "Plans: `plan export plan.yaml -f bash -o fix.sh`",
+      "Assurance: `migrate-plan --export`, `passport emit -o`",
+      "TUI view export / web Passport download"
+    ],
+    "empty": "Missing `--export-output`; PDF may need Chrome/wkhtmltopdf",
+    "success": "File opens (HTML) or validates (JSON/YAML)",
+    "related": [
+      "inspect",
+      "profiles",
+      "fix-plans",
+      "migration-assurance"
+    ]
+  },
+  "kubevirt-integration": {
+    "title": "KubeVirt Integration",
+    "how": "zyvor-api HTTP + CLI offline on PVC path",
+    "actions": [
+      "Deploy API with KubeVirt RBAC",
+      "Stopped VM: `GET/POST /api/v1/kubevirt/vms/{ns}/{name}/boot-inspect`",
+      "Or CLI: `doctor PVC_PATH --target kubevirt`",
+      "Live: guest/status, guest/doctor, guest/evidence",
+      "Install agent via guest/install-agent or vmtools"
+    ],
+    "empty": "Running VM \u2192 offline inspect skipped; missing PVC path",
+    "success": "available:true, source:guestkit, boot fields populated",
+    "related": [
+      "guest-control-fabric",
+      "guest-agent",
+      "zeus-vm-tools",
+      "doctor"
+    ]
+  },
+  "zeus-vm-tools": {
+    "title": "Zeus VM Tools",
+    "how": "Package zyvor-vm-tools / zyvor-guest-agent; API `/api/v1/vmtools/*`",
+    "actions": [
+      "Build packages",
+      "`POST .../vmtools/install?method=auto|cloud-init|qga|iso`",
+      "Check `GET /api/v1/vmtools/coverage`",
+      "Quiesce: `.../vmtools/quiesce` / unquiesce",
+      "Exec: `.../vmtools/exec`; offline: `agent-inject`"
+    ],
+    "empty": "Coverage 0 \u2192 QGA down / no network \u2192 use qga file bootstrap",
+    "success": "Agent connected; coverage chip; freeze/thaw works",
+    "related": [
+      "guest-agent",
+      "kubevirt-integration",
+      "guest-control-fabric"
+    ]
+  },
+  "tui": {
+    "title": "TUI (guestctl)",
+    "how": "`guestctl tui IMAGE` \u00b7 `guestkit tui|ui IMAGE`",
+    "actions": [
+      "Open TUI (optional `--fleet DIR`, `--compare OTHER`)",
+      "`{`/`}` groups; Tab views; Ctrl+P jump; `:` palette",
+      "Assurance: `d` doctor, `t` target, `p` preview, `e` export",
+      "Browse Packages/Services/Users/Network",
+      "Config `~/.config/guestkit/tui.toml`; `h`/`?` help"
+    ],
+    "empty": "Blank panes \u2192 inspect failed (permissions/format); check footer",
+    "success": "Dashboard populated; doctor score on Assurance",
+    "related": [
+      "doctor",
+      "migrate-plan",
+      "interactive-mode",
+      "inspect"
+    ]
+  },
+  "python-bindings": {
+    "title": "Python Bindings",
+    "how": "`pip install zyvor-guestkit` or `maturin develop --features python-bindings`",
+    "actions": [
+      "`from guestkit import Guestfs`",
+      "`add_drive_ro` \u2192 `launch` \u2192 `inspect_os`",
+      "Mount via `inspect_get_mountpoints` + `mount_ro`",
+      "`cat`/`ls` as needed",
+      "`umount_all` + `shutdown`; see `examples/python/`"
+    ],
+    "empty": "Import error \u2192 wrong package/feature; launch fail \u2192 NBD/sudo",
+    "success": "Distro/hostname printed; clean shutdown",
+    "related": [
+      "inspect",
+      "cli-guide",
+      "files"
+    ]
+  },
+  "vm-migration": {
+    "title": "VM Migration Guide",
+    "how": "CLI assurance-first workflow (+ hyper2kvm convert)",
+    "actions": [
+      "Convert if needed: `guestkit convert` / `qemu-img`",
+      "`doctor --target \u2026 --explain`",
+      "`migrate-plan --export`",
+      "`repair --fix boot` / `migrate-repair --apply`",
+      "Windows VirtIO via `GUESTKIT_VIRTIO_WIN`",
+      "`passport emit/verify` then convert/boot on target"
+    ],
+    "empty": "Boot fail post-cutover \u2192 fstab/GRUB/VirtIO; never write while guest running",
+    "success": "Doctor high enough; passport verifies; first boot on target",
+    "related": [
+      "migration-assurance",
+      "doctor",
+      "migrate-plan",
+      "repair"
+    ]
+  },
+  "troubleshooting": {
+    "title": "Troubleshooting",
+    "how": "Ops runbook \u2014 CLI diagnostics",
+    "actions": [
+      "`guestkit -v inspect \u2026` / `RUST_LOG=debug`",
+      "NBD: `modprobe nbd`; `qemu-nbd --disconnect`",
+      "Loop: `losetup -D`",
+      "`qemu-img check IMAGE`",
+      "Container: privileged + `/dev/nbd*`; gather version + uname + lsmod"
+    ],
+    "empty": "Persistent device busy \u2192 disconnect all nbd / reboot",
+    "success": "Same failing command succeeds after fix",
+    "related": [
+      "faq",
+      "getting-started",
+      "filesystems"
+    ]
+  },
+  "faq": {
+    "title": "FAQ",
+    "how": "Reference answers; commands embedded",
+    "actions": [
+      "Install: `cargo install guestkit`",
+      "Not legacy-appliance-tooling \u2014 use GuestKit stack",
+      "Passport: certify, then convert",
+      "Extract/list/rescue examples as in FAQ",
+      "Cache under `~/.cache/guestkit/`; escalate with version + repro"
+    ],
+    "empty": "N/A (doc); point to troubleshooting for runtime",
+    "success": "Reader can run cited command successfully",
+    "related": [
+      "troubleshooting",
+      "getting-started",
+      "vm-migration"
+    ]
+  }
+}

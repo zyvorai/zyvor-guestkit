@@ -1,0 +1,18 @@
+{
+  "$schema": "https://guestkit.dev/schemas/job-v1.json",
+  "version": "1.0",
+  "job_id": "job-01JAB3Y7X5K4M8F9W2T6",
+  "created_at": "2026-01-30T10:00:00Z",
+  "kind": "VMOperation",
+  "operation": "guestkit.inspect",
+  "payload": {
+    "type": "guestkit.inspect.v1",
+    "data": {
+      "image": {
+        "path": "/vms/production-web-01.qcow2",
+        "format": "qcow2",
+        "read_only": true
+      }
+    }
+  }
+}

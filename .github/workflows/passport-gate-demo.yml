@@ -1,0 +1,73 @@
+name: Passport Gate Demo
+
+# Dogfoods action.yml: installs the latest released `guestkit` binary and
+# runs the doctor -> migrate-plan -> passport emit -> passport verify gate
+# from docs/devops/01-passport-ci-gate.md against a real disk image, using
+# the same composite Action a downstream repo would `uses:`.
+#
+# fail-below is deliberately 0 here — this job proves the gate's mechanics
+# run cleanly in Actions, it does not enforce a quality bar against a
+# minimal cirros image. `guestkit doctor --explain` still prints the real
+# score in the job log.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'action.yml'
+      - 'docs/devops/01-passport-ci-gate.md'
+      - '.github/workflows/passport-gate-demo.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'action.yml'
+      - 'docs/devops/01-passport-ci-gate.md'
+      - '.github/workflows/passport-gate-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  passport-gate:
+    name: Passport gate (cirros)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache test image
+        uses: actions/cache@v4
+        with:
+          path: test-images/
+          key: passport-gate-demo-cirros-v1
+
+      - name: Download test image
+        run: |
+          set -euo pipefail
+          mkdir -p test-images
+          cd test-images
+          if [ ! -f cirros.img ]; then
+            curl -fsSL -o cirros.img \
+              "https://download.cirros-cloud.net/0.6.2/cirros-0.6.2-x86_64-disk.img"
+          fi
+          ls -lh cirros.img
+
+      - name: Run GuestKit passport gate (this repo's own Action)
+        id: gate
+        uses: ./
+        with:
+          disk: test-images/cirros.img
+          target: kvm
+          fail-below: '0'
+          artifact-name: passport-gate-demo
+
+      - name: Report score
+        run: |
+          echo "GuestKit doctor score: ${{ steps.gate.outputs.score }}"
+          echo "Gate passed: ${{ steps.gate.outputs.passed }}"

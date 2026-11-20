@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  wixl-compatible WiX source for building the GuestKit Agent MSI on Linux
+  (msitools `wixl`), used by scripts/build-windows-bundle.sh. The Microsoft
+  WiX toolset variant is packaging/vmtools/windows/zyvor-guest-agent.wxs.
+
+  Installs guestkitd.exe to Program Files and registers the GuestKitAgent
+  Windows service (auto-start, LocalSystem). File Source paths are relative
+  to the staging directory the build script assembles.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Id="*" Name="Zyvor GuestKit Agent" Language="1033" Version="1.3.1.0"
+           Manufacturer="ZyvorAI Labs" UpgradeCode="7E5B9F2A-4C1D-4E8A-9B3F-2D6A8C1E4F90">
+    <Package InstallerVersion="500" Compressed="yes" InstallScope="perMachine" />
+    <MajorUpgrade DowngradeErrorMessage="A newer version of GuestKit Agent is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFilesFolder">
+        <Directory Id="INSTALLDIR" Name="Zyvor GuestKit">
+          <Component Id="AgentBinary" Guid="A1B2C3D4-0001-4E8A-9B3F-2D6A8C1E4F01">
+            <File Id="AgentExe" Source="guestkitd.exe" KeyPath="yes" />
+            <ServiceInstall Id="AgentSvc" Type="ownProcess" Name="GuestKitAgent"
+                            DisplayName="Zyvor GuestKit Agent"
+                            Description="In-guest agent for Zeus VM Tools on KubeVirt/KVM VMs"
+                            Start="auto" ErrorControl="normal" Account="LocalSystem" />
+            <ServiceControl Id="AgentSvcCtl" Name="GuestKitAgent"
+                            Start="install" Stop="both" Remove="uninstall" Wait="no" />
+          </Component>
+          <Component Id="AgentCtl" Guid="A1B2C3D4-0003-4E8A-9B3F-2D6A8C1E4F03">
+            <File Id="CtlExe" Source="guestkitctl.exe" KeyPath="yes" />
+          </Component>
+          <Component Id="AgentPolicy" Guid="A1B2C3D4-0002-4E8A-9B3F-2D6A8C1E4F02">
+            <File Id="PolicyYaml" Source="agent-policy.yaml" KeyPath="yes" />
+          </Component>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id="Main" Title="GuestKit Agent" Level="1">
+      <ComponentRef Id="AgentBinary" />
+      <ComponentRef Id="AgentCtl" />
+      <ComponentRef Id="AgentPolicy" />
+    </Feature>
+  </Product>
+</Wix>

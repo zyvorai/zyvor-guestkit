@@ -1,0 +1,9 @@
+[target.x86_64-pc-windows-gnu]
+linker = "x86_64-w64-mingw32-gcc"
+
+[target.aarch64-apple-darwin]
+# Homebrew on Apple Silicon installs to /opt/homebrew, which isn't on the
+# default linker search path - needed to link libhivex (registry-write
+# feature). No-op on Linux (production target) or x86_64 Mac (Homebrew
+# uses /usr/local, already searched by default).
+rustflags = ["-L", "/opt/homebrew/lib"]

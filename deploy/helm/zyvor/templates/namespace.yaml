@@ -1,0 +1,12 @@
+{{- /*
+  Only render the Namespace when the chart is asked to own it. The remote
+  deploy path uses `helm --create-namespace`, so templating the namespace here
+  too makes helm fail the install with "namespaces <ns> already exists".
+  Default off: let --create-namespace (or a pre-created namespace) own it.
+*/ -}}
+{{- if .Values.createNamespace }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace }}
+{{- end }}

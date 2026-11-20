@@ -1,0 +1,50 @@
+{{- if .Values.zyvorApi.auth.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: zyvor-api-auth
+  namespace: {{ .Values.namespace }}
+data:
+  AUTH_ENABLED: "true"
+  JWT_ISSUER: {{ .Values.zyvorApi.auth.jwtIssuer | default "guestkit" | quote }}
+  JWT_EXPIRY_HOURS: {{ .Values.zyvorApi.auth.jwtExpiryHours | default 24 | quote }}
+  DEFAULT_ROLE: {{ .Values.zyvorApi.auth.defaultRole | default "operator" | quote }}
+  PUBLIC_BASE_URL: {{ .Values.zyvorApi.auth.publicBaseUrl | quote }}
+  UI_BASE_URL: {{ .Values.zyvorApi.auth.uiBaseUrl | quote }}
+  OIDC_ISSUER_URL: {{ .Values.zyvorApi.auth.oidc.issuerUrl | default "" | quote }}
+  OIDC_CLIENT_ID: {{ .Values.zyvorApi.auth.oidc.clientId | default "" | quote }}
+  OIDC_BUTTON_LABEL: {{ .Values.zyvorApi.auth.oidc.buttonLabel | default "Sign in with SSO" | quote }}
+  SAML_ENABLED: {{ ternary "true" "false" .Values.zyvorApi.auth.saml.enabled | quote }}
+  SAML_ENTITY_ID: {{ .Values.zyvorApi.auth.saml.entityId | default "" | quote }}
+  SAML_SSO_URL: {{ .Values.zyvorApi.auth.saml.ssoUrl | default "" | quote }}
+  SAML_METADATA_URL: {{ .Values.zyvorApi.auth.saml.metadataUrl | default "" | quote }}
+{{- end }}
+---
+{{/*
+zyvor-api-auth Secret is intentionally NOT gated on auth.enabled: agentBootstrapToken
+guards mTLS guest-agent registration (see AGENT_MTLS_BIND_ADDR in
+zyvor-api-deployment.yaml), which zyvor-api's own config validation requires
+independent of whether full UI/API JWT auth is turned on.
+*/}}
+{{- if or .Values.zyvorApi.auth.jwtSecret .Values.zyvorApi.auth.agentBootstrapToken .Values.zyvorApi.auth.oidc.clientSecret .Values.zyvorApi.auth.saml.certificatePem }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: zyvor-api-auth
+  namespace: {{ .Values.namespace }}
+type: Opaque
+stringData:
+  {{- if .Values.zyvorApi.auth.jwtSecret }}
+  JWT_SECRET: {{ .Values.zyvorApi.auth.jwtSecret | quote }}
+  {{- end }}
+  {{- if .Values.zyvorApi.auth.agentBootstrapToken }}
+  AGENT_BOOTSTRAP_TOKEN: {{ .Values.zyvorApi.auth.agentBootstrapToken | quote }}
+  {{- end }}
+  {{- if .Values.zyvorApi.auth.oidc.clientSecret }}
+  OIDC_CLIENT_SECRET: {{ .Values.zyvorApi.auth.oidc.clientSecret | quote }}
+  {{- end }}
+  {{- if .Values.zyvorApi.auth.saml.certificatePem }}
+  SAML_CERTIFICATE_PEM: |
+{{ .Values.zyvorApi.auth.saml.certificatePem | indent 4 }}
+  {{- end }}
+{{- end }}

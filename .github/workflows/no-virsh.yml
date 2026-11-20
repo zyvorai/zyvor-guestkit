@@ -1,0 +1,40 @@
+name: no-virsh
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  grep:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fail on new virsh qemu-agent-command call sites
+        run: |
+          set -euo pipefail
+          # Allowed: docs, the explicit GUESTKIT_ALLOW_VIRSH fallback, tests that
+          # assert the fallback string, and comments that name the old command.
+          hits=$(git grep -n 'qemu-agent-command' -- \
+            ':!docs/**' \
+            ':!.github/workflows/no-virsh.yml' \
+            ':!*.md' \
+            ':!crates/zyvor-api/src/qga_socket.rs' \
+            ':!src/agent/qga_client.rs' \
+            ':!src/agent/cli.rs' \
+            ':!src/agent/qga.rs' \
+            ':!src/agent/inject.rs' \
+            ':!src/cli/entry.rs' \
+            ':!crates/guestkit-agent-protocol/**' \
+            ':!crates/zyvor-guest-agent/**' \
+            || true)
+          if [ -n "$hits" ]; then
+            echo "$hits"
+            echo "::error::new qemu-agent-command call site; use guestkit qga"
+            exit 1
+          fi

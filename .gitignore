@@ -1,0 +1,41 @@
+/target
+**/target/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+/lib/
+/lib64/
+!scripts/lib/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Local AI caches
+.grok/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Local presentation exports
+presentations/
+
+# Deploy state (no secrets)
+.deploy-last
+.deploy-ui-last

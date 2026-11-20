@@ -1,0 +1,97 @@
+# ─────────────────────────────────────────────────────────────
+# GuestKit / Zyvor web stack — PRODUCTION EXAMPLE
+#
+# Copy and customize before use:
+#   cp deploy/docker-compose.prod.example.yml deploy/docker-compose.prod.yml
+#   # Edit secrets (JWT_SECRET, AGENT_BOOTSTRAP_TOKEN, POSTGRES_PASSWORD, REDIS_PASSWORD)
+#   docker compose -f deploy/docker-compose.prod.yml up -d
+#
+# Pin image versions — do not use :latest in production.
+# ─────────────────────────────────────────────────────────────
+name: zyvor
+
+x-images:
+  registry: &registry ${REGISTRY:-ghcr.io/zyvorai}
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: zyvor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: zyvor
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U zyvor"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD}"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  zyvor-api:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/zyvor-api:${TAG:?set TAG e.g. v1.2.6}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      BIND_ADDR: 0.0.0.0:8080
+      DATABASE_URL: postgres://zyvor:${POSTGRES_PASSWORD}@postgres:5432/zyvor
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      QUEUE_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      STORAGE_PATH: /var/lib/zyvor/images
+      AUTH_ENABLED: "true"
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      AGENT_BOOTSTRAP_TOKEN: ${AGENT_BOOTSTRAP_TOKEN:?set AGENT_BOOTSTRAP_TOKEN}
+      RUST_LOG: info
+    volumes:
+      - vm-images:/var/lib/zyvor/images
+
+  guestkit-worker:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/guestkit-worker:${TAG:?set TAG e.g. v1.2.6}
+    depends_on:
+      redis:
+        condition: service_healthy
+    privileged: true
+    command:
+      - daemon
+      - --transport
+      - redis
+      - --redis-url
+      - redis://:${REDIS_PASSWORD}@redis:6379
+      - --results-dir
+      - /var/lib/guestkit/results
+      - --work-dir
+      - /var/lib/guestkit/work
+      - --max-concurrent
+      - "4"
+    environment:
+      QUEUE_URL: redis://:${REDIS_PASSWORD}@redis:6379
+      RUST_LOG: info
+    volumes:
+      - vm-images:/var/lib/zyvor/images
+      - worker-results:/var/lib/guestkit/results
+      - worker-work:/var/lib/guestkit/work
+
+  zyvor-ui:
+    image: ${REGISTRY:-ghcr.io/zyvorai}/zyvor-ui:${TAG:?set TAG e.g. v1.2.6}
+    depends_on:
+      - zyvor-api
+    ports:
+      - "8088:80"
+
+volumes:
+  pgdata:
+  vm-images:
+  worker-results:
+  worker-work:

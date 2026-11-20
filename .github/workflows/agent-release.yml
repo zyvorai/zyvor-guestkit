@@ -1,0 +1,70 @@
+name: Agent Release (manual)
+
+# Agent artifacts are built and attached to GitHub Releases by release.yml on v* tags.
+# Use this workflow only to rebuild VM tools artifacts without cutting a release.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Attach artifacts to GitHub release v<version> (e.g. 1.0.1); leave empty for CI artifacts only"
+        required: false
+        default: ""
+
+jobs:
+  build-agent-musl:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y musl-tools genisoimage
+          rustup target add x86_64-unknown-linux-musl
+
+      - name: Build Zeus VM Tools artifacts
+        env:
+          VERSION: ${{ inputs.version != '' && inputs.version || '0.0.0-dev' }}
+        run: bash packaging/vmtools/build-artifacts.sh
+
+      - name: Upload Linux tarball
+        uses: actions/upload-artifact@v4
+        with:
+          name: zyvor-vm-tools-linux-amd64
+          path: |
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz.sha256
+
+      - name: Upload DEB
+        uses: actions/upload-artifact@v4
+        with:
+          name: zyvor-vm-tools-deb
+          path: dist/vmtools/linux/zyvor-vm-tools_*_amd64.deb
+
+      - name: Upload ISO
+        uses: actions/upload-artifact@v4
+        with:
+          name: zyvor-vm-tools-iso
+          path: dist/vmtools/zyvor-vm-tools.iso
+          if-no-files-found: ignore
+
+      - name: Upload to GitHub Release
+        if: inputs.version != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          FILES=(
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz
+            dist/vmtools/linux/zyvor-vm-tools-linux-amd64.tar.gz.sha256
+            "dist/vmtools/linux/zyvor-vm-tools_${VERSION}_amd64.deb"
+          )
+          if [[ -f dist/vmtools/zyvor-vm-tools.iso ]]; then
+            FILES+=(dist/vmtools/zyvor-vm-tools.iso)
+          fi
+          gh release upload "${TAG}" "${FILES[@]}" --clobber

@@ -1,0 +1,413 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+permissions:
+  contents: read
+  security-events: write
+
+# Newer pushes supersede older runs of the same branch; release tags are never cancelled.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
+
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        rust: [stable, beta]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: rustfmt, clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo index
+        uses: actions/cache@v4
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-cargo-git-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+
+      - name: Setup loop and NBD devices
+        run: |
+          sudo modprobe loop max_part=8 || true
+          sudo chmod 666 /dev/loop-control 2>/dev/null || true
+          # losetup/qemu-nbd run via sudo (tests run as the unprivileged
+          # `runner` user), but the resulting /dev/loopN or /dev/nbdN node
+          # is created root:disk 0660 by udev — the test process's plain
+          # (non-sudo) File::open() on it then fails with EACCES, which
+          # LoopDevice/NbdDevice's wait_for_device() can't distinguish
+          # from "not ready yet" and just times out instead. Loop nodes
+          # are pre-created at boot; NBD needs its module loaded first —
+          # both only need this once, up front.
+          sudo chmod 666 /dev/loop[0-9]* 2>/dev/null || true
+          sudo modprobe nbd max_part=8 || true
+          # Ubuntu 26.04 creates /dev/loopN and /dev/nbdN on demand (they are not all pre-created at boot), so the
+          # chmod above misses every node created later and the unprivileged test process gets EACCES. A udev rule
+          # applies the mode to nodes as they appear.
+          printf 'KERNEL=="loop[0-9]*", MODE="0666"\nKERNEL=="nbd[0-9]*", MODE="0666"\n' | sudo tee /etc/udev/rules.d/99-guestkit-test-devices.rules >/dev/null
+          sudo udevadm control --reload-rules
+          sudo chmod 666 /dev/nbd[0-9]* 2>/dev/null || true
+
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: NBD concurrency unit (flock serialize)
+        run: |
+          chmod +x scripts/test-nbd-concurrent.sh
+          ./scripts/test-nbd-concurrent.sh --unit
+
+      - name: Run tests
+        run: |
+          # --test-threads=1: find_available_device() (loop_device.rs / nbd.rs)
+          # checks a device's availability then uses it as two separate,
+          # non-atomic steps — the default parallel runner races multiple
+          # threads onto the same device index otherwise.
+          #
+          # NBD-dependent tests (integration_basic + integration_error_handling
+          # + integration_lvm_luks + phase3_comprehensive + phase3_windows)
+          # are skipped here: any operation past read-only inspection (mkfs,
+          # mount, file writes) routes through guestfs/mount.rs's NBD path
+          # regardless of the underlying image being raw — not just the
+          # qcow2/vmdk case handle.rs's loop-vs-NBD format detection is
+          # actually for — and NBD device attach ("qemu-nbd: Failed to set
+          # NBD socket") deterministically fails on GitHub-hosted runners
+          # here, on every device, serialized or not. Looks like a runner
+          # platform limitation, not a bug reachable from workflow config;
+          # needs investigation with actual shell access to a failing
+          # runner. Tests that don't reach a real mount (state/precondition
+          # checks, read-only inspection) still run and pass. See
+          # self-hosted-nbd-tests.yml and nbd-concurrency.yml (self-hosted
+          # `nbd` runner) for live concurrent allocate+connect coverage.
+          cargo test --verbose -- --test-threads=1 --skip test_arch_ --skip test_debian_ \
+            --skip test_ubuntu_ --skip test_windows_ \
+            --skip test_archive_operations --skip test_checksums \
+            --skip test_command_execution --skip test_copy_operations \
+            --skip test_file_operations --skip test_filesystem_creation_and_mount \
+            --skip test_multiple_partitions --skip test_partition_creation \
+            --skip test_stat_operations \
+            --skip test_error_delete_mounted_filesystem --skip test_error_double_mount \
+            --skip test_error_invalid_path --skip test_error_large_file_handling \
+            --skip test_error_nonexistent_file --skip test_error_special_characters_in_filename \
+            --skip test_error_write_to_directory --skip test_error_zero_size_file \
+            --skip test_vg_scan \
+            --skip test_add_drive_vs_add_drive_ro --skip test_phase3_comprehensive \
+            --skip test_rm_rm_rf_edge_cases --skip test_stat_vs_lstat_behavior \
+            --skip test_phase3_windows_comprehensive
+
+      - name: Cloud disk source recipe
+        run: ./scripts/ci-cloud-disk-sources.sh
+
+      - name: Build examples
+        run: cargo build --examples --verbose
+
+      - name: Build documentation
+        run: cargo doc --no-deps
+
+  coverage:
+    name: Code Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: llvm-tools-preview
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev libhivex-dev pkg-config
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Generate code coverage
+        run: cargo llvm-cov --all-features --workspace --lib --lcov --output-path lcov.info
+
+      - name: Upload coverage to Codecov
+        continue-on-error: true
+        uses: codecov/codecov-action@v4
+        with:
+          files: lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run cargo-audit
+        run: |
+          cargo install cargo-audit --locked --quiet
+          cargo audit
+
+  build-release:
+    name: Build Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install system dependencies (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils musl-tools libsystemd-dev
+
+      # musl has no libsystemd of its own — default features pull in
+      # journal-native (libsystemd-sys), which can't link against the
+      # host's glibc libsystemd.so from a musl target. Match the same
+      # feature set scripts/package-binary-release.sh uses for musl
+      # release builds.
+      - name: Build release
+        run: |
+          if [[ "${{ matrix.target }}" == *musl* ]]; then
+            cargo build --release --target ${{ matrix.target }} \
+              --no-default-features --features guest-inspect
+          else
+            cargo build --release --target ${{ matrix.target }}
+          fi
+
+      - name: Strip binary
+        if: matrix.os == 'ubuntu-latest'
+        run: strip target/${{ matrix.target }}/release/guestkit || true
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: guestkit-${{ matrix.target }}
+          path: target/${{ matrix.target }}/release/guestkit
+
+  docs:
+    name: Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+
+      - name: Build documentation
+        run: cargo doc --no-deps --all-features
+
+      - name: Check documentation
+        run: cargo doc --no-deps --all-features --document-private-items
+
+  # Was "Minimal Versions" (`cargo update -Z minimal-versions` + check). That job was
+  # red on every one of 25 sampled runs back to 2026-09-26: with every transitive dependency forced
+  # to the lowest version its parent allows, the first compile failure is always a
+  # third-party crate whose own manifest understates what it needs (openssl-sys 0.9.55
+  # cannot parse OpenSSL 3 headers, ahash 0.7.7 and pathfinder_simd 0.5.0 use removed
+  # nightly features, rustix 0.38.0, curve25519-dalek 4.0.0, sonic-number 0.1.0, ...),
+  # and guestkit's own `anyhow = "1"` resolves to anyhow 1.0.0, which does not build on
+  # any current rustc. Pinning crate after crate never converges and says nothing
+  # about this repository. What a shipped binary needs to know is the opposite: that
+  # today's newest compatible dependencies still build, so that is what this job checks.
+  latest-dependencies:
+    name: Latest Dependencies
+    runs-on: ubuntu-latest
+    # Advisory: an upstream release can break this on any day, independent of
+    # the change under review. The Test job (committed Cargo.lock) is the main signal.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+
+      - name: Check against the newest compatible dependencies
+        run: |
+          cargo update
+          cargo check --all-features --all-targets
+
+  windows-agent-check:
+    name: Windows Agent Cross-Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-gnu
+
+      - name: Install mingw
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64
+
+      - name: Check agent crate for Windows
+        run: |
+          cargo check -p zyvor-guest-agent --target x86_64-pc-windows-gnu
+
+  helm-chart:
+    name: Helm Chart
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: helm lint
+        run: helm lint deploy/helm/zyvor
+
+      - name: helm template (default values)
+        run: helm template test-release deploy/helm/zyvor > /dev/null
+
+      - name: helm template (kubevirt + all scheduled jobs enabled)
+        run: |
+          helm template test-release deploy/helm/zyvor \
+            --set kubevirt.enabled=true \
+            --set vmtools.reconcile.enabled=true \
+            --set backup.imageVault.enabled=true \
+            --set fleetWatch.enabled=true \
+            --set ingress.tls.enabled=true \
+            --set ingress.certManager.enabled=true \
+            > /dev/null
+
+      - name: helm template (real deployment overlays)
+        run: |
+          for values in values-ci.yaml values-k3s.yaml values-prod.yaml; do
+            echo "=== ${values} ==="
+            helm template test-release deploy/helm/zyvor \
+              -f "deploy/helm/zyvor/${values}" > /dev/null
+          done
+
+      - name: helm template (hostPath persistence — PVC-only features disabled)
+        run: |
+          helm template test-release deploy/helm/zyvor \
+            --set persistence.vmImages.hostPath=/var/lib/zyvor/images \
+            > /dev/null
+
+  python-bindings:
+    name: Python Bindings
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+
+      - name: Install maturin and pytest
+        run: pip install maturin pytest
+
+      - name: Build and install Python bindings
+        env:
+          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: "1"
+        run: |
+          maturin build --release --features python-bindings --out dist
+          pip install dist/zyvor_guestkit-*.whl
+
+      - name: Run Python binding tests
+        run: pytest tests/test_python_bindings.py -m "not requires_image"
+
+  website:
+    name: Website
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install dependencies
+        run: cd website && npm ci
+
+      - name: Build
+        run: cd website && npm run build
+
+  mcp-registry:
+    name: MCP Registry metadata
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: server.json, Dockerfile.mcp label and Cargo.toml version agree
+        run: bash scripts/check-mcp-registry.sh
+      - name: server.json validates against the registry schema (pinned mcp-publisher)
+        run: |
+          curl -fsSL -o mcp-publisher.tar.gz \
+            https://github.com/modelcontextprotocol/registry/releases/download/v1.8.1/mcp-publisher_linux_amd64.tar.gz
+          echo "a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc  mcp-publisher.tar.gz" | sha256sum -c -
+          tar xzf mcp-publisher.tar.gz mcp-publisher
+          ./mcp-publisher validate server.json

@@ -1,0 +1,58 @@
+[build-system]
+requires = ["maturin>=1.0,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "zyvor-guestkit"
+dynamic = ["version"]
+description = "Pure Rust VM disk toolkit with beautiful output, Windows registry parsing, and VM migration support - Python bindings"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "LicenseRef-Zyvor-Production-1.0" }
+keywords = ["vm", "disk", "qcow2", "vmdk", "inspection", "guestfs"]
+authors = [
+    { name = "ZyvorAI Labs Private Limited", email = "info@zyvor.dev" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Rust",
+    "Topic :: System :: Filesystems",
+    "Topic :: System :: Systems Administration",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Utilities",
+]
+
+[project.urls]
+Homepage = "https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit"
+Repository = "https://github.com/zyvorai/guestkit"
+Documentation = "https://github.com/zyvorai/guestkit/tree/main/docs"
+"Bug Tracker" = "https://github.com/zyvorai/guestkit/issues"
+"Enterprise & sales" = "https://zyvor.dev/contact?utm_source=github&utm_medium=guestkit"
+Changelog = "https://github.com/zyvorai/guestkit/releases"
+
+[tool.maturin]
+manifest-path = "Cargo.toml"
+bindings = "pyo3"
+features = ["python-bindings"]
+module-name = "guestkit"
+include = ["guestkit.pyi"]
+# maturin builds the extension as cdylib via `cargo rustc --crate-type cdylib`
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+markers = [
+    "requires_image: marks tests as requiring a disk image (deselect with '-m \"not requires_image\"')",
+]

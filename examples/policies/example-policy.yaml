@@ -1,0 +1,57 @@
+name: "Example Security Policy"
+version: "1.0.0"
+description: "Example policy for demonstration"
+
+rules:
+  - id: "PKG-001"
+    name: "OpenSSH Server Installed"
+    description: "Ensure OpenSSH server is installed"
+    severity: "medium"
+    rule_type:
+      type: "package_installed"
+      package: "openssh-server"
+    remediation: "Install openssh-server package"
+
+  - id: "PKG-002"
+    name: "Telnet Not Installed"
+    description: "Ensure telnet is not installed"
+    severity: "high"
+    rule_type:
+      type: "package_forbidden"
+      package: "telnet"
+    remediation: "Remove telnet package"
+
+  - id: "FILE-001"
+    name: "Password File Exists"
+    description: "Ensure /etc/passwd exists"
+    severity: "critical"
+    rule_type:
+      type: "file_exists"
+      path: "/etc/passwd"
+
+  - id: "PERM-001"
+    name: "SSH Config Permissions"
+    description: "Ensure /etc/ssh/sshd_config has correct permissions"
+    severity: "high"
+    rule_type:
+      type: "file_permissions"
+      path: "/etc/ssh/sshd_config"
+      mode: "600"
+    remediation: "chmod 600 /etc/ssh/sshd_config"
+
+  - id: "SVC-001"
+    name: "SSH Service Enabled"
+    description: "Ensure SSH service is enabled"
+    severity: "medium"
+    rule_type:
+      type: "service_enabled"
+      service: "sshd"
+    remediation: "systemctl enable sshd"
+
+  - id: "USER-001"
+    name: "Root User Exists"
+    description: "Ensure root user exists"
+    severity: "critical"
+    rule_type:
+      type: "user_exists"
+      username: "root"

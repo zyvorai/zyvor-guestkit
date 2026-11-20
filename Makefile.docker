@@ -1,0 +1,107 @@
+# Docker-specific Makefile for guestkit
+# Usage: make -f Makefile.docker <target>
+
+.PHONY: docker-build docker-test docker-run docker-clean docker-push help
+
+IMAGE_NAME ?= guestkit
+IMAGE_TAG ?= latest
+REGISTRY ?= docker.io
+VM_PATH ?= ./test-vms
+OUTPUT_PATH ?= ./test-output
+
+help:
+	@echo "Docker targets for guestkit:"
+	@echo "  docker-build        - Build Docker image"
+	@echo "  docker-test         - Test Docker setup"
+	@echo "  docker-run          - Run guestkit in container (interactive)"
+	@echo "  docker-inspect      - Inspect a VM (requires VM_PATH and VM_FILE)"
+	@echo "  docker-batch        - Batch inspect VMs in VM_PATH"
+	@echo "  docker-clean        - Remove Docker image and volumes"
+	@echo "  docker-push         - Push image to registry"
+	@echo ""
+	@echo "Variables:"
+	@echo "  IMAGE_NAME=$(IMAGE_NAME)"
+	@echo "  IMAGE_TAG=$(IMAGE_TAG)"
+	@echo "  VM_PATH=$(VM_PATH)"
+	@echo "  OUTPUT_PATH=$(OUTPUT_PATH)"
+	@echo ""
+	@echo "Examples:"
+	@echo "  make -f Makefile.docker docker-build"
+	@echo "  make -f Makefile.docker docker-inspect VM_FILE=vm.qcow2"
+	@echo "  make -f Makefile.docker docker-batch VM_PATH=./vms"
+
+docker-build:
+	@echo "Building Docker image $(IMAGE_NAME):$(IMAGE_TAG)..."
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+docker-test: docker-build
+	@echo "Testing Docker setup..."
+	./scripts/test-docker.sh
+
+docker-run: docker-build
+	@echo "Running guestkit container interactively..."
+	docker run -it --rm --privileged \
+		-v $(VM_PATH):/vms:ro \
+		-v $(OUTPUT_PATH):/output \
+		-v /dev:/dev \
+		$(IMAGE_NAME):$(IMAGE_TAG) bash
+
+docker-inspect: docker-build
+ifndef VM_FILE
+	@echo "Error: VM_FILE not specified"
+	@echo "Usage: make -f Makefile.docker docker-inspect VM_FILE=vm.qcow2"
+	@exit 1
+endif
+	@echo "Inspecting $(VM_FILE)..."
+	@mkdir -p $(OUTPUT_PATH)
+	docker run --rm --privileged \
+		-v $(VM_PATH):/vms:ro \
+		-v $(OUTPUT_PATH):/output \
+		-v /dev:/dev \
+		$(IMAGE_NAME):$(IMAGE_TAG) \
+		inspect /vms/$(VM_FILE) --output json > $(OUTPUT_PATH)/$(VM_FILE).json
+
+docker-batch: docker-build
+	@echo "Batch inspecting VMs in $(VM_PATH)..."
+	@mkdir -p $(OUTPUT_PATH)
+	docker run --rm --privileged \
+		-v $(VM_PATH):/vms:ro \
+		-v $(OUTPUT_PATH):/output \
+		-v /dev:/dev \
+		$(IMAGE_NAME):$(IMAGE_TAG) \
+		inspect-batch /vms/*.qcow2 --parallel 4 --output json
+
+docker-compose-up:
+	@echo "Starting with docker-compose..."
+	docker-compose up -d
+
+docker-compose-down:
+	@echo "Stopping docker-compose..."
+	docker-compose down
+
+docker-clean:
+	@echo "Cleaning up Docker resources..."
+	docker rmi $(IMAGE_NAME):$(IMAGE_TAG) || true
+	docker volume rm guestkit-cache guestkit-config || true
+	@echo "Cleanup complete"
+
+docker-push: docker-build
+	@echo "Tagging and pushing to $(REGISTRY)..."
+	docker tag $(IMAGE_NAME):$(IMAGE_TAG) $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+	docker push $(REGISTRY)/$(IMAGE_NAME):$(IMAGE_TAG)
+
+# Development targets
+docker-shell: docker-build
+	@echo "Opening shell in container..."
+	docker run -it --rm --privileged \
+		-v $(VM_PATH):/vms:ro \
+		-v /dev:/dev \
+		--entrypoint /bin/bash \
+		$(IMAGE_NAME):$(IMAGE_TAG)
+
+docker-logs:
+	docker-compose logs -f guestkit
+
+docker-size:
+	@echo "Docker image size:"
+	@docker images $(IMAGE_NAME):$(IMAGE_TAG) --format "{{.Repository}}:{{.Tag}}\t{{.Size}}"

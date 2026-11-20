@@ -1,0 +1,178 @@
+{
+  "routes": [
+    {
+      "label": "Getting Started",
+      "path": "getting-started",
+      "category": "Onboarding",
+      "legacy": false
+    },
+    {
+      "label": "Quick Reference",
+      "path": "quick-reference",
+      "category": "Onboarding",
+      "legacy": false
+    },
+    {
+      "label": "CLI Guide",
+      "path": "cli-guide",
+      "category": "Onboarding",
+      "legacy": false
+    },
+    {
+      "label": "Interactive Mode",
+      "path": "interactive-mode",
+      "category": "Onboarding",
+      "legacy": false
+    },
+    {
+      "label": "Inspect",
+      "path": "inspect",
+      "category": "Inspection",
+      "legacy": false
+    },
+    {
+      "label": "Filesystems",
+      "path": "filesystems",
+      "category": "Inspection",
+      "legacy": false
+    },
+    {
+      "label": "Packages",
+      "path": "packages",
+      "category": "Inspection",
+      "legacy": false
+    },
+    {
+      "label": "Services & Users",
+      "path": "services-users",
+      "category": "Inspection",
+      "legacy": false
+    },
+    {
+      "label": "Network Inspect",
+      "path": "network",
+      "category": "Inspection",
+      "legacy": false
+    },
+    {
+      "label": "Guest Files",
+      "path": "files",
+      "category": "Guest Files",
+      "legacy": false
+    },
+    {
+      "label": "Guest Control Fabric",
+      "path": "guest-control-fabric",
+      "category": "Guest Files",
+      "legacy": false
+    },
+    {
+      "label": "Guest Agent",
+      "path": "guest-agent",
+      "category": "Guest Agent",
+      "legacy": false
+    },
+    {
+      "label": "Doctor",
+      "path": "doctor",
+      "category": "Assurance",
+      "legacy": false
+    },
+    {
+      "label": "Migration Plan",
+      "path": "migrate-plan",
+      "category": "Assurance",
+      "legacy": false
+    },
+    {
+      "label": "Migration Assurance",
+      "path": "migration-assurance",
+      "category": "Assurance",
+      "legacy": false
+    },
+    {
+      "label": "Fix Plans",
+      "path": "fix-plans",
+      "category": "Fix Plans",
+      "legacy": false
+    },
+    {
+      "label": "Repair",
+      "path": "repair",
+      "category": "Fix Plans",
+      "legacy": false
+    },
+    {
+      "label": "Policy Gate",
+      "path": "policy",
+      "category": "Assurance",
+      "legacy": false
+    },
+    {
+      "label": "Fleet",
+      "path": "fleet",
+      "category": "Fleet",
+      "legacy": false
+    },
+    {
+      "label": "Forensic Diff",
+      "path": "forensic-diff",
+      "category": "Forensics",
+      "legacy": false
+    },
+    {
+      "label": "Profiles",
+      "path": "profiles",
+      "category": "Profiles",
+      "legacy": false
+    },
+    {
+      "label": "Export Formats",
+      "path": "export-formats",
+      "category": "Export",
+      "legacy": false
+    },
+    {
+      "label": "KubeVirt Integration",
+      "path": "kubevirt-integration",
+      "category": "Integration",
+      "legacy": false
+    },
+    {
+      "label": "Zeus VM Tools",
+      "path": "zeus-vm-tools",
+      "category": "Integration",
+      "legacy": false
+    },
+    {
+      "label": "TUI (guestctl)",
+      "path": "tui",
+      "category": "Interfaces",
+      "legacy": false
+    },
+    {
+      "label": "Python Bindings",
+      "path": "python-bindings",
+      "category": "Interfaces",
+      "legacy": false
+    },
+    {
+      "label": "VM Migration Guide",
+      "path": "vm-migration",
+      "category": "Guides",
+      "legacy": false
+    },
+    {
+      "label": "Troubleshooting",
+      "path": "troubleshooting",
+      "category": "Support",
+      "legacy": false
+    },
+    {
+      "label": "FAQ",
+      "path": "faq",
+      "category": "Support",
+      "legacy": false
+    }
+  ]
+}

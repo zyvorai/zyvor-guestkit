@@ -1,0 +1,86 @@
+name: Self-Hosted NBD Tests
+
+# Runs the full test suite with none of ci.yml's NBD-related --skip flags.
+#
+# Why this exists: ci.yml's main `test` job skips every test that reaches
+# past read-only inspection (mkfs, mount, file writes) — anything routing
+# through guestfs/mount.rs's NBD attach path — because qemu-nbd
+# deterministically fails ("Failed to set NBD socket") on GitHub-hosted
+# runners, every device, every time. That's a real coverage gap (not just
+# redundant qcow2/vmdk-specific coverage), confirmed after trying device
+# permission fixes, loading the nbd kernel module, and serializing test
+# execution to rule out a race — see ci.yml's "Run tests" step for the full
+# skip list and investigation notes. This workflow exists to close that gap
+# on infrastructure where NBD actually works.
+#
+# workflow_dispatch only, deliberately — never `pull_request` or `push`.
+# Self-hosted runners on a repo that also accepts external PRs must never
+# be wired to `pull_request`: a fork PR's workflow changes run with your
+# runner's credentials and network access before any maintainer reviews
+# them. Manual dispatch means a maintainer explicitly decides to run this,
+# after looking at what's on the branch.
+#
+# Provisioning a runner (one-time, by a repo admin — nothing here does
+# this for you):
+#   1. A Linux host/VM with: qemu-utils installable, the `nbd` kernel
+#      module loadable (`modprobe nbd`), and a user with passwordless sudo
+#      for losetup/qemu-nbd/modprobe (same requirement ci.yml's hosted
+#      runner already has via the default `runner` user).
+#   2. Settings -> Actions -> Runners -> New self-hosted runner in this
+#      repo (or org), following GitHub's setup instructions.
+#   3. When configuring the runner, add labels: `self-hosted,linux,nbd`
+#      (the `nbd` label is what scopes this workflow to that specific
+#      host — don't reuse a general-purpose self-hosted runner for
+#      anything else without thinking through the blast radius first).
+#   4. Run it as a service (`svc.sh install && svc.sh start`) so it's
+#      available when someone dispatches this workflow.
+#
+# Trigger from the Actions tab ("Run workflow") or:
+#   gh workflow run self-hosted-nbd-tests.yml
+
+on:
+  workflow_dispatch: {}
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  nbd-tests:
+    name: Full Suite (NBD-capable runner)
+    runs-on: [self-hosted, linux, nbd]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils libssl-dev libsystemd-dev pkg-config
+
+      - name: Setup loop and NBD devices
+        run: |
+          sudo modprobe loop max_part=8 || true
+          sudo chmod 666 /dev/loop-control 2>/dev/null || true
+          sudo chmod 666 /dev/loop[0-9]* 2>/dev/null || true
+          sudo modprobe nbd max_part=8 || true
+          sudo chmod 666 /dev/nbd[0-9]* 2>/dev/null || true
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Run full test suite (no NBD skips)
+        run: |
+          # --test-threads=1: loop-device allocation still has a check-then-use
+          # window across parallel test threads. NBD allocate+connect is
+          # flock-serialized (see scripts/test-nbd-concurrent.sh / fluxvm#104).
+          cargo test --verbose -- --test-threads=1
+
+      - name: Concurrent NBD allocate+connect
+        run: |
+          chmod +x scripts/test-nbd-concurrent.sh
+          ./scripts/test-nbd-concurrent.sh --live

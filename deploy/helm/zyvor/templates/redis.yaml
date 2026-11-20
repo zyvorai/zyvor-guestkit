@@ -1,0 +1,83 @@
+{{- if .Values.persistence.redis.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-data
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: redis
+spec:
+  accessModes:
+    - {{ .Values.persistence.redis.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.persistence.redis.size }}
+  {{- if .Values.persistence.redis.storageClass }}
+  storageClassName: {{ .Values.persistence.redis.storageClass | quote }}
+  {{- end }}
+---
+{{- end }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          {{- if .Values.redis.password }}
+          command:
+            - redis-server
+            - --requirepass
+            - {{ .Values.redis.password | quote }}
+            {{- if .Values.persistence.redis.enabled }}
+            - --appendonly
+            - "yes"
+            - --dir
+            - /data
+            {{- end }}
+          {{- else if .Values.persistence.redis.enabled }}
+          command:
+            - redis-server
+            - --appendonly
+            - "yes"
+            - --dir
+            - /data
+          {{- end }}
+          ports:
+            - containerPort: 6379
+          {{- if .Values.persistence.redis.enabled }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          {{- end }}
+      {{- if .Values.persistence.redis.enabled }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: redis-data
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: {{ .Values.namespace }}
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379

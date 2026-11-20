@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>User Documentation Overview — GuestKit</title>
+<style>
+@page{size:A4;margin:15mm 16mm}*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#1f2937;line-height:1.58;font-size:10.5pt}
+.cover{height:262mm;margin:-15mm -16mm 0;background:linear-gradient(135deg,#1c1917,#78350f,#0d1b2a);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;page-break-after:always;position:relative}
+.cover .kicker{letter-spacing:5px;text-transform:uppercase;opacity:.72;margin-bottom:1.4em}
+.cover h1{font-size:3.2em;font-weight:800;letter-spacing:-2px}
+.cover h1 span{color:#fbbf24}
+.cover .sub{font-size:1.3em;font-weight:300;opacity:.93;margin:1em 0;max-width:24em}
+.cover .badge{display:inline-block;background:rgba(96,165,250,.2);border:1px solid #fbbf24;padding:8px 22px;border-radius:20px;margin-top:2em}
+.cover .foot{position:absolute;bottom:34px;font-size:.82em;opacity:.6}
+h2{page-break-before:always;margin:0 0 .35em;font-size:1.55em;font-weight:750;color:#12203a;border-bottom:2px solid #e5edfb;padding-bottom:.28em}
+h2:first-of-type{page-break-before:avoid}
+h3{margin:1.1em 0 .4em;font-size:1.12em;font-weight:700}
+p,li{margin:.4em 0}ul,ol{margin:.5em 0 .9em 1.4em}
+a{color:#2563eb;text-decoration:none}
+code{background:#eef2f7;padding:1px 6px;border-radius:4px;font-size:.86em;font-family:ui-monospace,Menlo,monospace}
+pre{background:#0f172a;color:#e2e8f0;padding:12px 15px;border-radius:9px;overflow-x:auto;margin:.8em 0}
+table{width:100%;border-collapse:collapse;margin:.8em 0 1.1em;font-size:9.5pt}
+th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f1f5f9}
+hr{border:none;border-top:1px solid #e5e7eb;margin:1.2em 0}
+</style></head><body>
+<section class="cover"><div class="kicker">ZyvorAI Labs · User Documentation</div>
+<h1>Guest<span>Kit</span></h1>
+<div class="sub">User Documentation Overview</div>
+<div class="badge">2026-08-29</div>
+<div class="foot">zyvor.dev · Confidential — for licensed users</div></section>
+<main><p>Offline VM intelligence — inspect disks without booting, score boot readiness, and produce hypervisor-aware fix plans.</p>
+<table>
+<thead>
+<tr>
+<th>You want to…</th>
+<th>Open</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Install and log in</td>
+<td><a href="getting-started.md">Getting Started</a></td>
+</tr>
+<tr>
+<td>Learn the shell</td>
+<td><a href="using-the-dashboard.md">Using the Dashboard</a></td>
+</tr>
+<tr>
+<td>Follow a page, step by step</td>
+<td><a href="pages/README.md">Page-by-page guides</a></td>
+</tr>
+<tr>
+<td>Look up any screen</td>
+<td><a href="PAGE_INDEX.md">Complete page index</a></td>
+</tr>
+<tr>
+<td>Deploy, auth, ports</td>
+<td><a href="admin-basics.md">Admin basics</a></td>
+</tr>
+<tr>
+<td>Multi-page jobs</td>
+<td><a href="workflows.md">Common workflows</a></td>
+</tr>
+<tr>
+<td>Capability map</td>
+<td><a href="../guestkit-user-feature-guide.md">Feature Guide</a></td>
+</tr>
+</tbody></table>
+<h2>Printable PDFs</h2>
+<pre><code class="language-bash">node scripts/user-docs/build-user-pdfs.mjs
+</code></pre>
+<p>Output lands in <a href="pdf/"><code>pdf/</code></a>:</p>
+<table>
+<thead>
+<tr>
+<th>PDF</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>GuestKit-User-README.pdf</code></td>
+<td>This overview</td>
+</tr>
+<tr>
+<td><code>GuestKit-Getting-Started.pdf</code></td>
+<td>Access, basics, workflows</td>
+</tr>
+<tr>
+<td><code>GuestKit-Page-by-Page.pdf</code></td>
+<td>Complete page manual</td>
+</tr>
+<tr>
+<td><code>GuestKit-Admin-Basics.pdf</code></td>
+<td>Deploy, auth, ports</td>
+</tr>
+</tbody></table>
+<h2>Product at a glance</h2>
+<p>Offline VM intelligence — inspect disks without booting, score boot readiness, and produce hypervisor-aware fix plans.</p>
+<h2>Support surfaces (quick map)</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Surface</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Inspect</td>
+<td><code>guestkit inspect</code></td>
+</tr>
+<tr>
+<td>Doctor</td>
+<td><code>guestkit doctor</code></td>
+</tr>
+<tr>
+<td>Fix plans</td>
+<td>fix-plans / repair</td>
+</tr>
+<tr>
+<td>TUI</td>
+<td><code>guestctl</code></td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>ZyvorAI Labs · <a href="https://zyvor.dev">zyvor.dev</a> · GuestKit</em></p>
+</main></body></html>

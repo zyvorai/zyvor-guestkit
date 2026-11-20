@@ -1,0 +1,17 @@
+[package]
+name = "guestkit-agent-protocol"
+version = "0.1.0"
+edition = "2021"
+authors = ["ZyvorAI Labs Private Limited <info@zyvor.dev>"]
+license = "LicenseRef-Zyvor-Production-1.0"
+description = "JSON-RPC protocol types for the GuestKit in-guest agent"
+repository = "https://github.com/zyvorai/guestkit"
+keywords = ["virtualization", "vm", "agent", "jsonrpc"]
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+
+[dev-dependencies]
+serde_json = "1.0"

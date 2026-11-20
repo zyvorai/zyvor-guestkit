@@ -1,0 +1,31 @@
+{
+  "$schema": "https://guestkit.dev/schemas/job-v1.json",
+  "version": "1.0",
+  "job_id": "echo-test-001",
+  "created_at": "2026-01-30T16:00:00Z",
+  "kind": "VMOperation",
+  "operation": "system.echo",
+
+  "metadata": {
+    "name": "echo-test"
+  },
+
+  "execution": {
+    "timeout_seconds": 60,
+    "priority": 5
+  },
+
+  "payload": {
+    "type": "system.echo.v1",
+    "data": {
+      "message": "Hello from guestkit worker!",
+      "timestamp": "2026-01-30T16:00:00Z",
+      "test_data": {
+        "foo": "bar",
+        "nested": {
+          "value": 42
+        }
+      }
+    }
+  }
+}

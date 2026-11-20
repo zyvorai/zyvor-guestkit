@@ -1,0 +1,181 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"/><title>Getting Started — GuestKit</title>
+<style>
+@page{size:A4;margin:15mm 16mm}*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{font-family:'Segoe UI',system-ui,sans-serif;color:#1f2937;line-height:1.58;font-size:10.5pt}
+.cover{height:262mm;margin:-15mm -16mm 0;background:linear-gradient(135deg,#1c1917,#78350f,#0d1b2a);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;page-break-after:always;position:relative}
+.cover .kicker{letter-spacing:5px;text-transform:uppercase;opacity:.72;margin-bottom:1.4em}
+.cover h1{font-size:3.2em;font-weight:800;letter-spacing:-2px}
+.cover h1 span{color:#fbbf24}
+.cover .sub{font-size:1.3em;font-weight:300;opacity:.93;margin:1em 0;max-width:24em}
+.cover .badge{display:inline-block;background:rgba(96,165,250,.2);border:1px solid #fbbf24;padding:8px 22px;border-radius:20px;margin-top:2em}
+.cover .foot{position:absolute;bottom:34px;font-size:.82em;opacity:.6}
+h2{page-break-before:always;margin:0 0 .35em;font-size:1.55em;font-weight:750;color:#12203a;border-bottom:2px solid #e5edfb;padding-bottom:.28em}
+h2:first-of-type{page-break-before:avoid}
+h3{margin:1.1em 0 .4em;font-size:1.12em;font-weight:700}
+p,li{margin:.4em 0}ul,ol{margin:.5em 0 .9em 1.4em}
+a{color:#2563eb;text-decoration:none}
+code{background:#eef2f7;padding:1px 6px;border-radius:4px;font-size:.86em;font-family:ui-monospace,Menlo,monospace}
+pre{background:#0f172a;color:#e2e8f0;padding:12px 15px;border-radius:9px;overflow-x:auto;margin:.8em 0}
+table{width:100%;border-collapse:collapse;margin:.8em 0 1.1em;font-size:9.5pt}
+th,td{border:1px solid #e5e7eb;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f1f5f9}
+hr{border:none;border-top:1px solid #e5e7eb;margin:1.2em 0}
+</style></head><body>
+<section class="cover"><div class="kicker">ZyvorAI Labs · User Documentation</div>
+<h1>Guest<span>Kit</span></h1>
+<div class="sub">Getting Started</div>
+<div class="badge">2026-08-29</div>
+<div class="foot">zyvor.dev · Confidential — for licensed users</div></section>
+<main><p>Offline VM intelligence — inspect disks without booting, score boot readiness, and produce hypervisor-aware fix plans.</p>
+<h2>What you need</h2>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Linux host</td>
+<td>qemu-img / losetup / qemu-nbd (<code>qemu-utils</code>)</td>
+</tr>
+<tr>
+<td>Disk image</td>
+<td>qcow2 / vmdk / raw (guest shut down for writes)</td>
+</tr>
+<tr>
+<td>Optional UI</td>
+<td><code>:8088</code> zyvor-ui via GHCR compose</td>
+</tr>
+</tbody></table>
+<h2>1. Install</h2>
+<pre><code class="language-bash">cargo install guestkit
+# or install the release binary for your OS
+qemu-img --version
+guestkit version
+</code></pre>
+<h2>2. First doctor run</h2>
+<pre><code class="language-bash">guestkit doctor /path/to/disk.qcow2 --target kvm --explain
+</code></pre>
+<p>Optional TUI: <code>guestctl tui /path/to/disk.qcow2</code>.</p>
+<h2>3. Orient yourself</h2>
+<ol>
+<li><strong>Onboarding</strong> — Getting Started, CLI Guide, Interactive Mode, TUI</li>
+<li><strong>Inspection</strong> — Inspect, Filesystems, Packages, Network, Files</li>
+<li><strong>Assurance</strong> — Doctor, Migration Plan, Policy, Passport, Fleet</li>
+<li><strong>Fix</strong> — Fix Plans, Repair / Rescue</li>
+</ol>
+<h2>Next steps</h2>
+<ul>
+<li><a href="using-the-dashboard.md">Using the Dashboard</a> (TUI / optional web)</li>
+<li><a href="admin-basics.md">Admin basics</a></li>
+<li><a href="workflows.md">Common workflows</a></li>
+<li><a href="pages/README.md">Page guides</a></li>
+</ul>
+<hr>
+<p>GuestKit is primarily <strong>CLI + TUI</strong>, with an optional web Image Vault.</p>
+<h2>Surfaces</h2>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>How to open</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CLI</strong></td>
+<td><code>guestkit &lt;cmd&gt;</code> / <code>guestctl &lt;cmd&gt;</code></td>
+</tr>
+<tr>
+<td><strong>TUI</strong></td>
+<td><code>guestctl tui IMAGE</code> (aliases: <code>guestkit tui</code>, <code>guestkit ui</code>)</td>
+</tr>
+<tr>
+<td><strong>Interactive REPL</strong></td>
+<td><code>guestkit interactive IMAGE</code></td>
+</tr>
+<tr>
+<td><strong>File explorer</strong></td>
+<td><code>guestkit explore IMAGE [/path]</code></td>
+</tr>
+<tr>
+<td><strong>Optional web</strong></td>
+<td>GHCR compose → <code>http://&lt;host&gt;:8088</code></td>
+</tr>
+</tbody></table>
+<h2>TUI keys (Assurance)</h2>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>d</code></td>
+<td>Doctor</td>
+</tr>
+<tr>
+<td><code>t</code></td>
+<td>Cycle migration target</td>
+</tr>
+<tr>
+<td><code>p</code></td>
+<td>Preview plan</td>
+</tr>
+<tr>
+<td><code>e</code></td>
+<td>Export plan</td>
+</tr>
+<tr>
+<td><code>:</code></td>
+<td>Command palette</td>
+</tr>
+<tr>
+<td><code>h</code> / <code>?</code></td>
+<td>Help</td>
+</tr>
+</tbody></table>
+<h2>Browse vs act</h2>
+<p>Inspect / doctor / export are safe. <strong>Repair</strong>, <strong>plan apply</strong>, and <strong>rescue</strong> mutate disks — shut down the guest, dry-run first, keep a backup.</p>
+<h2>Related</h2>
+<ul>
+<li><a href="getting-started.md">Getting Started</a></li>
+<li><a href="pages/interfaces/tui.md">TUI</a></li>
+<li><a href="workflows.md">Common workflows</a></li>
+</ul>
+<hr>
+<p>End-to-end GuestKit jobs. Prefer CLI; optional TUI / web where noted.</p>
+<h2>First-hour assurance</h2>
+<ol>
+<li>Install CLI (<code>cargo install guestkit</code> or release binary); confirm <code>qemu-img</code></li>
+<li><a href="pages/assurance/doctor.md">Doctor</a> — <code>guestkit doctor IMAGE --target kvm --explain</code></li>
+<li><a href="pages/assurance/migrate-plan.md">Migration Plan</a> — export a FixPlan YAML</li>
+<li>Optional: <a href="pages/interfaces/tui.md">TUI</a> — <code>guestctl tui IMAGE</code></li>
+</ol>
+<h2>Inspect without booting</h2>
+<ol>
+<li><a href="pages/inspection/inspect.md">Inspect</a></li>
+<li><a href="pages/inspection/filesystems.md">Filesystems</a> → mount in <a href="pages/onboarding/interactive-mode.md">Interactive Mode</a> if needed</li>
+<li><a href="pages/inspection/packages.md">Packages</a> / <a href="pages/inspection/network.md">Network</a> / <a href="pages/guest-files/files.md">Guest Files</a></li>
+</ol>
+<h2>Repair then re-score</h2>
+<ol>
+<li>Doctor blockers</li>
+<li><a href="pages/fix-plans/repair.md">Repair</a> dry-run → apply (guest shut down)</li>
+<li>Or <a href="pages/fix-plans/fix-plans.md">Fix Plans</a> — preview → apply</li>
+<li>Re-run Doctor / passport verify</li>
+</ol>
+<h2>Fleet wave</h2>
+<ol>
+<li><a href="pages/fleet/fleet.md">Fleet</a> — <code>fleet analyze</code> / <code>wave-plan</code></li>
+<li><a href="pages/forensics/forensic-diff.md">Forensic Diff</a> or <code>fleet watch</code> for drift</li>
+<li><a href="pages/assurance/policy.md">Policy Gate</a> before cutover</li>
+</ol>
+<h2>Related</h2>
+<ul>
+<li><a href="getting-started.md">Getting Started</a></li>
+<li><a href="pages/README.md">Page-by-page guides</a></li>
+<li><a href="admin-basics.md">Admin basics</a></li>
+</ul>
+</main></body></html>

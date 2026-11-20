@@ -1,0 +1,195 @@
+namespace: zyvor
+# Let `helm --create-namespace` (or a pre-created namespace) own the namespace.
+# Set true only if you install without --create-namespace.
+createNamespace: false
+
+ingress:
+  enabled: true
+  className: nginx
+  # Protocol the controller uses to reach the zyvor-ui Service. The UI image serves HTTPS only
+  # (self-signed, port 8443), so this must stay HTTPS. Applied as the nginx
+  # backend-protocol annotation on the Ingress and, when className is traefik, as
+  # service.serversscheme on the zyvor-ui Service (Traefik must also accept the self-signed
+  # certificate, e.g. --serversTransport.insecureSkipVerify=true).
+  uiBackendProtocol: HTTPS
+  hosts:
+    ui: console.zyvor.local
+    api: api.zyvor.local
+    agentMtls: agent-api.zyvor.local
+  # TLS termination at the ingress (UI + API). Agent mTLS ingress stays passthrough.
+  tls:
+    enabled: false
+    secretName: zyvor-tls
+  certManager:
+    enabled: false
+    # ClusterIssuer / Issuer name when certManager.enabled=true
+    clusterIssuer: letsencrypt-prod
+
+networkPolicy:
+  enabled: true
+
+guestkitWorker:
+  image: guestkit-worker:latest
+  replicas: 2
+  transport: redis
+  privileged: true
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      cpu: 2
+      memory: 8Gi
+
+zyvorApi:
+  image: zyvor-api:latest
+  replicas: 1
+  storageClass: longhorn
+  defaultNamespace: zyvor
+  privileged: false
+  # Optional default for live VM agent-proxy (e.g. http://127.0.0.1:8765)
+  agentProxyUrl: ""
+  agentProxy:
+    enabled: false
+    vsockPort: 1234
+    listen: "127.0.0.1:8765"
+  agentMtls:
+    enabled: true
+    bindAddr: "0.0.0.0:8443"
+    serverSans: "localhost,zyvor-api,api.zyvor.local,agent-api.zyvor.local"
+  packetwolf:
+    correlationUrl: ""   # e.g. http://packetwolf-api.packetwolf.svc:8080/api/v1/correlate/guest-health
+    fleetCorrelateUrl: ""
+    fleetIntervalSecs: 300
+  auth:
+    enabled: false
+    jwtSecret: ""          # set via secret when auth.enabled=true
+    agentBootstrapToken: "" # required when auth.enabled=true (see zyvor-api config)
+    jwtIssuer: guestkit
+    jwtExpiryHours: 24
+    defaultRole: operator
+    publicBaseUrl: "http://api.zyvor.local"
+    uiBaseUrl: "http://console.zyvor.local"
+    nfsMountRoot: "/mnt/nfs"
+    oidc:
+      issuerUrl: ""
+      clientId: ""
+      clientSecret: ""     # set via secret when provided
+      buttonLabel: "Sign in with SSO"
+    saml:
+      enabled: false
+      entityId: ""
+      ssoUrl: ""
+      metadataUrl: ""
+      certificatePem: ""
+      buttonLabel: "Sign in with SAML"
+  service:
+    type: ClusterIP
+    nodePort: 30080
+
+zyvorUi:
+  image: zyvor-ui:latest
+  replicas: 1
+  service:
+    type: ClusterIP
+    nodePort: 30081
+
+postgresql:
+  image: postgres:16-alpine
+  # Optional pod securityContext (e.g. appArmorProfile, see values-ci.yaml).
+  securityContext: {}
+  user: zyvor
+  password: zyvor
+  database: zyvor
+  memoryRequest: 128Mi
+
+redis:
+  image: redis:7-alpine
+  password: ""   # set in values-prod.yaml; enables Redis AUTH when non-empty
+
+minio:
+  enabled: true
+  # minio/minio is no longer pullable from Docker Hub or quay.io; the Bitnami legacy mirror still
+  # serves this pinned build. Its entrypoint is a Bitnami wrapper, so run the binary directly.
+  image: docker.io/bitnamilegacy/minio:2025.7.23-debian-12-r5
+  # Container command override (needed for images whose entrypoint is not `minio`, e.g. Bitnami).
+  # Set to [] when using an image whose entrypoint already is `minio`.
+  command: ["minio"]
+  accessKey: zyvor
+  secretKey: zyvor-secret
+  service:
+    type: ClusterIP
+    nodePort: 30090
+
+persistence:
+  vmImages:
+    size: 100Gi
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    # Set hostPath on single-node k3s (shared API + worker image store)
+    hostPath: ""
+  # Eval/default uses emptyDir. Enable PVCs in values-prod.yaml for durable data.
+  postgresql:
+    enabled: false
+    size: 20Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+  redis:
+    enabled: false
+    size: 5Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+  minio:
+    enabled: false
+    size: 50Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+
+# Nightly tar of the image vault PVC into a separate backup PVC (retention by count).
+backup:
+  imageVault:
+    enabled: false
+    schedule: "0 2 * * *"
+    retain: 7
+    size: 100Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
+    image: busybox:1.36
+
+kubevirt:
+  enabled: false
+
+vmtools:
+  installCrds: true
+  defaultPolicy:
+    enabled: true
+    autoInstall: false
+    autoUpgrade: false
+    maxConcurrent: 3
+  bundle:
+    enabled: true
+    version: "0.1.0"
+    channel: stable
+    baseUrl: ""
+    linuxTarSha256: ""
+    linuxTarSignature: ""
+  reconcile:
+    enabled: false
+    schedule: "*/15 * * * *"
+    image: curlimages/curl:8.5.0
+    preferIso: false
+
+# Scheduled `guestkit fleet watch` run against the image vault: diffs each
+# VM's evidence against its stored golden baseline and reports drift.
+# Requires PVC-backed persistence.vmImages (unset hostPath), same as
+# backup.imageVault.
+fleetWatch:
+  enabled: false
+  schedule: "0 * * * *"
+  image: guestkit-worker:latest
+  recursive: true
+  failOnDrift: true
+  baseline:
+    size: 1Gi
+    storageClass: ""
+    accessMode: ReadWriteOnce
