@@ -102,5 +102,5 @@ Guest files are reached through a host mount of the attached device, so everythi
 - [Dump virsh → GuestKit](../user-guides/virsh-to-guestkit.md)
 - [Guest agent](../features/guest-agent.md)
 - [KubeVirt integration](../features/kubevirt-integration.md)
-- [CE vs Enterprise](../ce-vs-enterprise.md)
+- [Source-available vs Enterprise](../ce-vs-enterprise.md)
 - [User stories](../USER_STORIES.md)

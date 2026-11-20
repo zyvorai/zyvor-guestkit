@@ -19,7 +19,7 @@ This repository ships the source-available **GuestKit** toolkit — the offline 
 | **Sales & guided demos** | [sales@zyvor.dev](mailto:sales@zyvor.dev) · [contact form](https://zyvor.dev/contact?intent=demo) |
 | **General inquiries** | [info@zyvor.dev](mailto:info@zyvor.dev) |
 
-## Why buy GuestKit Enterprise (not only OSS)
+## Why buy GuestKit Enterprise (not only the source-available repo)
 
 | Buyer need | Source-available GuestKit | GuestKit Enterprise |
 | --- | --- | --- |

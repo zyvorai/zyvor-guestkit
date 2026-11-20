@@ -86,7 +86,7 @@ export default function Gallery(): ReactNode {
         <div className="container">
           <Heading as="h1">Product tour</Heading>
           <p>
-            The web console below is the bundled OSS UI rendering its offline
+            The web console below is the bundled source-available UI rendering its offline
             demo data. The recorded demos further down were captured live
             against real deployments.
           </p>

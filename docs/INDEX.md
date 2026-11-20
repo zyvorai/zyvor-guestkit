@@ -22,7 +22,7 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 | Guide | Description |
 |-------|-------------|
 | [TUI dashboard](features/tui-enhancements.md) | Two-tier tabs, **Assurance** (doctor/migrate-plan), fix-plan preview — [zyvor.dev/guestkit](https://zyvor.dev/guestkit) |
-| [Web Image Vault](user/using-the-dashboard.md) | OSS zyvor-ui: inventory tabs, Assurance, Profiles, Files browse |
+| [Web Image Vault](user/using-the-dashboard.md) | Source-available zyvor-ui: inventory tabs, Assurance, Profiles, Files browse |
 | [File explorer](features/explore/EXPLORE-QUICKSTART.md) | `guestkit explore` (+ web Browse files) |
 | [Interactive shell](user-guides/interactive-mode.md) | REPL mode |
 | [Security profiles](user-guides/profiles.md) | Security, compliance, migration profiles |
@@ -75,7 +75,7 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 
 | Guide | Description |
 |-------|-------------|
-| [Source-available vs Enterprise](ce-vs-enterprise.md) | OSS engine vs GuestKit Enterprise control plane |
+| [Source-available vs Enterprise](ce-vs-enterprise.md) | Source-available engine vs GuestKit Enterprise control plane |
 | [Enterprise guide](zyvor-enterprise.md) | Sales, SLAs, full HyperSDK suite |
 
 ## Examples

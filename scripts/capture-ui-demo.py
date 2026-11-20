@@ -2,7 +2,7 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
 # SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
 
-"""Capture the docs screenshots from the bundled OSS web UI's offline demo.
+"""Capture the docs screenshots from the bundled source-available web UI's offline demo.
 
 Serves deploy/ui/ on a local port, drives it with Google Chrome via Playwright
 (`pip install playwright`), and writes docs/img/ui-*.png. The data shown is the

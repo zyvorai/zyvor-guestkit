@@ -14,36 +14,16 @@ guestkit is a pure Rust toolkit for VM disk inspection and manipulation without 
 - Python bindings for automation
 - 578 disk image manipulation functions
 
-### How is GuestKit different from legacy appliance tooling?
 
-**GuestKit does not use legacy appliance tooling.** It is a pure Rust alternative with its own disk, partition, and filesystem stack (`guestkit::guestfs`, loop/NBD, assurance APIs). You do not need `legacy guest tools`, or `virt-inspector` to run GuestKit.
-
-The table below compares products for migration planning — not a dependency list:
-
-| Feature | guestkit | legacy appliance tooling |
-|---------|----------|----------------------------|
-| **Language** | Pure Rust | C + bindings |
-| **Dependencies** | Minimal (qemu-img, nbd for some formats) | Many C libraries |
-| **Installation** | Single binary | Complex dependencies |
-| **Performance** | Fast (loop devices) | Appliance boot overhead |
-| **API Coverage** | GuestKit assurance + inspect APIs | Full virt-* ecosystem |
-| **Windows Support** | Registry parsing built-in | Requires Windows tools |
-| **Visual Output** | Beautiful emojis + colors | Plain text |
-| **Migration** | Built-in fstab/crypttab rewriter | Manual scripting |
-
-**Bottom line:** Use GuestKit APIs (`doctor`, `migrate-plan`, `passport`, `run_boot_inspect`, Zyvor HTTP routes). Do not install legacy appliance tooling expecting GuestKit to call it.
-
-### How does GuestKit compare to Red Hat virt-v2v / MTV?
-
-They solve different jobs:
+### How does the Cutover Passport fit a migration pipeline?
 
 | Role | Tool |
 |------|------|
 | Discover / export | **HyperSDK** (`hyperctl`) |
-| Convert / deploy to KVM | **[h2kvm](https://github.com/zyvorai/h2kvm)** (`h2kvmctl`) or virt-v2v/MTV |
+| Convert / deploy to KVM | **[h2kvm](https://github.com/zyvorai/h2kvm)** (`h2kvmctl`) |
 | Certify cutover (score → fix → re-score) | **GuestKit Cutover Passport** |
 
-RH virt-v2v and MTV are **convert-first**. GuestKit is **assurance-first**: emit a reviewable Passport, gate CI with `passport verify --fail-below 80`, then hand off to h2kvm. MTV cannot skip that gate.
+GuestKit is **assurance-first**: emit a reviewable Passport, gate CI with `passport verify --fail-below 80`, then hand off to h2kvm.
 
 ```bash
 guestkit passport emit vm.qcow2 --target kvm -o passport.json

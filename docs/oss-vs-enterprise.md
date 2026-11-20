@@ -13,7 +13,7 @@
 - CLI · TUI · Python · self-hosted web/workers  
 - GitHub Action Passport gate  
 - Free `zyvor-ui` Image Vault dock  
-- Best for labs, CI, small fleets, and production without Enterprise extras  
+- Best for labs, CI, small fleets, and production use (a commercial license is required)  
 
 </td>
 <td width="50%" valign="top">

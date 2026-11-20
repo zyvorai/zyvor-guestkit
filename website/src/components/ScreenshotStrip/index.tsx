@@ -26,7 +26,7 @@ export default function ScreenshotStrip(): ReactNode {
           The web console
         </Heading>
         <p className="text--center">
-          The bundled OSS console rendering its offline demo data.{' '}
+          The bundled source-available console rendering its offline demo data.{' '}
           <Link to="/gallery">See the tour and recorded demos →</Link>
         </p>
         <div className={styles.grid}>

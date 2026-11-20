@@ -524,7 +524,7 @@
     "actions": [
       "Install: `cargo install guestkit`",
       "Not legacy-appliance-tooling \u2014 use GuestKit stack",
-      "Passport vs virt-v2v: certify then convert",
+      "Passport: certify, then convert",
       "Extract/list/rescue examples as in FAQ",
       "Cache under `~/.cache/guestkit/`; escalate with version + repro"
     ],

@@ -12,7 +12,7 @@ contact_links:
   - name: "ROI calculator"
     url: https://zyvor.dev/roi?utm_source=github&utm_medium=guestkit
     about: Estimate savings from VMware exit and platform migration
-  - name: "CE vs Enterprise"
+  - name: "Source-available vs Enterprise"
     url: https://github.com/zyvorai/guestkit/blob/main/docs/ce-vs-enterprise.md
     about: When to use this GitHub repo vs contact Zyvor for production
   - name: "💬 Discussions"

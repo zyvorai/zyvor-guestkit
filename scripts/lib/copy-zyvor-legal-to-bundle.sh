@@ -10,7 +10,7 @@ ROOT="${2:?repo root}"
 
 mkdir -p "${STAGE}/docs/legal" "${STAGE}/legal/templates"
 
-# Code license (LGPL, Apache, or proprietary LICENSE)
+# Code license (Zyvor Production License v1.0 LICENSE)
 if [[ -f "${ROOT}/LICENSE" ]]; then
   cp "${ROOT}/LICENSE" "${STAGE}/LICENSE"
 fi

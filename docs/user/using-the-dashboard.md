@@ -12,7 +12,7 @@ GuestKit ships **CLI**, **TUI**, and a source-available **web Image Vault** (`de
 | **File explorer (CLI)** | `guestkit explore IMAGE [/path]` |
 | **Web Image Vault** | GHCR compose → `http://<host>:8088` · or `./scripts/deploy-ui-remote.sh` (HTTPS lab) |
 
-## Web Image Vault (OSS zyvor-ui)
+## Web Image Vault (source-available zyvor-ui)
 
 Import a disk into the vault, then run the assure loop from the browser. The detail workspace mirrors TUI inventory + Assurance panes.
 

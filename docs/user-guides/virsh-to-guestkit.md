@@ -20,8 +20,6 @@ invocation.
 | `virsh qemu-agent-command $vm '{"execute":"guest-exec",...}'` | `guestkit qga --socket $SOCK --execute guest-exec --arguments '{"path":"/bin/true"}'` |
 | `virsh qemu-agent-command $vm '{"execute":"guestkit-rpc",...}'` | `guestkit agent-call --socket $SOCK --method guestkit.getVersion` |
 | Guess “will it boot?” by `virsh start` + `virsh console` | `guestkit doctor disk.qcow2 --target kvm --explain` |
-| Hand-edit fstab after `virt-v2v` | `guestkit migrate-plan disk.qcow2 --target kvm --export plan.yaml` then `guestkit plan apply` |
-| `guestfish` / libguestfs appliance | `guestkit inspect disk.qcow2`, `guestkit extract`, `guestkit rescue` |
 | `virsh dumpxml` just to find the disk path | `guestkit domain-disks domain.xml` |
 | `qemu-img check\|info\|snapshot` | `guestkit img check\|info\|snapshots` |
 | Hunt virtio-win ISO by hand | `guestkit virtio-win plan --image win.qcow2` |

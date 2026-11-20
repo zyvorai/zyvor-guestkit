@@ -2,8 +2,6 @@
 
 # GuestKit
 
-[Client overview (PDF)](docs/GuestKit-Client-Overview.pdf)
-
 [![CI](https://img.shields.io/github/actions/workflow/status/zyvorai/zyvor-guestkit/ci.yml?branch=main&style=flat-square&labelColor=1d1d1f&label=CI)](https://github.com/zyvorai/zyvor-guestkit/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://crates.io/crates/guestkit)
 [![PyPI](https://img.shields.io/pypi/v/zyvor-guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://pypi.org/project/zyvor-guestkit/)
@@ -108,28 +106,6 @@ CLI, TUI, QEMU, Python, web console, in-guest agent and a GitHub Action.<br>
 
 ![Capabilities at a glance: Assure, Repair, Certify, Surfaces](docs/ux/readme-capabilities.jpg)
 
-<a id="why-teams-switch"></a>
-
-The [full comparison](docs/why-teams-switch.md) has more rows, including fleet drift, the Carbon TUI with the in-guest agent, and `guestkit qga` as a drop-in for `virsh qemu-agent-command`.
-
----
-
-## GuestKit vs libguestfs + virt-v2v
-
-![GuestKit vs libguestfs + virt-v2v: not just convert it, prove it will boot](docs/ux/readme-vs.jpg)
-
-| | **GuestKit** | **libguestfs + virt-v2v** |
-|---|---|---|
-| Disk access | Rust engine; guest files reached through `qemu-nbd` or loop mounts on the host | Launches a small appliance VM to read and edit the disk |
-| Boot readiness | `doctor`: a 0–100 first-boot score per target, with blockers explained | Inspection and conversion; no readiness score |
-| Migration plan | `migrate-plan` per target (`kvm`, `proxmox`, `qemu`, `kubevirt`, `aws`, `azure`, `gcp`, `hyperv`) | `virt-v2v` converts a guest to run on KVM |
-| Repair | Fix plans with backups and rollback; `rescue` for SSH, GRUB and passwords | `virt-customize`, `virt-rescue` and `guestfish` for scripted edits |
-| Cutover evidence | Signed Cutover Passport and a GitHub Action that fails below a score | Not part of the toolkit |
-| Interfaces | CLI, TUI, Python, web console, in-guest agent, GitHub Action | CLI tools and language bindings |
-| **Choose libguestfs when** | | You need its broad filesystem and OS coverage, or virt-v2v's end-to-end conversion, and have no need for a score or a cutover record |
-
-GuestKit sits next to conversion tools rather than replacing all of them: [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) converts and deploys, and calls GuestKit for the offline fixes.
-
 ---
 
 ## See it live
@@ -148,7 +124,7 @@ GuestKit sits next to conversion tools rather than replacing all of them: [h2kvm
 
 <sub>Image Vault: import a disk, or try the offline demo.</sub>
 
-<sub>The bundled OSS web console rendering its offline demo data, not a live deployment. Demo videos are in the <a href="docs/gallery.md">gallery</a>.</sub>
+<sub>The bundled source-available web console rendering its offline demo data, not a live deployment. Demo videos are in the <a href="docs/gallery.md">gallery</a>.</sub>
 
 </div>
 
@@ -172,16 +148,7 @@ GuestKit sits next to conversion tools rather than replacing all of them: [h2kvm
       CLI · TUI · QEMU · Python · Web · Agent · GitHub Action
 ```
 
-<div align="center">
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/social/migration-1200x630-dark.png">
-  <img src="docs/social/migration-1200x630.png" alt="VMware to KubeVirt, four tools one path: Transiva exports, h2kvm converts and deploys, GuestKit assures, Zorvia operates, each with Community and Enterprise tiers." width="820">
-</picture>
-
-</div>
-
-**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Apache-2.0) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Zyvor Production License) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia/blob/main/docs/leave-openshift.md) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
+**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Zyvor Production License) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Zyvor Production License) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
 
 Architecture in depth: [docs/architecture/overview.md](docs/architecture/overview.md).
 
@@ -247,7 +214,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 - <a id="h2kvm-integration"></a>**h2kvm integration:** [docs/h2kvm-at-a-glance.md](docs/h2kvm-at-a-glance.md).
 - <a id="what-you-can-do"></a>**What you can do:** assure, plan, certify, repair, launch — [docs/capabilities.md](docs/capabilities.md).
 - <a id="run-the-free-web-stack-ghcr"></a>**Free web stack (GHCR):** [docs/web-stack-ghcr.md](docs/web-stack-ghcr.md).
-- <a id="open-source-vs-enterprise"></a>**Source-available vs Enterprise:** [docs/oss-vs-enterprise.md](docs/oss-vs-enterprise.md).
+- <a id="source-available-vs-enterprise"></a>**Source-available vs Enterprise:** [docs/oss-vs-enterprise.md](docs/oss-vs-enterprise.md).
 - <a id="platform-layout"></a>**Platform layout:** [docs/platform-layout.md](docs/platform-layout.md).
 - <a id="repository"></a>**Repository:** [docs/repository-layout.md](docs/repository-layout.md).
 - <a id="prerequisites"></a><a id="build"></a>**Prerequisites and build:** [docs/prerequisites-and-build.md](docs/prerequisites-and-build.md); `docs/` and this README are authoritative.

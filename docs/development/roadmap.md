@@ -52,7 +52,7 @@ The previously tracked Unreleased slices (Passport signing, day-0/rescue, GCF te
 
 None currently.
 
-## Not planned (open source)
+## Not planned
 
 - Hosted control plane (see [zyvor-enterprise.md](../zyvor-enterprise.md))
 - Automatic apply without dry-run/backup guardrails

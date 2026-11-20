@@ -28,7 +28,7 @@ const FeatureList: FeatureItem[] = [
   {
     title: 'Cutover Passport',
     description:
-      'A signed, verifiable record (guestkit passport emit / verify) — an audit trail for migration that MTV or virt-v2v can otherwise skip entirely.',
+      'A signed, verifiable record (guestkit passport emit / verify) — an audit trail for migration.',
     to: '/docs/features/vm-runtime',
   },
   {
