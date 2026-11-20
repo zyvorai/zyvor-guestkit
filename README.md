@@ -220,7 +220,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Source-available, Enterprise
 
-**Source-available under the Zyvor Production License v1.0.** This repo · a commercial license is required to run it (30-day trial key for evaluation). Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
+**Source-available under the Zyvor Production License v1.0.** This repo · free for non-production use; production use requires a paid commercial license ([pricing](https://zyvor.dev/pricing); 30-day trial key at [zyvor.dev/trial/start](https://zyvor.dev/trial/start)). Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
 
 **Enterprise — buy for programs.** Same engine — **not** a locked doctor. Command Center · Portfolio · Assurance · Migration Factory · Passport Authority · OIDC / RBAC / audit · SLA · air-gap · hypervisor exit workshops.
 
@@ -262,7 +262,7 @@ GuestKit is at **v1.3.0** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `gue
 
 ## Support
 
-A commercial license is required under the Zyvor Production License v1.0 (sales@zyvor.dev; a 30-day trial key is available). If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+Non-production use is free under the Zyvor Production License v1.0; production use requires a paid commercial license ([pricing](https://zyvor.dev/pricing), sales@zyvor.dev; a 30-day trial key is available). If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 

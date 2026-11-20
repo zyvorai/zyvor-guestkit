@@ -1,5 +1,7 @@
 # Contributing to GuestKit
 
+> GuestKit is under the [Zyvor Production License v1.0](../../LICENSE). Please contact sales@zyvor.dev before sending a contribution; contributions are accepted only under the terms of that license.
+
 Thank you for your interest in contributing to GuestKit! This document provides guidelines and information for contributors.
 
 ## Table of Contents

@@ -614,7 +614,7 @@ sudo guestkit inspect vm.qcow2
 **Copyright owner:** ZyvorAI Labs Private Limited
 
 **What this means:**
-- ⚠️ A commercial license is required to run guestkit (sales@zyvor.dev, https://zyvor.dev/buy; a 30-day trial key is available)
+- ⚠️ Non-production use is free; production use requires a paid commercial license (https://zyvor.dev/pricing, sales@zyvor.dev; a 30-day trial key is available)
 - ⚠️ Must preserve license notices and NOTICE file in redistributions
 
 ### Can I use guestkit in commercial products?

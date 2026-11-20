@@ -308,7 +308,7 @@ We strive to:
 ### License Compatibility
 
 GuestKit is licensed under the Zyvor Production License v1.0 by ZyvorAI Labs Private Limited:
-- A commercial license is required (sales@zyvor.dev; 30-day trial key available)
+- Non-production use (evaluation, development, testing, research, education) is free; production use requires a paid commercial license (https://zyvor.dev/pricing, sales@zyvor.dev; 30-day trial key available)
 - Modifications and redistributions remain subject to the license terms
 
 ### Standards

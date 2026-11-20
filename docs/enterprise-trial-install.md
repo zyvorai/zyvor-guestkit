@@ -2,7 +2,7 @@
 
 Try the **commercial control plane** (Command Center, Migration Factory, Passport Authority, Image Vault, SSO/RBAC) before you buy.
 
-This is **not** the offline CLI in this repo (source-available under the Zyvor Production License v1.0; a commercial license is required).  
+This is **not** the offline CLI in this repo (source-available under the Zyvor Production License v1.0; production use requires a commercial license).  
 The evaluation package is a self-contained compiled binary attached to this repository — no source, no Node.js required.
 
 **Download:** [Latest Enterprise trial release](https://github.com/zyvorai/zyvor-guestkit/releases?q=enterprise-trial) · tag `v*-enterprise-trial`
@@ -78,7 +78,7 @@ Console: `cd console && python3 -m http.server 8081` → http://HOST:8081
 - **How long?** 30 days from token issue — expiry is inside the signed JWT, not a local clock.
 - **What happens after 30 days?** The API refuses to start and points you to **sales@zyvor.dev**.
 - **Extension / full license?** Email **sales@zyvor.dev** — fastest path either way.
-- **Source-available doctor?** Unaffected — keep using [this repo](https://github.com/zyvorai/guestkit) under the Zyvor Production License v1.0 (a commercial license is required to run it).
+- **Source-available doctor?** Unaffected — keep using [this repo](https://github.com/zyvorai/guestkit) under the Zyvor Production License v1.0 (non-production use is free; production use requires a commercial license).
 
 ---
 
