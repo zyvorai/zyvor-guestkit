@@ -1,6 +1,6 @@
 # ZyvorAI Labs — GuestKit corporate reference
 
-GuestKit **source code** is licensed under **Apache-2.0** — see [LICENSE](../../LICENSE).  
+GuestKit **source code** is licensed under the **Zyvor Production License v1.0** — see [LICENSE](../../LICENSE).  
 **Copyright owner:** ZyvorAI Labs Private Limited.
 
 ## Legal entity
@@ -25,8 +25,8 @@ Software and licensing agreements may be executed by a **Director** of ZyvorAI L
 
 | Document | Purpose |
 |----------|---------|
-| [LICENSE](../../LICENSE) | Apache 2.0 — GuestKit source & community distribution |
-| [NOTICE](../../NOTICE) | Copyright and attribution (Apache 2.0) |
+| [LICENSE](../../LICENSE) | Zyvor Production License v1.0 — GuestKit source distribution |
+| [NOTICE](../../NOTICE) | Copyright and attribution |
 | [zyvor-enterprise.md](../zyvor-enterprise.md) | Enterprise / commercial |
 
-Internal MCA references: see ZyvorAI Labs corporate records (not required on user-facing Apache 2.0 text).
+Internal MCA references: see ZyvorAI Labs corporate records (not required on user-facing license text).

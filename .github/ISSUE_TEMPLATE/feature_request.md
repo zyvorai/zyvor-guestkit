@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest an enhancement for the open-source repo
+about: Suggest an enhancement for the source-available repo
 title: "[FEATURE] "
 labels: enhancement
 ---

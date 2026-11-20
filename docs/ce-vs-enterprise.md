@@ -1,6 +1,6 @@
-# Open source vs Enterprise (Zyvor)
+# Source-available vs Enterprise (Zyvor)
 
-**GuestKit (this repo)** is the full Apache-2.0 **offline disk engine** — free for personal, lab, and commercial production use (no license key).  
+**GuestKit (this repo)** is the full **offline disk engine**, source-available under the Zyvor Production License v1.0 — free for non-production use (no license key); production use requires a commercial license.  
 **GuestKit Enterprise** is Zyvor’s commercial **migration control plane** — every Command Center screen below — calling the **same** `guestkit doctor` evidence. Not a forked binary. Not a feature hostage. Enterprise support, SLAs, and the control plane are licensed separately.
 
 Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) · [Book a demo](https://zyvor.dev/schedule?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) · [sales@zyvor.dev](mailto:sales@zyvor.dev)
@@ -13,7 +13,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ### Positioning
 
-| Capability | Open source (this repo) | GuestKit Enterprise |
+| Capability | Source-available (this repo) | GuestKit Enterprise |
 | --- | --- | --- |
 | What you get | Offline disk engine | Migration **operating system** on that engine |
 | Who it is for | Engineers, CI, labs, small fleets | Platform / SRE / migration leads · 50–10,000+ VMs |
@@ -23,7 +23,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ### Offline engine (shared)
 
-| Capability | Open source | Enterprise |
+| Capability | Source-available | Enterprise |
 | --- | --- | --- |
 | `doctor` / `migrate-plan` / repair / harden | ✅ CLI · TUI · Python · zyvor-ui | ✅ Same engine via workers / adapter |
 | Disk formats · boot score 0–100 | ✅ | ✅ Surfaced in Command Center & Image Vault |
@@ -33,7 +33,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ### Command Center console (Enterprise)
 
-| Capability | Open source | Enterprise |
+| Capability | Source-available | Enterprise |
 | --- | --- | --- |
 | **Command Center** (KPIs, readiness, velocity, run assessment) | — | ✅ |
 | **Portfolio** (risk-ranked workloads, remediate) | Spreadsheets | ✅ |
@@ -55,7 +55,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ### Image Vault (disk dock)
 
-| Capability | Open source (`zyvor-ui`) | Enterprise Image Vault |
+| Capability | Source-available (`zyvor-ui`) | Enterprise Image Vault |
 | --- | --- | --- |
 | Vault screen under SSO / RBAC | Lab / self-secured | ✅ |
 | Inspect inventory tabs (OS/packages/services/users/network/…) | ✅ | ✅ + evidence pane |
@@ -71,7 +71,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ### Identity · audit · ops
 
-| Capability | Open source | Enterprise |
+| Capability | Source-available | Enterprise |
 | --- | --- | --- |
 | OIDC / SSO (Keycloak reference) | Configure yourself | ✅ Productized |
 | RBAC role gates | DIY | ✅ |
@@ -93,7 +93,7 @@ Product: [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_m
 
 ---
 
-## When to stay on open source
+## When to stay on the source-available edition
 
 CI / golden-image gates · lab evaluation · small fleets owned by one engineer.
 

@@ -307,10 +307,9 @@ We strive to:
 
 ### License Compatibility
 
-GuestKit is licensed under Apache-2.0 by ZyvorAI Labs Private Limited, ensuring:
-- Security fixes can be shared
-- Modifications carry Apache 2.0 terms when redistributed
-- Commercial use is permitted
+GuestKit is licensed under the Zyvor Production License v1.0 by ZyvorAI Labs Private Limited:
+- Non-production use is free; production use requires a commercial license (sales@zyvor.dev)
+- Modifications and redistributions remain subject to the license terms
 
 ### Standards
 

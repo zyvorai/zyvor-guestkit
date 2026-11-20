@@ -136,4 +136,4 @@ See the [examples/jobs](../../examples/jobs/) directory for complete examples:
 
 ## License
 
-Apache-2.0
+Zyvor Production License v1.0

@@ -279,4 +279,4 @@ Worker emits structured logs:
 
 ## License
 
-Apache-2.0
+Zyvor Production License v1.0

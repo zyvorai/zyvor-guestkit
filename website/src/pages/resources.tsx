@@ -14,7 +14,7 @@ type Asset = {
 const ASSETS: Asset[] = [
   {
     title: 'CLI, TUI and QEMU runtime',
-    meta: 'Linux · Apache-2.0',
+    meta: 'Linux · Zyvor Production License',
     blurb:
       'guestkit, guestctl (TUI) and guestkit-qemu as release tarballs on GitHub, with checksums. Needs qemu-img, losetup and qemu-nbd on the host.',
     links: [
@@ -56,11 +56,11 @@ const ASSETS: Asset[] = [
     title: '30-day Enterprise trial',
     meta: 'Binary · trial token included',
     blurb:
-      'Try the control plane — Command Center, Passport Authority, Migration Factory — before you buy. The open-source engine is not locked.',
+      'Try the control plane — Command Center, Passport Authority, Migration Factory — before you buy. The source-available engine is not locked.',
     links: [
       {label: 'Trial releases', to: 'https://github.com/zyvorai/guestkit/releases?q=enterprise-trial'},
       {label: 'Install guide', to: '/docs/enterprise-trial-install'},
-      {label: 'Open source vs Enterprise', to: '/docs/ce-vs-enterprise'},
+      {label: 'Source-available vs Enterprise', to: '/docs/ce-vs-enterprise'},
     ],
   },
   {

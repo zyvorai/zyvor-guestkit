@@ -96,7 +96,7 @@ const config: Config = {
           items: [
             {label: 'Getting started', to: '/docs/user-guides/getting-started'},
             {label: 'Quick reference', to: '/docs/user-guides/quick-reference'},
-            {label: 'Open source vs Enterprise', to: '/docs/ce-vs-enterprise'},
+            {label: 'Source-available vs Enterprise', to: '/docs/ce-vs-enterprise'},
             {label: 'Gallery', to: '/gallery'},
             {label: 'Resources (downloads)', to: '/resources'},
           ],
@@ -107,7 +107,7 @@ const config: Config = {
             {label: 'GitHub', href: 'https://github.com/zyvorai/zyvor-guestkit'},
             {label: 'Support', to: '/support'},
             {label: 'crates.io', href: 'https://crates.io/crates/guestkit'},
-            {label: 'License (Apache-2.0)', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/LICENSE'},
+            {label: 'License (Zyvor Production)', href: 'https://github.com/zyvorai/zyvor-guestkit/blob/main/LICENSE'},
           ],
         },
         {
@@ -118,7 +118,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} Zyvor. GuestKit core is Apache-2.0 licensed.`,
+      copyright: `Copyright © ${new Date().getFullYear()} Zyvor. GuestKit is licensed under the Zyvor Production License v1.0.`,
     },
     prism: {
       theme: prismThemes.github,

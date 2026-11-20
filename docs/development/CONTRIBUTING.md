@@ -462,4 +462,4 @@ Err(Error::InvalidInput(format!("Invalid device: {}", device)))
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the Apache-2.0 license and that ZyvorAI Labs Private Limited may include them in GuestKit.
+By contributing, you agree that your contributions will be licensed under the Zyvor Production License v1.0 and that ZyvorAI Labs Private Limited may include them in GuestKit.

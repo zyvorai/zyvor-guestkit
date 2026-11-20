@@ -89,7 +89,7 @@ function TrustBand() {
               Real, recorded demos
             </Heading>
             <p>
-              Apache-2.0 core, 70+ commands across 6 disk formats, 0
+              Source-available core, 70+ commands across 6 disk formats, 0
               appliance daemons. The CLI &amp; TUI and web dashboard demos
               are recorded live against real deployments — not staged
               screenshots.
@@ -108,8 +108,8 @@ function TrustBand() {
               alt="crates.io version"
             />
             <img
-              src="https://img.shields.io/badge/license-Apache--2.0-blue.svg"
-              alt="Apache 2.0 license"
+              src="https://img.shields.io/badge/license-Zyvor%20Production%201.0-blue.svg"
+              alt="Zyvor Production License v1.0"
             />
           </div>
         </Reveal>
@@ -124,10 +124,10 @@ function EnterpriseCTA() {
       <div className="container text--center">
         <Reveal>
           <Heading as="h2" className={styles.sectionHeading}>
-            Open source core, Enterprise for scale
+            Source-available core, Enterprise for scale
           </Heading>
           <p className={styles.enterpriseCopy}>
-            GuestKit's core is Apache-2.0 and free to run in production.
+            GuestKit's core is free for non-production use under the Zyvor Production License v1.0; production use requires a commercial license.
             Zyvor Enterprise adds a 30-day trial with fleet analysis,
             policy-as-code, and production support for teams running this
             at scale.

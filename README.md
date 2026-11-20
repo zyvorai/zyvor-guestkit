@@ -7,7 +7,7 @@
 [![CI](https://img.shields.io/github/actions/workflow/status/zyvorai/zyvor-guestkit/ci.yml?branch=main&style=flat-square&labelColor=1d1d1f&label=CI)](https://github.com/zyvorai/zyvor-guestkit/actions/workflows/ci.yml)
 [![crates.io](https://img.shields.io/crates/v/guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://crates.io/crates/guestkit)
 [![PyPI](https://img.shields.io/pypi/v/zyvor-guestkit?style=flat-square&color=0071e3&labelColor=1d1d1f)](https://pypi.org/project/zyvor-guestkit/)
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-0071e3?style=flat-square&labelColor=1d1d1f)](LICENSE)
+[![License: Zyvor Production 1.0](https://img.shields.io/badge/License-Zyvor%20Production%201.0-0071e3?style=flat-square&labelColor=1d1d1f)](LICENSE)
 [![Rust](https://img.shields.io/badge/Rust-engine%20%C2%B7%20CLI%20%C2%B7%20agent-dea584?style=flat-square&labelColor=1d1d1f&logo=rust&logoColor=white)](Cargo.toml)
 [![GHCR](https://img.shields.io/badge/GHCR-zyvorai-0071e3?style=flat-square&labelColor=1d1d1f&logo=github)](https://github.com/orgs/zyvorai/packages)
 [![Docs](https://img.shields.io/badge/Docs-zyvorai.github.io%2Fzyvor--guestkit-0071e3?style=flat-square&labelColor=1d1d1f)](https://zyvorai.github.io/zyvor-guestkit/)
@@ -22,7 +22,7 @@
 
 **Offline VM intelligence and migration assurance.** GuestKit reads a VM disk while the guest is off, scores first-boot readiness 0–100, repairs it through a plan you can read, and certifies cutover with a signed Passport.
 
-**6 disk formats** · **0–100 boot score** · **0 appliance daemons** · **8 migration targets** · **Apache-2.0**
+**6 disk formats** · **0–100 boot score** · **0 appliance daemons** · **8 migration targets** · **Zyvor Production License**
 
 [Gallery](docs/gallery.md) · [Docs](https://zyvorai.github.io/zyvor-guestkit/) · [Product](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero) · [Wiki](https://github.com/zyvorai/zyvor-guestkit/wiki) · [30-day Enterprise trial](docs/enterprise-trial-install.md)
 
@@ -102,7 +102,7 @@ CLI, TUI, QEMU, Python, web console, in-guest agent and a GitHub Action.<br>
 
 <div align="center">
 
-**70+** commands · **6** disk formats · **0** appliance daemons · **8** migration targets · **Apache-2.0**
+**70+** commands · **6** disk formats · **0** appliance daemons · **8** migration targets · **Zyvor Production License**
 
 </div>
 
@@ -181,7 +181,7 @@ GuestKit sits next to conversion tools rather than replacing all of them: [h2kvm
 
 </div>
 
-**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Apache-2.0) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Apache-2.0) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia/blob/main/docs/leave-openshift.md) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
+**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Apache-2.0) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Zyvor Production License) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia/blob/main/docs/leave-openshift.md) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
 
 Architecture in depth: [docs/architecture/overview.md](docs/architecture/overview.md).
 
@@ -247,18 +247,18 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 - <a id="h2kvm-integration"></a>**h2kvm integration:** [docs/h2kvm-at-a-glance.md](docs/h2kvm-at-a-glance.md).
 - <a id="what-you-can-do"></a>**What you can do:** assure, plan, certify, repair, launch — [docs/capabilities.md](docs/capabilities.md).
 - <a id="run-the-free-web-stack-ghcr"></a>**Free web stack (GHCR):** [docs/web-stack-ghcr.md](docs/web-stack-ghcr.md).
-- <a id="open-source-vs-enterprise"></a>**Open source vs Enterprise:** [docs/oss-vs-enterprise.md](docs/oss-vs-enterprise.md).
+- <a id="open-source-vs-enterprise"></a>**Source-available vs Enterprise:** [docs/oss-vs-enterprise.md](docs/oss-vs-enterprise.md).
 - <a id="platform-layout"></a>**Platform layout:** [docs/platform-layout.md](docs/platform-layout.md).
 - <a id="repository"></a>**Repository:** [docs/repository-layout.md](docs/repository-layout.md).
 - <a id="prerequisites"></a><a id="build"></a>**Prerequisites and build:** [docs/prerequisites-and-build.md](docs/prerequisites-and-build.md); `docs/` and this README are authoritative.
 
-## Open source, Enterprise
+## Source-available, Enterprise
 
-**Open source — free under Apache-2.0.** This repo · personal, lab, and commercial production. Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
+**Source-available — free for non-production use under the Zyvor Production License v1.0.** This repo · evaluation, lab, dev/test; production use needs a commercial license. Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
 
 **Enterprise — buy for programs.** Same engine — **not** a locked doctor. Command Center · Portfolio · Assurance · Migration Factory · Passport Authority · OIDC / RBAC / audit · SLA · air-gap · hypervisor exit workshops.
 
-[Open source vs Enterprise](docs/oss-vs-enterprise.md) · [Full feature matrix](docs/ce-vs-enterprise.md) · [30-day Enterprise trial](docs/enterprise-trial-install.md) · [Pricing](https://zyvor.dev/pricing?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition)
+[Source-available vs Enterprise](docs/oss-vs-enterprise.md) · [Full feature matrix](docs/ce-vs-enterprise.md) · [30-day Enterprise trial](docs/enterprise-trial-install.md) · [Pricing](https://zyvor.dev/pricing?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition)
 
 **Trial expired or want a guided evaluation?** [Book a demo](https://zyvor.dev/schedule?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) or [start a 30-day PoC](https://zyvor.dev/poc?utm_source=github&utm_medium=guestkit&utm_campaign=readme_edition) — no email needed. [sales@zyvor.dev](mailto:sales@zyvor.dev) remains as a fallback.
 
@@ -296,11 +296,11 @@ GuestKit is at **v1.3.0** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `gue
 
 ## Support
 
-Free under Apache-2.0. If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+Non-production use is free under the Zyvor Production License v1.0; production use requires a commercial license (sales@zyvor.dev). If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 
-GuestKit is **free and open source** under the [Apache License, Version 2.0](LICENSE). You may use, modify, and run it for personal, lab, and commercial production use at no charge, subject to Apache-2.0 (preserve notices / NOTICE where required). See [NOTICE](NOTICE) and `docs/legal/` where applicable. That does not change.
+GuestKit is source-available under the **[Zyvor Production License v1.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-1.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-1.0.txt)). Non-production use (evaluation, development, testing, research, education) is free. Production use needs a commercial license from Zyvor AI Labs Private Limited; a 30-day trial key is available for production evaluation. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). See [NOTICE](NOTICE) and `docs/legal/`.
 
 **Zyvor Enterprise** adds what production teams ask for: supported releases, deployment and upgrade guidance, priority incident triage, a named technical contact and 24x7 critical intake. Production support, SLAs, and Zyvor Enterprise products are licensed separately. Plans and terms: [docs/SUBSCRIPTION-MODEL.md](docs/SUBSCRIPTION-MODEL.md) · [Pricing](https://zyvor.dev/pricing?utm_source=github&utm_medium=guestkit&utm_campaign=readme_license) · [sales@zyvor.dev](mailto:sales@zyvor.dev).
 

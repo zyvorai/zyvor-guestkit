@@ -192,9 +192,9 @@ Supporting host and fabric layers: **Machina** (libvirt/KVM hypervisor OS), **Zy
 
 VMware vSphere · Nutanix AHV · AWS · Azure · Google Cloud · Hyper-V · Oracle Cloud · OpenStack · Alibaba Cloud · Proxmox · KubeVirt · KVM
 
-### Open source vs enterprise
+### Source-available vs enterprise
 
-| | Open source (this repo) | Enterprise ([zyvor.dev](https://zyvor.dev)) |
+| | Source-available (this repo) | Enterprise ([zyvor.dev](https://zyvor.dev)) |
 |---|------------------------|-----------------------------------------------|
 | GuestKit CLI/TUI | ✅ | Same codebase + SLA |
 | Self-hosted web stack | ✅ GHCR / Helm | Hardened reference architectures |

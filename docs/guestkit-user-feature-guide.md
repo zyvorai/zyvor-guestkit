@@ -267,7 +267,7 @@ Full guide: [qemu-runtime.md](features/qemu-runtime.md).
 
 ## 11. Deployment & Editions
 
-_Install in one command; run the full open-source stack; scale with Enterprise support._
+_Install in one command; run the full source-available stack; scale with Enterprise support._
 
 - **GitHub Release** — the v1.3.0 tarball (`guestkit-1.3.0-linux-amd64.tar.gz`, plus a static `-musl` variant and `.sha256` files) installs `guestkit` and `guestctl` (a symlink to `guestkit`); `guestkit-qemu` and `virtctl-guestkit` are built from source. Releases ship tar.gz only, with no RPM or COPR packages. crates.io `guestkit` is still 0.3.2. — _From zero to inspecting in one download._
   - **How:** CLI: download `guestkit-1.3.0-linux-amd64.tar.gz` from the v1.3.0 release.
@@ -275,7 +275,7 @@ _Install in one command; run the full open-source stack; scale with Enterprise s
   - **How:** Docker: `docker compose -f deploy/docker-compose.ghcr.yml up -d` brings up zyvor-ui/zyvor-api/guestkit-worker at http://localhost:8088 with no docker login.
 - **Helm & remote deploy** — A Helm chart for clusters plus scripted remote deploy for Docker hosts. — _Ship it where your fleet already lives._
   - **How:** Cluster: `helm install` the chart (provisions Postgres/Redis/MinIO); for Docker hosts use the scripted remote deploy under `scripts/`.
-- **Full open-source stack** — CLI, TUI, Python bindings, assurance APIs, web console, and KubeVirt hooks are all Apache-2.0 in the repo - Enterprise adds support, not features. — _Nothing core is withheld from the open source._
+- **Full source-available stack** — CLI, TUI, Python bindings, assurance APIs, web console, and KubeVirt hooks are all in the repo under the Zyvor Production License v1.0 - Enterprise adds support, not features. — _Nothing core is withheld from the source-available repo._
   - **How:** Clone the repo (`git clone https://github.com/zyvorai/guestkit`) — CLI, TUI, Python bindings, assurance APIs, web console and KubeVirt hooks are all Apache-2.0.
 - **Enterprise programs** — SLA, air-gapped deployment packages, guided playbooks, and fleet automation for 100+ VM and regulated migrations. — _Backed help for VMware-exit programs at scale._
   - **How:** Contact the account team at info@zyvor.dev for SLA, air-gapped packages, guided playbooks and fleet automation.
@@ -293,4 +293,4 @@ _Install in one command; run the full open-source stack; scale with Enterprise s
 > **Good to know:** GuestKit runs on Linux hosts and needs host tooling (losetup, qemu-nbd, and qemu-img for conversion); mount and in-cluster boot-inspect operations require root or a privileged pod. Offline disk analysis targets stopped VMs - running VMs return VM-spec heuristics or need the live guest agent. Deep guest intelligence is Linux-first; the native Windows agent MSI is scaffolded, and Windows relies on virtio-win today. LLM-assisted features require building with --features ai; deterministic intelligence works without it. Reporting notes: --output and --export are mutually exclusive, HTML reports truncate to 100 packages, and PDF is produced via external tools.
 
 ---
-_GuestKit is developed by ZyvorAI Labs (Apache License 2.0). Contact **info@zyvor.dev**._
+_GuestKit is developed by ZyvorAI Labs (Zyvor Production License v1.0). Contact **info@zyvor.dev**._

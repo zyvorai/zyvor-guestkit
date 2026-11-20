@@ -50,7 +50,7 @@ fi
   echo "https://zyvor.dev · sales@zyvor.dev · info@zyvor.dev · legal@zyvor.dev"
   echo ""
   echo "FILES:"
-  [[ -f "${STAGE}/NOTICE" ]] && echo "  NOTICE               — copyright attribution (Apache 2.0)"
+  [[ -f "${STAGE}/NOTICE" ]] && echo "  NOTICE               — copyright attribution"
   [[ -f "${STAGE}/LICENSE.txt" ]] && echo "  LICENSE.txt          — software license"
   echo "  legal/ docs/legal/   — company reference"
   echo ""

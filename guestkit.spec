@@ -3,7 +3,8 @@ Version:        1.3.0
 Release:        1%{?dist}
 Summary:        Pure-Rust VM disk inspection and manipulation toolkit
 
-License:        LicenseRef-Zyvor-Production-1.0URL:            https://github.com/hypersdk/guestkit
+License:        LicenseRef-Zyvor-Production-1.0
+URL:            https://github.com/hypersdk/guestkit
 Source0:        %{name}-%{version}.tar.gz
 
 # Build dependencies

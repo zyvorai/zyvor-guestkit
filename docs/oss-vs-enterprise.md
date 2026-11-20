@@ -1,4 +1,4 @@
-# Open source vs Enterprise
+# Source-available vs Enterprise
 
 > Part of the [GuestKit README](../README.md). Back to the [documentation map](documentation-map.md).
 
@@ -6,8 +6,8 @@
 <tr>
 <td width="50%" valign="top">
 
-## Open source — free under Apache-2.0
-**This repo** · personal, lab, and commercial production
+## Source-available — free for non-production use
+**This repo** · Zyvor Production License v1.0: evaluation, lab, dev/test; production use needs a commercial license
 
 - Full offline **doctor**, migrate-plan, repair, fleet, policy  
 - CLI · TUI · Python · self-hosted web/workers  

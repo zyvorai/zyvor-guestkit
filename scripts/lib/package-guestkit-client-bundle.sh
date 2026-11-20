@@ -68,7 +68,7 @@ GuestKit — install guide
 
 HOST FIRST (Linux — offline disk inspection, not Kubernetes)
   1. tar xzf guestkit-*-linux-amd64.tar.gz && cd guestkit-*-linux-amd64
-  2. Read LICENSE (Apache 2.0)
+  2. Read LICENSE (Zyvor Production License v1.0)
   3. ./install.sh
   4. ./test-host.sh
   5. ./test-selftest.sh --quick
@@ -94,8 +94,8 @@ START: cat START_HERE.txt  |  full help: cat HELP.txt
 NOT KUBERNETES — inspects offline VM disk images on this Linux host.
 
 FILES
-  LICENSE               Apache-2.0 (source code — ZyvorAI Labs Private Limited)
-  NOTICE                Copyright and attribution (Apache 2.0)
+  LICENSE               Zyvor Production License v1.0 (source code — ZyvorAI Labs Private Limited)
+  NOTICE                Copyright and attribution
   LEGAL-INDEX.txt
   guestkit              Main CLI binary
   guestctl              Symlink to guestkit (same CLI)

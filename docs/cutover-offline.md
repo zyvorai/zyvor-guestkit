@@ -24,6 +24,6 @@ GuestKit reads the disk **while the guest is off**, scores first-boot probabilit
 |---|---|
 | **70+** commands | **6** disk formats |
 | **0** appliance daemons | **8** migration targets |
-| **Apache-2.0** | Used in CI, labs, and hypervisor-exit programs |
+| **Zyvor Production License** | Used in CI, labs, and hypervisor-exit programs |
 
 **Certify with [GuestKit](https://github.com/zyvorai/guestkit) → run & manage with [FluxVM](https://github.com/zyvorai/fluxvm) → convert & deploy with [h2kvm](https://github.com/zyvorai/h2kvm) → operate on [Zeus OS](https://zyvor.dev/zeus-os).**

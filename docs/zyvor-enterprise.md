@@ -6,7 +6,7 @@
   </a>
 </p>
 
-This repository ships the open-source **GuestKit** toolkit — the offline disk engine buyers evaluate first.  
+This repository ships the source-available **GuestKit** toolkit — the offline disk engine buyers evaluate first.  
 **GuestKit Enterprise** is the commercial **migration control plane** that runs the program on top of this engine. For production migrations, SLAs, and the full platform, contact **[Zyvor](https://zyvor.dev/)**.
 
 ## Contact Zyvor
@@ -21,7 +21,7 @@ This repository ships the open-source **GuestKit** toolkit — the offline disk 
 
 ## Why buy GuestKit Enterprise (not only OSS)
 
-| Buyer need | Open source GuestKit | GuestKit Enterprise |
+| Buyer need | Source-available GuestKit | GuestKit Enterprise |
 | --- | --- | --- |
 | Prove a disk will boot offline | ✅ `doctor` | ✅ same scores in Command Center / Image Vault |
 | Gate CI with Passports | ✅ Action + CLI | ✅ same evidence + in-product Passport Authority |

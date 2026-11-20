@@ -1,6 +1,6 @@
 # Using the Dashboard
 
-GuestKit ships **CLI**, **TUI**, and an open-source **web Image Vault** (`deploy/ui` / GHCR `zyvor-ui`) over the same zyvor-api + guestkit-worker engine.
+GuestKit ships **CLI**, **TUI**, and a source-available **web Image Vault** (`deploy/ui` / GHCR `zyvor-ui`) over the same zyvor-api + guestkit-worker engine.
 
 ## Surfaces
 

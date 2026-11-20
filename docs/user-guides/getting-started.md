@@ -302,4 +302,4 @@ sudo apt install qemu-utils
 
 ## License
 
-Apache-2.0
+Zyvor Production License v1.0

@@ -3899,7 +3899,7 @@ pub fn run() -> anyhow::Result<()> {
             println!("A modern VM disk inspection and manipulation toolkit");
             println!();
             println!("Project: https://github.com/zyvorai/guestkit");
-            println!("License: Apache-2.0");
+            println!("License: Zyvor Production License v1.0");
             println!("Copyright: ZyvorAI Labs Private Limited");
         }
 
