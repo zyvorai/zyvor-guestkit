@@ -268,6 +268,8 @@ Evaluation is free for 30 days per organization under the Zyvor Production Licen
 
 GuestKit is source-available under the **[Zyvor Production License v1.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-1.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-1.0.txt)). Evaluation (evaluation, development, testing, research, education) is free for 30 days per organization. Production use needs a commercial license from Zyvor AI Labs Private Limited; a 30-day trial key is available for production evaluation. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). See [NOTICE](NOTICE) and `docs/legal/`.
 
+**Price:** INR 4,999 per seat per year incl. 18% GST in India; US$50 per seat per year excl. tax elsewhere. Buy: [zyvor.dev/buy](https://zyvor.dev/buy). Orders of USD 5,000 or more and quotes are invoiced in USD through Skydo.
+
 **Zyvor Enterprise** adds what production teams ask for: supported releases, deployment and upgrade guidance, priority incident triage, a named technical contact and 24x7 critical intake. Production support, SLAs, and Zyvor Enterprise products are licensed separately. Plans and terms: [docs/SUBSCRIPTION-MODEL.md](docs/SUBSCRIPTION-MODEL.md) · [Pricing](https://zyvor.dev/pricing?utm_source=github&utm_medium=guestkit&utm_campaign=readme_license) · [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 Report vulnerabilities privately per [SECURITY.md](SECURITY.md). More at [zyvor.dev/guestkit](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_footer) · [docs](https://zyvor.dev/docs?utm_source=github&utm_medium=guestkit&utm_campaign=readme_footer) · [blog](https://zyvor.dev/blog?utm_source=github&utm_medium=guestkit&utm_campaign=readme_footer).
