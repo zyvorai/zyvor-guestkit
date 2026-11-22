@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # Build the GuestKit Linux in-guest agent and assemble a self-contained
 # bundle tarball — the Linux counterpart of scripts/build-windows-bundle.sh.
 # For download and integration with Zeus OS / Veyron / Machina (drop the

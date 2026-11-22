@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! GuestKit in-guest eBPF programs (one object, loaded by guestkitd):
 //! per-container network policy (cgroup_skb) and per-container MAC (BPF-LSM).

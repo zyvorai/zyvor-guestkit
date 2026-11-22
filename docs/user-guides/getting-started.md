@@ -302,4 +302,4 @@ sudo apt install qemu-utils
 
 ## License
 
-Zyvor Production License v1.0
+Zyvor Production Licence v2.0

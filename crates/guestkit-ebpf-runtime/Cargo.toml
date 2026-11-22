@@ -2,7 +2,7 @@
 name = "guestkit-ebpf-runtime"
 version = "0.1.0"
 edition = "2021"
-license = "LicenseRef-Zyvor-Production-1.0"
+license = "LicenseRef-Zyvor-Production-2.0"
 description = "Loader for the GuestKit in-guest eBPF programs (per-container netpolicy + LSM MAC)"
 
 [dependencies]

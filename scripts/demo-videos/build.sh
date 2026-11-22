@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # Build the GuestKit CLI/TUI demo video from 4 separate VHS recordings
 # (rec-inspect.tape, rec-doctor.tape, rec-migrate.tape, rec-tui.tape) +
 # title/caption cards (render-cards.mjs).

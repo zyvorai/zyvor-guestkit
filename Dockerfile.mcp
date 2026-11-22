@@ -1,5 +1,5 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 #
 # guestkit-mcp: `guestkit mcp-serve` (stdio MCP server, six read-only evidence
 # tools for ONE VM disk image) packaged for the MCP Registry (server.json).

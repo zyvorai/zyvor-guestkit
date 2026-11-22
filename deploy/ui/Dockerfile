@@ -1,5 +1,5 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 FROM python:3.12-alpine
 # serve-https.py shells out to `openssl req` to mint a self-signed cert at start-up;
 # python:alpine does not ship the binary.

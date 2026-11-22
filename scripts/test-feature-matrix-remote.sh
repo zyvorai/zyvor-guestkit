@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # ─────────────────────────────────────────────────────────────────────────────
 # test-feature-matrix-remote.sh — run scripts/test-feature-matrix.sh on a remote
 # Linux host that has the system deps the matrix needs (libhivex, libsystemd,

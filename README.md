@@ -20,7 +20,7 @@
 
 **Offline VM intelligence and migration assurance.** GuestKit reads a VM disk while the guest is off, scores first-boot readiness 0–100, repairs it through a plan you can read, and certifies cutover with a signed Passport.
 
-**6 disk formats** · **0–100 boot score** · **0 appliance daemons** · **8 migration targets** · **Zyvor Production License**
+**6 disk formats** · **0–100 boot score** · **0 appliance daemons** · **8 migration targets** · **Zyvor Production Licence**
 
 [Gallery](docs/gallery.md) · [Docs](https://zyvorai.github.io/zyvor-guestkit/) · [Product](https://zyvor.dev/guestkit?utm_source=github&utm_medium=guestkit&utm_campaign=readme_hero) · [Wiki](https://github.com/zyvorai/zyvor-guestkit/wiki) · [30-day Enterprise trial](docs/enterprise-trial-install.md)
 
@@ -100,7 +100,7 @@ CLI, TUI, QEMU, Python, web console, in-guest agent and a GitHub Action.<br>
 
 <div align="center">
 
-**70+** commands · **6** disk formats · **0** appliance daemons · **8** migration targets · **Zyvor Production License**
+**70+** commands · **6** disk formats · **0** appliance daemons · **8** migration targets · **Zyvor Production Licence**
 
 </div>
 
@@ -148,7 +148,7 @@ CLI, TUI, QEMU, Python, web console, in-guest agent and a GitHub Action.<br>
       CLI · TUI · QEMU · Python · Web · Agent · GitHub Action
 ```
 
-**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Zyvor Production License) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production License) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Zyvor Production License) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
+**Export with [Transiva](https://github.com/zyvorai/zyvor-transiva) (Zyvor Production Licence) → convert & deploy with [h2kvm](https://github.com/zyvorai/zyvor-h2kvm) (Zyvor Production Licence) → assure with [GuestKit](https://github.com/zyvorai/zyvor-guestkit) (Zyvor Production Licence) → operate on [Zorvia](https://github.com/zyvorai/zyvor-zorvia) or [Zeus OS](https://zyvor.dev/zeus-os?utm_source=github&utm_medium=guestkit&utm_campaign=readme_suite).** Run and manage VMs with [FluxVM](https://github.com/zyvorai/zyvor-fluxvm). [Who does what](docs/who-does-what.md) · [h2kvm integration](docs/h2kvm-at-a-glance.md)
 
 Architecture in depth: [docs/architecture/overview.md](docs/architecture/overview.md).
 
@@ -220,7 +220,7 @@ The complete map, with the changelog and roadmap, is in [docs/documentation-map.
 
 ## Source-available, Enterprise
 
-**Source-available under the Zyvor Production License v1.0.** This repo · free for non-production use; production use requires a paid commercial license ([pricing](https://zyvor.dev/pricing); 30-day trial key at [zyvor.dev/trial/start](https://zyvor.dev/trial/start)). Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
+**Source-available under the Zyvor Production Licence v2.0.** This repo. A 30-day trial is available on request from sales@zyvor.dev (a paid evaluation Order at no charge); production and any other use needs a paid Order under the Zyvor Production Licence v2.0. See [pricing](https://zyvor.dev/pricing). Full offline **doctor**, migrate-plan, repair, fleet, policy · CLI · TUI · Python · self-hosted web/workers.
 
 **Enterprise — buy for programs.** Same engine — **not** a locked doctor. Command Center · Portfolio · Assurance · Migration Factory · Passport Authority · OIDC / RBAC / audit · SLA · air-gap · hypervisor exit workshops.
 
@@ -262,11 +262,11 @@ GuestKit is at **v1.3.0** (GitHub Release; PyPI `zyvor-guestkit`; crates.io `gue
 
 ## Support
 
-Evaluation is free for 30 days per organization under the Zyvor Production License v1.0; production use requires a paid commercial license ([pricing](https://zyvor.dev/pricing), sales@zyvor.dev; a 30-day trial key is available). If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
+A 30-day trial is available on request from sales@zyvor.dev (a paid evaluation Order at no charge); production and any other use needs a paid Order under the Zyvor Production Licence v2.0. See [pricing](https://zyvor.dev/pricing). If it helps you, you can donate any amount you like: <https://zyvor.dev/donate>. A donation is voluntary and supports development and maintenance. It is not a purchase: it buys no support, SLA, features, priority or license, and it is not tax-deductible (Zyvor AI Labs Private Limited is a company, not a charity). Zyvor Enterprise (supported releases, SLAs, a named contact and enterprise features) is separate: [sales@zyvor.dev](mailto:sales@zyvor.dev).
 
 ## License
 
-GuestKit is source-available under the **[Zyvor Production License v1.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-1.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-1.0.txt)). Evaluation (evaluation, development, testing, research, education) is free for 30 days per organization. Production use needs a commercial license from Zyvor AI Labs Private Limited; a 30-day trial key is available for production evaluation. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). See [NOTICE](NOTICE) and `docs/legal/`.
+GuestKit is source-available under the **[Zyvor Production Licence v2.0](LICENSE)** (SPDX `LicenseRef-Zyvor-Production-2.0`, also in [LICENSES/](LICENSES/LicenseRef-Zyvor-Production-2.0.txt)). A 30-day trial is available on request from sales@zyvor.dev (a paid evaluation Order at no charge); production and any other use needs a paid Order under the Zyvor Production Licence v2.0. Buy / get a quote: [zyvor.dev/buy](https://zyvor.dev/buy) · [sales@zyvor.dev](mailto:sales@zyvor.dev). See [NOTICE](NOTICE) and `docs/legal/`.
 
 **Price:** INR 4,999 per seat per year incl. 18% GST in India; US$50 per seat per year excl. tax elsewhere. Buy: [zyvor.dev/buy](https://zyvor.dev/buy). Orders of USD 5,000 or more and quotes are invoiced in USD through Skydo.
 

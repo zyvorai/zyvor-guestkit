@@ -279,4 +279,4 @@ Worker emits structured logs:
 
 ## License
 
-Zyvor Production License v1.0
+Zyvor Production Licence v2.0

@@ -1,6 +1,6 @@
 # ZyvorAI Labs — GuestKit corporate reference
 
-GuestKit **source code** is licensed under the **Zyvor Production License v1.0** — see [LICENSE](../../LICENSE).  
+GuestKit **source code** is licensed under the **Zyvor Production Licence v2.0** — see [LICENSE](../../LICENSE).  
 **Copyright owner:** ZyvorAI Labs Private Limited.
 
 ## Legal entity
@@ -25,7 +25,7 @@ Software and licensing agreements may be executed by a **Director** of ZyvorAI L
 
 | Document | Purpose |
 |----------|---------|
-| [LICENSE](../../LICENSE) | Zyvor Production License v1.0 — GuestKit source distribution |
+| [LICENSE](../../LICENSE) | Zyvor Production Licence v2.0 — GuestKit source distribution |
 | [NOTICE](../../NOTICE) | Copyright and attribution |
 | [zyvor-enterprise.md](../zyvor-enterprise.md) | Enterprise / commercial |
 

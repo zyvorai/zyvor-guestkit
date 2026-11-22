@@ -7,7 +7,7 @@ resolver = "2"
 
 [workspace.package]
 authors = ["ZyvorAI Labs Private Limited <info@zyvor.dev>"]
-license = "LicenseRef-Zyvor-Production-1.0"
+license = "LicenseRef-Zyvor-Production-2.0"
 edition = "2024"
 repository = "https://github.com/hypersdk/guestkit"
 

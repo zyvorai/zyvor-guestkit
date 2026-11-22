@@ -2,7 +2,7 @@
 name = "zyvor-guest-agent"
 version = "0.1.0"
 edition = "2021"
-license = "LicenseRef-Zyvor-Production-1.0"
+license = "LicenseRef-Zyvor-Production-2.0"
 description = "Zeus VM Tools in-guest agent (Windows + Linux)"
 
 [[bin]]

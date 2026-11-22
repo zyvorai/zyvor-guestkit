@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # Copy license + Zyvor legal pack into a release/user bundle directory.
 # Usage: copy-zyvor-legal-to-bundle.sh <stage-dir> <repo-root>
 set -euo pipefail
@@ -10,7 +10,7 @@ ROOT="${2:?repo root}"
 
 mkdir -p "${STAGE}/docs/legal" "${STAGE}/legal/templates"
 
-# Code license (Zyvor Production License v1.0 LICENSE)
+# Code license (Zyvor Production Licence v2.0 LICENSE)
 if [[ -f "${ROOT}/LICENSE" ]]; then
   cp "${ROOT}/LICENSE" "${STAGE}/LICENSE"
 fi
