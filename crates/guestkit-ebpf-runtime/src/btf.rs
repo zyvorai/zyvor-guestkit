@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Minimal kernel BTF reader: struct member byte offsets, so programs that
 //! walk kernel structs (without CO-RE in Rust eBPF) get the running kernel's

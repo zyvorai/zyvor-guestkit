@@ -1,5 +1,5 @@
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # shellcheck shell=bash
 # Shared UI helpers for VMRogue-family client packaging scripts.
 # Source from scripts/lib/*.sh or .package-lib/package-ui.sh inside tarballs.

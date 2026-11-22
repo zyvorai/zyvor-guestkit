@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # Run all Phase 3 tests individually with proper cleanup between runs
 #
 # This script runs each test function separately to avoid NBD device conflicts

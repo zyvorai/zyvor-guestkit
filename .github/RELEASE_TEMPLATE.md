@@ -4,7 +4,7 @@
 
 ## Source-available
 
-This release is the source-available **GuestKit** toolkit (Zyvor Production License v1.0) on GitHub.
+This release is the source-available **GuestKit** toolkit (Zyvor Production Licence v2.0) on GitHub.
 
 ## Enterprise & production
 

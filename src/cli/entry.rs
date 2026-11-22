@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! CLI entry (`guestkit` / `guestctl`).
 
@@ -3899,7 +3899,7 @@ pub fn run() -> anyhow::Result<()> {
             println!("A modern VM disk inspection and manipulation toolkit");
             println!();
             println!("Project: https://github.com/zyvorai/guestkit");
-            println!("License: Zyvor Production License v1.0");
+            println!("License: Zyvor Production Licence v2.0");
             println!("Copyright: ZyvorAI Labs Private Limited");
         }
 

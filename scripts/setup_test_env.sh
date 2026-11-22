@@ -1,6 +1,6 @@
 #!/bin/bash
 # Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # Setup test environment for Phase 3 comprehensive tests
 #
 # This script configures the system to allow non-root users to run

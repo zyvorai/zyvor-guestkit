@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! Per-container MAC on BPF-LSM hooks, keyed by the calling task's cgroup id
 //! (LSM_POLICIES): exec outside the container's binary allowlist, W+X

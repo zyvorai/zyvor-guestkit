@@ -1,6 +1,6 @@
 # Contributing to GuestKit
 
-> GuestKit is under the [Zyvor Production License v1.0](../../LICENSE). Please contact sales@zyvor.dev before sending a contribution; contributions are accepted only under the terms of that license.
+> GuestKit is under the [Zyvor Production Licence v2.0](../../LICENSE). Please contact sales@zyvor.dev before sending a contribution; contributions are accepted only under the terms of that license.
 
 Thank you for your interest in contributing to GuestKit! This document provides guidelines and information for contributors.
 
@@ -356,7 +356,7 @@ How has this been tested?
 1. **Create the module file**: `src/guestfs/newmodule.rs`
 
 ```rust
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 //! Brief module description
 //!
 //! Detailed module documentation
@@ -464,4 +464,4 @@ Err(Error::InvalidInput(format!("Invalid device: {}", device)))
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the Zyvor Production License v1.0 and that ZyvorAI Labs Private Limited may include them in GuestKit.
+By contributing, you agree that your contributions will be licensed under the Zyvor Production Licence v2.0 and that ZyvorAI Labs Private Limited may include them in GuestKit.

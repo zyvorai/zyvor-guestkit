@@ -1,4 +1,4 @@
-# SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+# SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 # PacketWolf guest ↔ flow correlation (per-VM + fleet batch).
 
 # Per-VM ingest (on each guest-agent report):

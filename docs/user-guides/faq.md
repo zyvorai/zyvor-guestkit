@@ -610,16 +610,16 @@ sudo guestkit inspect vm.qcow2
 
 ### What license is guestkit under?
 
-**Zyvor Production License v1.0** (SPDX `LicenseRef-Zyvor-Production-1.0`)  
+**Zyvor Production Licence v2.0** (SPDX `LicenseRef-Zyvor-Production-2.0`)  
 **Copyright owner:** ZyvorAI Labs Private Limited
 
 **What this means:**
-- ⚠️ Non-production use is free; production use requires a paid commercial license (https://zyvor.dev/pricing, sales@zyvor.dev; a 30-day trial key is available)
+- ⚠️ A 30-day trial is available on request from sales@zyvor.dev (a paid evaluation Order at no charge); production and any other use needs a paid Order under the Zyvor Production Licence v2.0.
 - ⚠️ Must preserve license notices and NOTICE file in redistributions
 
 ### Can I use guestkit in commercial products?
 
-**Yes, with a commercial license.** Production use under the Zyvor Production License v1.0 requires a commercial license from Zyvor AI Labs.
+**Yes, with a commercial license.** Production use under the Zyvor Production Licence v2.0 requires a commercial license from Zyvor AI Labs.
 
 **Requirements:**
 - Include the license text and NOTICE (if provided)

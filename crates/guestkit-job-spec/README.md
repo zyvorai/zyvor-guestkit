@@ -136,4 +136,4 @@ See the [examples/jobs](../../examples/jobs/) directory for complete examples:
 
 ## License
 
-Zyvor Production License v1.0
+Zyvor Production Licence v2.0

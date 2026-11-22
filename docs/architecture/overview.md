@@ -74,7 +74,7 @@ Evidence is cached under `~/.cache/guestkit/` after successful `doctor` runs.
 
 The root `Cargo.toml` workspace includes the main package, `guestkit-agent-protocol`, `guestkit-job-spec`, `zyvor-guest-agent`, `guestkit-ebpf-common` and `guestkit-ebpf-runtime`; `crates/guestkit-ebpf` (kernel-side programs) is excluded and built by `guestkit-ebpf-runtime/build.rs`. `zyvor-api` and `guestkit-worker` build as sibling crates with their own lockfiles and path dependencies (see each crate `Cargo.toml`).
 
-**Version:** 1.3.0 (package) · **License:** Zyvor Production License v1.0 · **Owner:** ZyvorAI Labs Private Limited
+**Version:** 1.3.0 (package) · **License:** Zyvor Production Licence v2.0 · **Owner:** ZyvorAI Labs Private Limited
 
 ## Guest-file trust boundary (v1.2.11)
 

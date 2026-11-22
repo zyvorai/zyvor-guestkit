@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 import type {ReactNode} from 'react';
 import Layout from '@theme/Layout';
@@ -17,7 +17,7 @@ type Asset = {
 const ASSETS: Asset[] = [
   {
     title: 'CLI, TUI and QEMU runtime',
-    meta: 'Linux · Zyvor Production License',
+    meta: 'Linux · Zyvor Production Licence',
     blurb:
       'guestkit, guestctl (TUI) and guestkit-qemu as release tarballs on GitHub, with checksums. Needs qemu-img, losetup and qemu-nbd on the host.',
     links: [

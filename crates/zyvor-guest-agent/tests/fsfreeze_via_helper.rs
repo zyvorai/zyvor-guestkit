@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! The agent runs unprivileged, so freezing must go through the privileged helper
 //! (`guestkitd-exec`). This starts the real helper binary with a fake `fsfreeze` on its PATH

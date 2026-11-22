@@ -2,7 +2,7 @@
 
 | Document | Purpose |
 |----------|---------|
-| [LICENSE](../../LICENSE) | **Zyvor Production License v1.0** — GuestKit source code (owner: ZyvorAI Labs Private Limited) |
+| [LICENSE](../../LICENSE) | **Zyvor Production Licence v2.0** — GuestKit source code (owner: ZyvorAI Labs Private Limited) |
 | [NOTICE](../../NOTICE) | Copyright and attribution for distributions |
 | [CORPORATE.md](CORPORATE.md) | Company reference |
 | [TRADEMARK-NOTICE.md](TRADEMARK-NOTICE.md) | Brand rights |

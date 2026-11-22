@@ -2,7 +2,7 @@
 name = "guestkit-ebpf-common"
 version = "0.1.0"
 edition = "2021"
-license = "LicenseRef-Zyvor-Production-1.0"
+license = "LicenseRef-Zyvor-Production-2.0"
 description = "Map key/value layouts shared by the GuestKit in-guest eBPF programs and their loader"
 
 [features]

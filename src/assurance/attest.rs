@@ -1,5 +1,5 @@
 // Copyright 2026 Zyvor AI Labs · https://zyvor.dev
-// SPDX-License-Identifier: LicenseRef-Zyvor-Production-1.0
+// SPDX-License-Identifier: LicenseRef-Zyvor-Production-2.0
 
 //! in-toto attestations for an image's SBOM / inventory, wrapped in a DSSE
 //! envelope and signed with the same Ed25519 key format as Cutover Passports.
