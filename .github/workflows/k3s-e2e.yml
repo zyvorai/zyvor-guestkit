@@ -37,7 +37,7 @@ jobs:
       contents: read
       packages: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install k3s and prerequisites
         run: bash deploy/scripts/install-k3s-ubuntu.sh
@@ -58,7 +58,7 @@ jobs:
 
       - name: Log in to GHCR (release smoke)
         if: steps.images.outputs.use_release_images == 'true'
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
