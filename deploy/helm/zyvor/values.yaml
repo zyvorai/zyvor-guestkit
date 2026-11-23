@@ -25,6 +25,22 @@ ingress:
     # ClusterIssuer / Issuer name when certManager.enabled=true
     clusterIssuer: letsencrypt-prod
 
+# Gateway API front door served by Setura, an alternative to `ingress` (enable one, not both).
+# Needs the Setura controller: setura gateway install --image ghcr.io/zyvorai/zyvor-setura-gateway:0.7.0
+gateway:
+  enabled: false
+  className: setura
+  httpPort: 80
+  httpsPort: 443
+  tls:
+    enabled: false
+    secretName: zyvor-tls
+  # The UI serves HTTPS (self-signed) on 8443. Provide its CA in a ConfigMap to verify it.
+  uiBackendTLS:
+    enabled: false
+    hostname: zyvor-ui
+    caConfigMap: zyvor-ui-ca
+
 networkPolicy:
   enabled: true
 
