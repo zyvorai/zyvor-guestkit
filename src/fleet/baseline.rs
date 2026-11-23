@@ -51,7 +51,7 @@ fn image_key(image_path: &Path) -> String {
         .unwrap_or_else(|_| image_path.to_path_buf());
     let mut hasher = Sha256::new();
     hasher.update(canonical.to_string_lossy().as_bytes());
-    format!("{:x}", hasher.finalize())
+    crate::core::hexfmt::hex_lower(hasher.finalize())
 }
 
 fn baseline_path(image_path: &Path) -> Result<PathBuf> {

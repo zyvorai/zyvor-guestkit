@@ -693,7 +693,16 @@ impl RequestHandler {
             );
         };
         use sysinfo::{Pid, ProcessesToUpdate, System};
-        let mut sys = System::new();
+        let mut sys = match System::new() {
+            Ok(s) => s,
+            Err(e) => {
+                return JsonRpcResponse::error(
+                    id,
+                    RpcErrorCode::InternalError,
+                    format!("process info unavailable: {e}"),
+                );
+            }
+        };
         let target = Pid::from_u32(pid as u32);
         sys.refresh_processes(ProcessesToUpdate::Some(&[target]), true);
         let Some(proc_) = sys.process(target) else {

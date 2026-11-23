@@ -589,14 +589,14 @@ pub fn rescue_command(
 
                 // Generate SHA-512 crypt password hash using openssl
                 let hash = {
-                    use rand::Rng;
+                    use rand::RngExt;
 
                     // Generate random 16-char salt from ./0-9A-Za-z
                     const SALT_CHARS: &[u8] =
                         b"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-                    let mut rng = rand::thread_rng();
+                    let mut rng = rand::rng();
                     let salt: String = (0..16)
-                        .map(|_| SALT_CHARS[rng.gen_range(0..SALT_CHARS.len())] as char)
+                        .map(|_| SALT_CHARS[rng.random_range(0..SALT_CHARS.len())] as char)
                         .collect();
 
                     // Use openssl to generate a proper SHA-512 crypt hash
@@ -1447,12 +1447,12 @@ fn build_rescue_export_plan(
             }
             let pw = password.ok_or_else(|| anyhow::anyhow!("--password required"))?;
             let hash = {
-                use rand::Rng;
+                use rand::RngExt;
                 const SALT_CHARS: &[u8] =
                     b"./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-                let mut rng = rand::thread_rng();
+                let mut rng = rand::rng();
                 let salt: String = (0..16)
-                    .map(|_| SALT_CHARS[rng.gen_range(0..SALT_CHARS.len())] as char)
+                    .map(|_| SALT_CHARS[rng.random_range(0..SALT_CHARS.len())] as char)
                     .collect();
                 let mut child = std::process::Command::new("openssl")
                     .args(["passwd", "-6", "-salt", &salt, "-stdin"])

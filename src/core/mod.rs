@@ -7,6 +7,7 @@ pub mod binary_cache;
 pub mod cache_root;
 pub mod diagnostics;
 pub mod error;
+pub mod hexfmt;
 pub mod mem_optimize;
 pub mod progress;
 pub mod retry;

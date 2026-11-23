@@ -58,7 +58,7 @@ pub fn cmd_export(ctx: &mut ShellContext, args: &[&str]) -> Result<()> {
 
 /// Show directory tree
 pub fn cmd_tips(_ctx: &ShellContext, _args: &[&str]) -> Result<()> {
-    use rand::Rng;
+    use rand::RngExt;
 
     let tips = vec![
         (
@@ -89,8 +89,8 @@ pub fn cmd_tips(_ctx: &ShellContext, _args: &[&str]) -> Result<()> {
         ("📈", "Check shell statistics", "Try: stats"),
     ];
 
-    let mut rng = rand::thread_rng();
-    let tip = &tips[rng.gen_range(0..tips.len())];
+    let mut rng = rand::rng();
+    let tip = &tips[rng.random_range(0..tips.len())];
 
     println!("\n{} {}", "💡 Tip:".yellow().bold(), tip.1.green());
     if !tip.2.is_empty() {

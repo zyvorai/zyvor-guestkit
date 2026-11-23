@@ -41,7 +41,7 @@ impl JobBuilder {
 
     /// Generate a new ULID job ID
     pub fn generate_job_id(mut self) -> Self {
-        self.job_id = Some(format!("job-{}", ulid::Ulid::new()));
+        self.job_id = Some(format!("job-{}", ulid::Ulid::generate()));
         self
     }
 

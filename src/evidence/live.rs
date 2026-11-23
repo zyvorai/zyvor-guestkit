@@ -83,11 +83,14 @@ fn enrich_migration_fields_live(snapshot: &mut EvidenceSnapshot) {
     // Root free space via statvfs-equivalent (sysinfo Disks; agent builds).
     #[cfg(feature = "sysinfo")]
     {
-        let disks = sysinfo::Disks::new_with_refreshed_list();
-        snapshot.storage.free_space_root_mb = disks
-            .iter()
-            .find(|d| d.mount_point() == std::path::Path::new("/"))
-            .map(|d| d.available_space() / (1024 * 1024));
+        snapshot.storage.free_space_root_mb = sysinfo::Disks::new_with_refreshed_list()
+            .ok()
+            .and_then(|disks| {
+                disks
+                    .iter()
+                    .find(|d| d.mount_point() == std::path::Path::new("/"))
+                    .map(|d| d.available_space() / (1024 * 1024))
+            });
     }
 
     // Routing table for drift comparison.

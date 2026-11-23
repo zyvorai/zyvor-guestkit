@@ -56,7 +56,16 @@ pub struct LoadAverage {
 }
 
 pub fn collect_metrics_live() -> GuestMetricsSnapshot {
-    let mut sys = System::new_all();
+    let mut sys = match System::new_all() {
+        Ok(s) => s,
+        Err(e) => {
+            log::warn!("sysinfo unavailable: {e}");
+            return GuestMetricsSnapshot {
+                collected_at: chrono::Utc::now().to_rfc3339(),
+                ..Default::default()
+            };
+        }
+    };
     sys.refresh_all();
     std::thread::sleep(std::time::Duration::from_millis(200));
     sys.refresh_cpu_usage();
@@ -72,12 +81,12 @@ pub fn collect_metrics_live() -> GuestMetricsSnapshot {
         0.0
     };
 
-    let disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list().ok();
     let mut read_bytes = 0u64;
     let mut write_bytes = 0u64;
     let mut root_used = 0u64;
     let mut root_total = 0u64;
-    for disk in disks.list() {
+    for disk in disks.iter().flat_map(|d| d.iter()) {
         read_bytes = read_bytes.saturating_add(disk.usage().total_read_bytes);
         write_bytes = write_bytes.saturating_add(disk.usage().total_written_bytes);
         let mp = disk.mount_point().to_string_lossy();
@@ -92,15 +101,15 @@ pub fn collect_metrics_live() -> GuestMetricsSnapshot {
         0.0
     };
 
-    let networks = Networks::new_with_refreshed_list();
+    let networks = Networks::new_with_refreshed_list().ok();
     let mut rx = 0u64;
     let mut tx = 0u64;
-    for data in networks.values() {
+    for data in networks.iter().flat_map(|n| n.values()) {
         rx = rx.saturating_add(data.total_received());
         tx = tx.saturating_add(data.total_transmitted());
     }
 
-    let load = sysinfo::System::load_average();
+    let load = sysinfo::System::load_average().unwrap_or_default();
 
     GuestMetricsSnapshot {
         collected_at: chrono::Utc::now().to_rfc3339(),
