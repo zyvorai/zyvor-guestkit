@@ -3,7 +3,7 @@
 
 //! Retry logic with exponential backoff
 
-use rand::Rng;
+use rand::RngExt;
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -82,7 +82,7 @@ where
 
                 // Add jitter to prevent thundering herd
                 if config.jitter {
-                    let jitter_factor = 0.5 + rand::thread_rng().r#gen::<f64>() * 0.5;
+                    let jitter_factor = 0.5 + rand::rng().random::<f64>() * 0.5;
                     delay = Duration::from_secs_f64(delay.as_secs_f64() * jitter_factor);
                 }
 

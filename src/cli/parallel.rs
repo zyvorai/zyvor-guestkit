@@ -302,7 +302,7 @@ impl ParallelInspector {
         }
 
         let hash = hasher.finalize();
-        Ok(format!("{:x}", hash))
+        Ok(crate::core::hexfmt::hex_lower(hash))
     }
 
     /// Perform actual disk inspection using Guestfs

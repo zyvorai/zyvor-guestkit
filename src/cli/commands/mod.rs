@@ -11,6 +11,7 @@ pub mod assurance;
 pub mod batch;
 pub mod disk_ops;
 pub mod file_ops;
+pub mod image_audit;
 pub mod inspect;
 #[cfg(feature = "mcp")]
 #[cfg(not(target_os = "windows"))]
@@ -24,6 +25,7 @@ pub use assurance::*;
 pub use batch::*;
 pub use disk_ops::*;
 pub use file_ops::*;
+pub use image_audit::*;
 pub use inspect::*;
 #[cfg(feature = "mcp")]
 #[cfg(not(target_os = "windows"))]

@@ -89,6 +89,8 @@ pub mod journal;
 #[cfg(feature = "agent")]
 pub mod metrics;
 pub mod migration;
+#[cfg(unix)]
+pub mod offline;
 
 // Optional modules
 #[cfg(feature = "guest-inspect")]

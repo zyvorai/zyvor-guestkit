@@ -62,7 +62,7 @@ impl InspectionCache {
         hasher.update(size.to_le_bytes());
 
         let hash = hasher.finalize();
-        Ok(format!("{:x}", hash))
+        Ok(crate::core::hexfmt::hex_lower(hash))
     }
 
     /// Get cached inspection result if available and valid

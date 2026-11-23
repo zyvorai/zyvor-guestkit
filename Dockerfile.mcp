@@ -7,7 +7,7 @@
 # in-container path, e.g.
 #   docker run -i --rm -v /vms:/vms:ro ghcr.io/zyvorai/guestkit-mcp:<ver> /vms/web01.qcow2
 # The top-level Dockerfile (guestkit CLI image) is intentionally untouched.
-FROM rust:slim-bookworm AS builder
+FROM rust:1-slim-bookworm AS builder
 RUN apt-get update && apt-get install -y --no-install-recommends \
       pkg-config libssl-dev libsystemd-dev \
     && rm -rf /var/lib/apt/lists/*

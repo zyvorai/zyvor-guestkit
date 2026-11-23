@@ -70,8 +70,8 @@ fn token_key() -> Result<[u8; 32]> {
     }
     let mut key = [0u8; 32];
     // rand is a workspace dependency.
-    use rand::RngCore;
-    rand::thread_rng().fill_bytes(&mut key);
+    use rand::Rng;
+    rand::rng().fill_bytes(&mut key);
     std::fs::create_dir_all(state_dir())?;
     std::fs::write(&path, key)?;
     #[cfg(unix)]

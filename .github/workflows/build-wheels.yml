@@ -30,11 +30,11 @@ jobs:
         # aarch64 manylinux cross image fails in CI; macOS needs Linux-only libc gated
         target: [x86_64]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.11'
+          python-version: "3.14"
 
       - name: Build wheels
         uses: PyO3/maturin-action@v1
@@ -47,7 +47,7 @@ jobs:
             yum install -y openssl-devel systemd-devel
 
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-linux-${{ matrix.target }}
           path: dist
@@ -67,7 +67,7 @@ jobs:
     name: Build source distribution
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build sdist
         uses: PyO3/maturin-action@v1
@@ -76,7 +76,7 @@ jobs:
           args: --out dist
 
       - name: Upload sdist
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: wheels-sdist
           path: dist
@@ -97,7 +97,7 @@ jobs:
       id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
@@ -120,16 +120,16 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ['3.10', '3.11', '3.12', '3.13']
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: wheels-*
           merge-multiple: true
           path: dist
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 

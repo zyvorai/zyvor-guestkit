@@ -473,12 +473,12 @@ fn hash_file_sha256(path: &Path) -> Result<String> {
         }
         hasher.update(&buf[..n]);
     }
-    Ok(format!("{:x}", hasher.finalize()))
+    Ok(crate::core::hexfmt::hex_lower(hasher.finalize()))
 }
 
 fn plan_digest(plan: &FixPlan) -> Result<PlanDigest> {
     let bytes = serde_json::to_vec(plan)?;
-    let sha = format!("{:x}", Sha256::digest(&bytes));
+    let sha = crate::core::hexfmt::hex_lower(Sha256::digest(&bytes));
     Ok(PlanDigest {
         profile: plan.profile.clone(),
         operation_count: plan.operations.len(),
@@ -695,10 +695,12 @@ fn sign_passport(_passport: &CutoverPassport, _key_path: &Path) -> Result<Passpo
 #[cfg(feature = "agent")]
 fn generate_passport_signing_key_inner(seed_path: &Path, public_path: &Path) -> Result<String> {
     use ed25519_dalek::SigningKey;
-    use rand::RngCore;
+    use rand::TryRng;
 
     let mut seed = [0u8; 32];
-    rand::rngs::OsRng.fill_bytes(&mut seed);
+    rand::rngs::SysRng
+        .try_fill_bytes(&mut seed)
+        .expect("OS RNG unavailable");
     let signing_key = SigningKey::from_bytes(&seed);
     let pub_hex = hex::encode(signing_key.verifying_key().as_bytes());
 

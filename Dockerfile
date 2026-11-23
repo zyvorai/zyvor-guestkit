@@ -4,7 +4,7 @@
 
 # Multi-stage build for guestkit
 # Stage 1: Builder
-FROM rust:1.70-slim-bookworm AS builder
+FROM rust:1-slim-bookworm AS builder
 
 # Install build dependencies
 RUN apt-get update && apt-get install -y \
@@ -60,7 +60,7 @@ CMD ["--help"]
 
 # Stage 3: LVM Worker Container
 # Pre-built image with all LVM/filesystem tools for podman-based clone isolation
-FROM fedora:43 AS lvm-worker
+FROM fedora:44 AS lvm-worker
 
 LABEL description="guestkit LVM worker - privileged container for LVM clone operations"
 

@@ -20,9 +20,13 @@ const PERSIST_EVERY_TICKS: u64 = 300; // 5 minutes
 pub async fn run_sampler(store: Arc<TelemetryStore>) {
     store.load_coarse();
     let mut tick: u64 = 0;
+    let (Ok(sys), Ok(networks)) = (System::new(), Networks::new_with_refreshed_list()) else {
+        log::warn!("telemetry sampler disabled: sysinfo is unavailable");
+        return;
+    };
     let mut state = SamplerState {
-        sys: System::new(),
-        networks: Networks::new_with_refreshed_list(),
+        sys,
+        networks,
         prev_disk_read: 0,
         prev_disk_write: 0,
     };
@@ -55,9 +59,10 @@ fn take_sample(state: &mut SamplerState) -> PerfSample {
     };
 
     let root_mount = if cfg!(windows) { "C:\\" } else { "/" };
-    let disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list().ok();
     let disk_used_pct = disks
         .iter()
+        .flat_map(|d| d.iter())
         .find(|d| d.mount_point().to_string_lossy() == root_mount)
         .map(|d| {
             if d.total_space() > 0 {
@@ -95,7 +100,7 @@ fn take_sample(state: &mut SamplerState) -> PerfSample {
         ts: chrono::Utc::now().timestamp() as u64,
         cpu_pct,
         cpu_pct_max: cpu_pct,
-        load1: System::load_average().one as f32,
+        load1: System::load_average().unwrap_or_default().one as f32,
         mem_used: used_mem,
         mem_avail: state.sys.available_memory(),
         swap_used: state.sys.used_swap(),
@@ -169,7 +174,7 @@ fn proc_count() -> u32 {
 
 #[cfg(not(target_os = "linux"))]
 fn proc_count() -> u32 {
-    let mut sys = System::new();
+    let Ok(mut sys) = System::new() else { return 0 };
     sys.refresh_processes(sysinfo::ProcessesToUpdate::All, true);
     sys.processes().len() as u32
 }

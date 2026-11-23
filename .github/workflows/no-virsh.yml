@@ -14,7 +14,7 @@ jobs:
   grep:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Fail on new virsh qemu-agent-command call sites
         run: |
           set -euo pipefail

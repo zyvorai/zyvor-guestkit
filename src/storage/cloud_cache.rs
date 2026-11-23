@@ -32,7 +32,7 @@ fn cache_root() -> Result<PathBuf> {
 fn cache_key(uri: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(uri.as_bytes());
-    format!("{:x}", hasher.finalize())
+    crate::core::hexfmt::hex_lower(hasher.finalize())
 }
 
 fn extension_hint(uri: &str) -> &'static str {

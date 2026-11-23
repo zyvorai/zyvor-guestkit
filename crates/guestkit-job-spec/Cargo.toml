@@ -14,20 +14,20 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
 # Validation
-validator = { version = "0.20", features = ["derive"] }
+validator = { version = "0.21", features = ["derive"] }
 
 # Time handling
 chrono = { version = "0.4", features = ["serde"] }
 
 # ULID generation
-ulid = { version = "1.1", features = ["serde"] }
+ulid = { version = "3.0", features = ["serde"] }
 
 # Error handling
 thiserror = "2.0"
 anyhow = "1.0"
 
 # Optional: JSON Schema generation
-schemars = { version = "0.8", optional = true }
+schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 serde_yaml = "0.9"

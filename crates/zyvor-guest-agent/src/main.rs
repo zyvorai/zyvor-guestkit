@@ -167,7 +167,7 @@ fn parse_channel(args: &[String]) -> guestkit::agent::AgentChannel {
             match val.as_str() {
                 "stdio" => return guestkit::agent::AgentChannel::Stdio,
                 "vsock" => return guestkit::agent::AgentChannel::Vsock,
-                "virtio" | _ => return guestkit::agent::AgentChannel::Virtio,
+                _ => return guestkit::agent::AgentChannel::Virtio,
             }
         }
     }

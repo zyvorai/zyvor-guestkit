@@ -107,7 +107,7 @@ fn fingerprint_packages(ev: &EvidenceSnapshot) -> String {
     for pkg in ev.packages.sample_packages.iter().take(20) {
         hasher.update(pkg.as_bytes());
     }
-    format!("{:x}", hasher.finalize())[..12].to_string()
+    crate::core::hexfmt::hex_lower(hasher.finalize())[..12].to_string()
 }
 
 #[cfg(test)]

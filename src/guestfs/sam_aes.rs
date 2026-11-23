@@ -11,12 +11,12 @@
 use crate::core::{Error, Result};
 use aes::Aes128;
 use cbc::{Decryptor as AesCbcDec, Encryptor as AesCbcEnc};
-use cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
-use des::cipher::{BlockDecrypt, BlockEncrypt, KeyInit};
+use cipher::{block_padding::Pkcs7, BlockModeDecrypt, BlockModeEncrypt, KeyIvInit};
+use des::cipher::{BlockCipherDecrypt, BlockCipherEncrypt, KeyInit};
 use des::Des;
 use md4::Md4;
 use md5::{Digest, Md5};
-use rand::RngCore;
+use rand::Rng;
 use std::fs;
 use std::path::Path;
 
@@ -322,7 +322,7 @@ fn aes_cbc_encrypt(key: &[u8], iv: &[u8], plaintext: &[u8]) -> Result<Vec<u8>> {
         .try_into()
         .map_err(|_| Error::InvalidFormat("AES IV must be 16 bytes".into()))?;
     let enc = AesCbcEnc::<Aes128>::new((&key).into(), (&iv).into());
-    Ok(enc.encrypt_padded_vec_mut::<Pkcs7>(plaintext))
+    Ok(enc.encrypt_padded_vec::<Pkcs7>(plaintext))
 }
 
 fn aes_cbc_decrypt(key: &[u8], iv: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>> {
@@ -341,7 +341,7 @@ fn aes_cbc_decrypt(key: &[u8], iv: &[u8], ciphertext: &[u8]) -> Result<Vec<u8>> 
     let dec = AesCbcDec::<Aes128>::new((&key).into(), (&iv).into());
     let mut buf = ciphertext.to_vec();
     let pt = dec
-        .decrypt_padded_mut::<cipher::block_padding::NoPadding>(&mut buf)
+        .decrypt_padded::<cipher::block_padding::NoPadding>(&mut buf)
         .map_err(|e| Error::InvalidFormat(format!("AES decrypt: {e:?}")))?;
     Ok(pt.to_vec())
 }
@@ -630,7 +630,7 @@ fn from_hex(b: u8) -> Option<u8> {
 /// Random 16-byte salt for AES SAM_HASH_AES.
 pub fn random_salt() -> [u8; 16] {
     let mut s = [0u8; 16];
-    rand::thread_rng().fill_bytes(&mut s);
+    rand::rng().fill_bytes(&mut s);
     s
 }
 

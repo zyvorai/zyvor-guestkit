@@ -29,7 +29,7 @@ jobs:
         os: [ubuntu-latest]
         rust: [stable, beta]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
@@ -146,7 +146,7 @@ jobs:
     name: Code Coverage
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -178,7 +178,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -199,7 +199,7 @@ jobs:
           - os: ubuntu-latest
             target: x86_64-unknown-linux-musl
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -231,7 +231,7 @@ jobs:
         run: strip target/${{ matrix.target }}/release/guestkit || true
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: guestkit-${{ matrix.target }}
           path: target/${{ matrix.target }}/release/guestkit
@@ -240,7 +240,7 @@ jobs:
     name: Documentation
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -273,7 +273,7 @@ jobs:
     # the change under review. The Test job (committed Cargo.lock) is the main signal.
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -292,7 +292,7 @@ jobs:
     name: Windows Agent Cross-Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -312,10 +312,10 @@ jobs:
     name: Helm Chart
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
 
       - name: helm lint
         run: helm lint deploy/helm/zyvor
@@ -352,11 +352,11 @@ jobs:
     name: Python Bindings
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: "3.14"
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -383,11 +383,11 @@ jobs:
     name: Website
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
-          node-version: "22"
+          node-version: "24"
           cache: npm
           cache-dependency-path: website/package-lock.json
 
@@ -401,7 +401,7 @@ jobs:
     name: MCP Registry metadata
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: server.json, Dockerfile.mcp label and Cargo.toml version agree
         run: bash scripts/check-mcp-registry.sh
       - name: server.json validates against the registry schema (pinned mcp-publisher)

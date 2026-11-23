@@ -32,28 +32,34 @@ struct Probe {
     virtio_ready: bool,
 }
 
-fn shared_system() -> &'static Mutex<System> {
-    static SYS: OnceLock<Mutex<System>> = OnceLock::new();
-    SYS.get_or_init(|| Mutex::new(System::new()))
+fn shared_system() -> &'static Mutex<Option<System>> {
+    static SYS: OnceLock<Mutex<Option<System>>> = OnceLock::new();
+    SYS.get_or_init(|| Mutex::new(System::new().ok()))
 }
 
 fn probe() -> Probe {
     let (cpu, mem) = {
-        let mut sys = shared_system().lock().unwrap_or_else(|e| e.into_inner());
-        sys.refresh_cpu_usage();
-        sys.refresh_memory();
-        let mem_pct = if sys.total_memory() > 0 {
-            (sys.used_memory() as f64 / sys.total_memory() as f64 * 100.0) as f32
-        } else {
-            0.0
-        };
-        (sys.global_cpu_usage(), mem_pct)
+        let mut guard = shared_system().lock().unwrap_or_else(|e| e.into_inner());
+        match guard.as_mut() {
+            Some(sys) => {
+                sys.refresh_cpu_usage();
+                sys.refresh_memory();
+                let mem_pct = if sys.total_memory() > 0 {
+                    (sys.used_memory() as f64 / sys.total_memory() as f64 * 100.0) as f32
+                } else {
+                    0.0
+                };
+                (sys.global_cpu_usage(), mem_pct)
+            }
+            None => (0.0, 0.0),
+        }
     };
 
     let root_mount = if cfg!(windows) { "C:\\" } else { "/" };
-    let disks = Disks::new_with_refreshed_list();
+    let disks = Disks::new_with_refreshed_list().ok();
     let root_disk = disks
         .iter()
+        .flat_map(|d| d.iter())
         .find(|d| d.mount_point().to_string_lossy() == root_mount)
         .map(|d| {
             if d.total_space() > 0 {
@@ -189,7 +195,7 @@ fn boot_id() -> String {
     // Synthetic stable per-boot id: hash of boot time + hostname.
     use sha2::{Digest, Sha256};
     let mut hasher = Sha256::new();
-    hasher.update(System::boot_time().to_le_bytes());
+    hasher.update(System::boot_time().unwrap_or(0).to_le_bytes());
     hasher.update(System::host_name().unwrap_or_default());
     let digest = hasher.finalize();
     hex::encode(&digest[..16])
@@ -227,7 +233,7 @@ pub fn build_heartbeat(rt: &AgentRuntime) -> Heartbeat {
         seq: rt.next_heartbeat_seq(),
         agent_state: state,
         boot_id: boot_id(),
-        os_uptime_secs: System::uptime(),
+        os_uptime_secs: System::uptime().unwrap_or(0),
         agent_uptime_secs: rt.started_at.elapsed().as_secs(),
         agent_version: crate::VERSION.to_string(),
         protocol_version: PROTOCOL_VERSION.to_string(),

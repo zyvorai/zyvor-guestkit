@@ -241,7 +241,7 @@ pub fn fingerprint_command(
         hasher.update(data.as_bytes());
         hasher.update(b"\n");
     }
-    let fingerprint_hash = format!("{:x}", hasher.finalize());
+    let fingerprint_hash = crate::core::hexfmt::hex_lower(hasher.finalize());
 
     progress.finish_and_clear();
 
