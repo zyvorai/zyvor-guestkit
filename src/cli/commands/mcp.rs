@@ -17,6 +17,11 @@ pub fn mcp_serve_command(image: &Path, target: &str, verbose: bool) -> Result<()
     let boot_target = boot_target_from_str(target);
     let (evidence, _) = collect_assurance_data(image, boot_target, verbose)?;
     let boot = analyze_bootability(&evidence, boot_target);
+    // Offline hardening/boot audit; a failure must not stop the server.
+    let audit =
+        crate::cli::commands::collect_image_audit(image, crate::offline::AuditScope::All, verbose)
+            .ok()
+            .and_then(|r| serde_json::to_value(r).ok());
 
     if verbose {
         eprintln!(
@@ -27,7 +32,10 @@ pub fn mcp_serve_command(image: &Path, target: &str, verbose: bool) -> Result<()
         );
     }
 
-    let server = GuestkitMcpServer::new(evidence, Some(boot));
+    let mut server = GuestkitMcpServer::new(evidence, Some(boot));
+    if let Some(a) = audit {
+        server = server.with_offline_audit(a);
+    }
 
     let rt = tokio::runtime::Runtime::new().context("failed to start async runtime")?;
     rt.block_on(async move {

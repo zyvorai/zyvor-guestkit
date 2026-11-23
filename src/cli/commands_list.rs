@@ -70,6 +70,8 @@ const GROUPS: &[(&str, &[&str])] = &[
             "policy",
             "cloud-profile",
             "harden",
+            "image-audit",
+            "image-audit-diff",
             "anomaly",
             "recommend",
             "predict",

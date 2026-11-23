@@ -1821,6 +1821,47 @@ enum Commands {
         strict: bool,
     },
 
+    /// Offline hardening (SSH, sudo, PAM, accounts) and boot-readiness audit of a disk image
+    #[command(name = "image-audit")]
+    ImageAudit {
+        /// Disk image
+        image: PathBuf,
+
+        /// Rule sets to run (hardening, boot, all)
+        #[arg(long, value_name = "SCOPE", default_value = "all")]
+        scope: String,
+
+        /// Output format (text, json, yaml)
+        #[arg(short, long, value_name = "FORMAT", default_value = "text")]
+        output: String,
+
+        /// Exit 2 when any finding is at or above this severity (info, low, medium, high, critical)
+        #[arg(long, value_name = "SEVERITY")]
+        fail_on: Option<String>,
+    },
+
+    /// Diff two offline audits (disk images or saved `image-audit -o json` reports)
+    #[command(name = "image-audit-diff")]
+    ImageAuditDiff {
+        /// Before: disk image or saved audit JSON
+        old: PathBuf,
+
+        /// After: disk image or saved audit JSON
+        new: PathBuf,
+
+        /// Rule sets to run when an argument is a disk image (hardening, boot, all)
+        #[arg(long, value_name = "SCOPE", default_value = "all")]
+        scope: String,
+
+        /// Output format (text, json, yaml)
+        #[arg(short, long, value_name = "FORMAT", default_value = "text")]
+        output: String,
+
+        /// Exit 2 when a new or worsened finding is at or above this severity
+        #[arg(long, value_name = "SEVERITY")]
+        fail_on_regression: Option<String>,
+    },
+
     /// List subcommands grouped by category
     #[command(name = "commands")]
     CommandCatalog,
@@ -3905,6 +3946,38 @@ pub fn run() -> anyhow::Result<()> {
 
         Commands::HostCheck { output, strict } => {
             crate::cli::host_check::host_check_command(&output, strict)?;
+        }
+
+        Commands::ImageAudit {
+            image,
+            scope,
+            output,
+            fail_on,
+        } => {
+            crate::cli::commands::image_audit_command(
+                &image,
+                &scope,
+                &output,
+                fail_on.as_deref(),
+                cli.verbose,
+            )?;
+        }
+
+        Commands::ImageAuditDiff {
+            old,
+            new,
+            scope,
+            output,
+            fail_on_regression,
+        } => {
+            crate::cli::commands::image_audit_diff_command(
+                &old,
+                &new,
+                &scope,
+                &output,
+                fail_on_regression.as_deref(),
+                cli.verbose,
+            )?;
         }
 
         Commands::CommandCatalog => {

@@ -23,13 +23,23 @@ use std::sync::Arc;
 #[derive(Clone)]
 pub struct GuestkitMcpServer {
     ctx: SnapshotContext,
+    /// Offline hardening/boot-readiness audit captured at startup (optional).
+    audit: Option<Arc<Value>>,
 }
 
 impl GuestkitMcpServer {
     pub fn new(evidence: EvidenceSnapshot, boot: Option<BootabilityReport>) -> Self {
         Self {
             ctx: SnapshotContext::new(Arc::new(evidence), Arc::new(boot)),
+            audit: None,
         }
+    }
+
+    /// Attach the offline audit report (`offline::AuditReport` as JSON) so the
+    /// `get_offline_audit` tool can serve it. Additive; `new` is unchanged.
+    pub fn with_offline_audit(mut self, report: Value) -> Self {
+        self.audit = Some(Arc::new(report));
+        self
     }
 
     /// Dispatch through the same `SnapshotTools::call` every other tool
@@ -96,6 +106,18 @@ impl GuestkitMcpServer {
     )]
     async fn get_windows_risks(&self) -> Json<Value> {
         self.call("get_windows_risks", Value::Null)
+    }
+
+    #[tool(
+        description = "Get the offline hardening (SSH, sudo, PAM, accounts) and boot-readiness (kernel/initramfs, GRUB/BLS, fstab, cloud-init, network) audit. Each finding has a severity and a confidence (confirmed, likely, heuristic); secrets are never included."
+    )]
+    async fn get_offline_audit(&self) -> Json<Value> {
+        match &self.audit {
+            Some(a) => Json(a.as_ref().clone()),
+            None => Json(
+                serde_json::json!({ "error": "offline audit was not collected for this server" }),
+            ),
+        }
     }
 
     #[tool(description = "Get the proactive remediation recommendations for this VM.")]
