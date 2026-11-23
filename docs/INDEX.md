@@ -26,6 +26,8 @@ Operator cheat sheets (cutover cookbook, day-0/rescue, Passport, env vars): **[G
 | [File explorer](features/explore/EXPLORE-QUICKSTART.md) | `guestkit explore` (+ web Browse files) |
 | [Interactive shell](user-guides/interactive-mode.md) | REPL mode |
 | [Security profiles](user-guides/profiles.md) | Security, compliance, migration profiles |
+| [Offline image audit](features/offline-audit.md) | `image-audit` hardening and boot-readiness rules with confidence, `image-audit-diff`, MCP `get_offline_audit` |
+| [Research notes](RESEARCH.md) | Offline inspection landscape (libguestfs, Trivy, Syft, OpenSCAP, Lynis, Inspector) and ranked ideas |
 | [Migration assurance](features/migration-assurance.md) | Doctor, migrate-plan, fleet, policy, forensic diff |
 | [QEMU / VirtIO runtime](features/qemu-runtime.md) | Assured `guestkit-qemu plan|run|qmp` from evidence |
 | [VM lifecycle](features/vm-runtime.md) | Lab `guestkit vm`; production run/network/TTL → [FluxVM](https://github.com/zyvorai/fluxvm) |
