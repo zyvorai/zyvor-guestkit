@@ -43,6 +43,13 @@ impl Guestfs {
             .map(|s| s.as_str())
     }
 
+    /// Host directory where the guest `/` is mounted (read-only inspection
+    /// helpers walk the tree from here; callers must confine symlinks, see
+    /// `offline::GuestRoot`).
+    pub fn guest_root_dir(&self) -> Result<PathBuf> {
+        Ok(PathBuf::from(self.find_root_mountpoint()?))
+    }
+
     /// Resolve guest path to host path (internal helper)
     ///
     /// This function securely resolves guest paths by:
