@@ -698,7 +698,9 @@ fn generate_passport_signing_key_inner(seed_path: &Path, public_path: &Path) -> 
     use rand::TryRng;
 
     let mut seed = [0u8; 32];
-    rand::rngs::SysRng.try_fill_bytes(&mut seed).expect("OS RNG unavailable");
+    rand::rngs::SysRng
+        .try_fill_bytes(&mut seed)
+        .expect("OS RNG unavailable");
     let signing_key = SigningKey::from_bytes(&seed);
     let pub_hex = hex::encode(signing_key.verifying_key().as_bytes());
 
