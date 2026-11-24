@@ -19,19 +19,29 @@ pub mod boot_ready;
 pub mod diff;
 pub mod finding;
 pub mod hardening;
+pub mod identity;
 pub mod root;
+pub mod rules;
+pub mod sarif;
+pub mod waivers;
 
 pub use boot_ready::{audit_boot_readiness, KnownFilesystem};
 pub use diff::{diff_reports, AuditDiff, AuditVerdict, AUDIT_DIFF_SCHEMA};
 pub use finding::{AuditReport, Confidence, Finding, Severity, AUDIT_SCHEMA};
 pub use hardening::audit_hardening;
+pub use identity::audit_identity;
 pub use root::{GuestRoot, Limits, ReadOutcome};
+pub use rules::{CustomRule, RuleSet};
+pub use sarif::to_sarif;
+pub use waivers::{apply_baseline, WaivedFinding, Waiver, WaiverSet, WaiverSummary};
 
 /// Which rule sets to run.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AuditScope {
     Hardening,
     Boot,
+    /// Baked-in identity and leftover state (machine-id, history, leases...).
+    Identity,
     All,
 }
 
@@ -40,8 +50,11 @@ impl AuditScope {
         match s.to_ascii_lowercase().as_str() {
             "hardening" => Ok(Self::Hardening),
             "boot" => Ok(Self::Boot),
+            "identity" => Ok(Self::Identity),
             "all" => Ok(Self::All),
-            other => anyhow::bail!("unknown audit scope `{other}` (hardening, boot, all)"),
+            other => {
+                anyhow::bail!("unknown audit scope `{other}` (hardening, boot, identity, all)")
+            }
         }
     }
 }
@@ -59,6 +72,9 @@ pub fn run_audit(
     }
     if matches!(scope, AuditScope::Boot | AuditScope::All) {
         audit_boot_readiness(root, known_fs, &mut report);
+    }
+    if matches!(scope, AuditScope::Identity | AuditScope::All) {
+        audit_identity(root, &mut report);
     }
     report.finish();
     report

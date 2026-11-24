@@ -68,7 +68,6 @@ chrono = { version = "0.4", features = ["serde"] }
 tempfile = "3.27"
 
 # Disk image and partition parsing (pure Rust)
-memmap2 = "0.9"
 byteorder = "1.5"
 
 # Regex for OS detection
