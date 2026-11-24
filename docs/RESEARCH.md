@@ -91,3 +91,37 @@ GRUB, EFI, virtio, cloud-init conflicts), `migrate-assess`, `passport`,
   authorized key material are counted or named, not copied.
 * All reads go through one confined reader (symlinks resolved against the guest
   root, non-regular files refused, size/fan-out/include-depth caps).
+
+## Round 3 (2026-11-24): turning the audit into a workflow
+
+Read from fetched pages on 2026-11-24:
+
+| Source | What it showed | Source URL |
+|---|---|---|
+| virt-sysprep man page | Full operation list (machine-id, ssh-hostkeys, dhcp-client-state, udev-persistent-net, net-hwaddr, bash-history, cron-spool, passwd-backups, mail-spool, rh-subscription-manager, rhn-systemid, yum-uuid, kerberos-hostkeytab, logfiles, tmp-files, crash-data, package-manager-cache, ...) and the shared random-seed hazard | https://libguestfs.org/virt-sysprep.1.html |
+| Trivy filtering docs | `.trivyignore.yaml` entries have `id`, `paths`, `purls`, `expired_at`, `statement`; `--show-suppressed` lists what was suppressed; the YAML file is experimental. The page does not say what happens after `expired_at` passes or how SARIF treats suppressed results | https://trivy.dev/latest/docs/configuration/filtering/ |
+| gitleaks README | Built-in `json`, `csv`, `junit`, `sarif` reports; `--baseline-path` reports only findings not in a previous report; fingerprint ignore file | https://github.com/gitleaks/gitleaks |
+| Wazuh custom SCA policies | Checks as data: file-exists, content regex (`f:path -> r:REGEX`), negation, directory scans | https://documentation.wazuh.com/current/user-manual/capabilities/sec-config-assessment/creating_custom_policies.html |
+| SARIF 2.1.0 spec and community reports | `suppressions` with `kind: external` and `justification` are part of the spec; `security-severity` on the rule drives GitHub severity; several projects report GitHub code scanning ignores `suppressions` (not confirmed against GitHub docs) | https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html |
+
+Built from these (all on `image-audit`, all read-only):
+
+1. `--scope identity` (IDENT-001..014): the virt-sysprep checklist as an audit, so
+   a golden image can be checked without running virt-sysprep. Resolves research
+   item 5 above.
+2. Waivers (`--waivers`) with required reason, optional expiry, stale and expired
+   reporting, plus `--baseline` (gitleaks and Trivy style). Expired and stale
+   entries are surfaced rather than silently ignored, which the Trivy docs leave
+   unspecified.
+3. `-o sarif` (SARIF 2.1.0) with stable fingerprints and suppressions.
+4. `--rules FILE`: user rules as YAML data, a small Wazuh-SCA-style vocabulary
+   (resolves research item 6 for simple file/line/mode rules; not an OVAL/SCAP
+   engine).
+5. Directory targets for `image-audit` / `image-audit-diff` (oscap-chroot style
+   input), which also makes the whole rule engine testable at CLI level without
+   an image.
+
+Still not built: SCAP/OVAL content, auditing LVM or LUKS inner filesystems
+without libguestfs, and CIS benchmark mapping (rule ids are not tagged with CIS
+control numbers; claiming that mapping without the benchmark text in hand would
+be guesswork).

@@ -135,6 +135,10 @@ pub struct AuditReport {
     /// Honest limits: files too large, unreadable, caps hit, unverifiable items.
     pub notes: Vec<String>,
     pub counts: SeverityCounts,
+    /// Findings suppressed by a waiver file or a baseline, kept for audit
+    /// trail. Absent in reports that used neither.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub waived: Vec<super::waivers::WaivedFinding>,
 }
 
 impl AuditReport {
@@ -146,6 +150,7 @@ impl AuditReport {
             findings: Vec::new(),
             notes: Vec::new(),
             counts: SeverityCounts::default(),
+            waived: Vec::new(),
         }
     }
 

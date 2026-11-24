@@ -14,6 +14,7 @@
 //! interoperability (ECDSA-P256 or cosign key formats, Rekor) is a follow-up.
 
 use anyhow::{bail, Context, Result};
+#[cfg(feature = "agent")]
 use base64::{engine::general_purpose::STANDARD as B64, Engine as _};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};

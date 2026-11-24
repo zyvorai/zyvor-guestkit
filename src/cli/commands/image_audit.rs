@@ -7,8 +7,8 @@
 
 use super::{init_guestfs_ro, mount_all_ro};
 use crate::offline::{
-    diff_reports, run_audit, AuditDiff, AuditReport, AuditScope, AuditVerdict, GuestRoot,
-    KnownFilesystem, Severity, AUDIT_SCHEMA,
+    apply_baseline, diff_reports, run_audit, to_sarif, AuditDiff, AuditReport, AuditScope,
+    AuditVerdict, GuestRoot, KnownFilesystem, RuleSet, Severity, WaiverSet, AUDIT_SCHEMA,
 };
 use anyhow::{Context, Result};
 use owo_colors::OwoColorize;
@@ -40,8 +40,40 @@ fn known_filesystems(g: &mut crate::Guestfs, root_dev: &str) -> Vec<KnownFilesys
         .collect()
 }
 
+/// Extra inputs of `image-audit` beyond the image and scope.
+#[derive(Debug, Default, Clone)]
+pub struct ImageAuditExtras<'a> {
+    /// YAML file with user rules (`--rules`).
+    pub rules: Option<&'a Path>,
+    /// YAML file with waivers (`--waivers`).
+    pub waivers: Option<&'a Path>,
+    /// Saved `image-audit -o json` report; findings already in it are suppressed.
+    pub baseline: Option<&'a Path>,
+}
+
 /// Open `image` read-only, mount it, run the audit and return the report.
+/// `image` may also be an already mounted guest root directory.
 pub fn collect_image_audit(image: &Path, scope: AuditScope, verbose: bool) -> Result<AuditReport> {
+    collect_image_audit_with(image, scope, &RuleSet::default(), verbose)
+}
+
+fn collect_image_audit_with(
+    image: &Path,
+    scope: AuditScope,
+    rules: &RuleSet,
+    verbose: bool,
+) -> Result<AuditReport> {
+    if image.is_dir() {
+        // An already mounted (or extracted) guest root: same confined reader,
+        // no libguestfs. Filesystem references cannot be resolved without an
+        // image, which the boot rules report as unverifiable.
+        let root = GuestRoot::new(image)
+            .with_context(|| format!("guest root {} is not accessible", image.display()))?;
+        let mut report = run_audit(&root, scope, &[], &image.display().to_string());
+        report.note("audited a directory tree, not a disk image: filesystem UUID/label references could not be verified");
+        rules.run(&root, &mut report);
+        return Ok(report);
+    }
     let resolved = crate::storage::resolve_to_local_path(
         image
             .to_str()
@@ -54,9 +86,53 @@ pub fn collect_image_audit(image: &Path, scope: AuditScope, verbose: bool) -> Re
     let root_dir = g.guest_root_dir()?;
     let root = GuestRoot::new(&root_dir)
         .with_context(|| format!("guest root {} is not accessible", root_dir.display()))?;
-    let report = run_audit(&root, scope, &known, &image.display().to_string());
+    let mut report = run_audit(&root, scope, &known, &image.display().to_string());
+    rules.run(&root, &mut report);
     let _ = g.shutdown();
     Ok(report)
+}
+
+/// Audit plus the optional rules, waivers and baseline. Inputs are validated
+/// before the image is opened so a typo fails fast.
+pub fn build_image_audit(
+    image: &Path,
+    scope: AuditScope,
+    extras: &ImageAuditExtras,
+    verbose: bool,
+) -> Result<AuditReport> {
+    let rules = match extras.rules {
+        Some(p) => RuleSet::load(p)?,
+        None => RuleSet::default(),
+    };
+    let waivers = extras.waivers.map(WaiverSet::load).transpose()?;
+    let baseline = match extras.baseline {
+        Some(p) => Some(load_saved_report(p).ok_or_else(|| {
+            anyhow::anyhow!(
+                "baseline {} is not a saved `image-audit -o json` report (schema {AUDIT_SCHEMA})",
+                p.display()
+            )
+        })?),
+        None => None,
+    };
+    let mut report = collect_image_audit_with(image, scope, &rules, verbose)?;
+    if let Some(b) = &baseline {
+        apply_baseline(&mut report, b);
+    }
+    if let Some(w) = &waivers {
+        w.apply(&mut report, chrono::Utc::now().date_naive());
+    }
+    Ok(report)
+}
+
+/// Render a report as `text` (None), json, yaml or sarif.
+pub fn render_audit(format: &str, report: &AuditReport) -> Result<Option<String>> {
+    if format.eq_ignore_ascii_case("sarif") {
+        return Ok(Some(format!(
+            "{}\n",
+            serde_json::to_string_pretty(&to_sarif(report))?
+        )));
+    }
+    crate::cli::output::render_structured(format, report)
 }
 
 fn print_finding(f: &crate::offline::Finding) {
@@ -92,6 +168,12 @@ fn print_report(r: &AuditReport) {
     for f in &r.findings {
         print_finding(f);
     }
+    if !r.waived.is_empty() {
+        println!("\n{} finding(s) waived or in baseline:", r.waived.len());
+        for w in &r.waived {
+            println!("  - {} {} ({})", w.finding.id, w.finding.title, w.reason);
+        }
+    }
     if !r.notes.is_empty() {
         println!("\n{}", "Limits of this audit:".yellow());
         for n in &r.notes {
@@ -105,13 +187,16 @@ pub fn image_audit_command(
     scope: &str,
     output_format: &str,
     fail_on: Option<&str>,
+    extras: &ImageAuditExtras,
     verbose: bool,
 ) -> Result<()> {
-    crate::cli::output::StructuredFormat::parse(output_format)?;
+    if !output_format.eq_ignore_ascii_case("sarif") {
+        crate::cli::output::StructuredFormat::parse(output_format)?;
+    }
     let scope = AuditScope::parse(scope)?;
     let threshold = fail_on.map(Severity::parse).transpose()?;
-    let report = collect_image_audit(image, scope, verbose)?;
-    match crate::cli::output::render_structured(output_format, &report)? {
+    let report = build_image_audit(image, scope, extras, verbose)?;
+    match render_audit(output_format, &report)? {
         Some(s) => print!("{s}"),
         None => print_report(&report),
     }
@@ -247,9 +332,33 @@ mod tests {
     #[test]
     fn unknown_formats_and_scopes_are_rejected_before_opening_the_image() {
         let missing = Path::new("/nonexistent/disk.img");
-        assert!(image_audit_command(missing, "all", "jsno", None, false).is_err());
-        assert!(image_audit_command(missing, "bogus", "json", None, false).is_err());
-        assert!(image_audit_command(missing, "all", "json", Some("severe"), false).is_err());
+        assert!(image_audit_command(
+            missing,
+            "all",
+            "jsno",
+            None,
+            &ImageAuditExtras::default(),
+            false
+        )
+        .is_err());
+        assert!(image_audit_command(
+            missing,
+            "bogus",
+            "json",
+            None,
+            &ImageAuditExtras::default(),
+            false
+        )
+        .is_err());
+        assert!(image_audit_command(
+            missing,
+            "all",
+            "json",
+            Some("severe"),
+            &ImageAuditExtras::default(),
+            false
+        )
+        .is_err());
         assert!(image_audit_diff_command(missing, missing, "all", "table", None, false).is_err());
     }
 }

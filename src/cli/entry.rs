@@ -1827,17 +1827,29 @@ enum Commands {
         /// Disk image
         image: PathBuf,
 
-        /// Rule sets to run (hardening, boot, all)
+        /// Rule sets to run (hardening, boot, identity, all)
         #[arg(long, value_name = "SCOPE", default_value = "all")]
         scope: String,
 
-        /// Output format (text, json, yaml)
+        /// Output format (text, json, yaml, sarif)
         #[arg(short, long, value_name = "FORMAT", default_value = "text")]
         output: String,
 
         /// Exit 2 when any finding is at or above this severity (info, low, medium, high, critical)
         #[arg(long, value_name = "SEVERITY")]
         fail_on: Option<String>,
+
+        /// YAML file with your own rules (file-present, file-missing, line-matches, line-missing, max-mode)
+        #[arg(long, value_name = "FILE")]
+        rules: Option<PathBuf>,
+
+        /// YAML file of waivers (accepted risks, with reason and optional expiry)
+        #[arg(long, value_name = "FILE")]
+        waivers: Option<PathBuf>,
+
+        /// Saved `image-audit -o json` report; findings already in it are suppressed
+        #[arg(long, value_name = "REPORT")]
+        baseline: Option<PathBuf>,
     },
 
     /// Diff two offline audits (disk images or saved `image-audit -o json` reports)
@@ -1849,7 +1861,7 @@ enum Commands {
         /// After: disk image or saved audit JSON
         new: PathBuf,
 
-        /// Rule sets to run when an argument is a disk image (hardening, boot, all)
+        /// Rule sets to run when an argument is a disk image (hardening, boot, identity, all)
         #[arg(long, value_name = "SCOPE", default_value = "all")]
         scope: String,
 
@@ -3953,12 +3965,20 @@ pub fn run() -> anyhow::Result<()> {
             scope,
             output,
             fail_on,
+            rules,
+            waivers,
+            baseline,
         } => {
             crate::cli::commands::image_audit_command(
                 &image,
                 &scope,
                 &output,
                 fail_on.as_deref(),
+                &crate::cli::commands::ImageAuditExtras {
+                    rules: rules.as_deref(),
+                    waivers: waivers.as_deref(),
+                    baseline: baseline.as_deref(),
+                },
                 cli.verbose,
             )?;
         }
